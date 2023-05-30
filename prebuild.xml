@@ -125,7 +125,7 @@
       <Reference name="System.Drawing.Common"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="log4net"/>
+      <PackageReference name="log4net" version = "2.0.15"/>
       <Reference name="XMLRPC"/>
       <Reference name="SmartThreadPool"/>
       <Reference name="zlib.net" />
@@ -201,7 +201,7 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="XMLRPC"/>
-      <Reference name="log4net"/>
+      <PackageReference name="log4net" version = "2.0.15"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true">
@@ -582,7 +582,7 @@
       <Reference name="GridProxy"/>
       <Reference name="XMLRPC"/>
       <Reference name="Be.Windows.Forms.HexBox"/>
-      <Reference name="log4net"/>
+      <PackageReference name="log4net" version = "2.0.15"/>
       <Files>
         <Match pattern="*.cs" recurse="true">
           <Exclude name="obj" pattern="obj"/>
