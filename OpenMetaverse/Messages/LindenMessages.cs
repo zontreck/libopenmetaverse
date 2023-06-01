@@ -31,6 +31,7 @@ using System.IO;
 using zlib;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
+using OpenMetaverse.Structures;
 
 namespace OpenMetaverse.Messages.Linden
 {

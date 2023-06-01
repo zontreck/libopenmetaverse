@@ -37,6 +37,7 @@ using OpenMetaverse.Assets;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
+using OpenMetaverse.Structures;
 
 namespace OpenMetaverse
 {
