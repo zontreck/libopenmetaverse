@@ -24,40 +24,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an AssetScriptBinary object containing the
+///     LSO compiled bytecode of an LSL script
+/// </summary>
+public class AssetScriptBinary : Asset
 {
-    /// <summary>
-    /// Represents an AssetScriptBinary object containing the 
-    /// LSO compiled bytecode of an LSL script
-    /// </summary>
-    public class AssetScriptBinary : Asset
+    /// <summary>Initializes a new instance of an AssetScriptBinary object</summary>
+    public AssetScriptBinary()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.LSLBytecode; } }
+    }
 
-        /// <summary>Initializes a new instance of an AssetScriptBinary object</summary>
-        public AssetScriptBinary() { }
+    /// <summary>Initializes a new instance of an AssetScriptBinary object with parameters</summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetScriptBinary(UUID assetID, byte[] assetData)
+        : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>Initializes a new instance of an AssetScriptBinary object with parameters</summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetScriptBinary(UUID assetID, byte[] assetData)
-            : base(assetID, assetData)
-        {
-        }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.LSLBytecode;
 
-        /// <summary>
-        /// TODO: Encodes a scripts contents into a LSO Bytecode file
-        /// </summary>
-        public override void Encode() { }
+    /// <summary>
+    ///     TODO: Encodes a scripts contents into a LSO Bytecode file
+    /// </summary>
+    public override void Encode()
+    {
+    }
 
-        /// <summary>
-        /// TODO: Decode LSO Bytecode into a string
-        /// </summary>
-        /// <returns>true</returns>
-        public override bool Decode() { return true; }
+    /// <summary>
+    ///     TODO: Decode LSO Bytecode into a string
+    /// </summary>
+    /// <returns>true</returns>
+    public override bool Decode()
+    {
+        return true;
     }
 }

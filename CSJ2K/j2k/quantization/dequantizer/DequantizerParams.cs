@@ -12,10 +12,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -41,31 +41,26 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 */
-using System;
-using CSJ2K.j2k.entropy.decoder;
-using CSJ2K.j2k.util;
-namespace CSJ2K.j2k.quantization.dequantizer
+
+namespace CSJ2K.j2k.quantization.dequantizer;
+
+/// <summary>
+///     This is the generic ineterface for dequantization parameters. Generally,
+///     for each type of dequantizer, there should be a corresponding class to
+///     store its parameters. The parameters are those that come from the bit
+///     stream header, that concern dequantization.
+/// </summary>
+public abstract class DequantizerParams
 {
-	
-	/// <summary> This is the generic ineterface for dequantization parameters. Generally,
-	/// for each type of dequantizer, there should be a corresponding class to
-	/// store its parameters. The parameters are those that come from the bit
-	/// stream header, that concern dequantization.
-	/// 
+	/// <summary>
+	///     Returns the type of the dequantizer for which the parameters are. The
+	///     types are defined in the Dequantizer class.
 	/// </summary>
-	public abstract class DequantizerParams
-	{
-		/// <summary> Returns the type of the dequantizer for which the parameters are. The
-		/// types are defined in the Dequantizer class.
-		/// 
-		/// </summary>
-		/// <returns> The type of the dequantizer for which the parameters
-		/// are.
-		/// 
-		/// </returns>
-		/// <seealso cref="Dequantizer">
-		/// 
-		/// </seealso>
-		public abstract int DequantizerType{get;}
-	}
+	/// <returns>
+	///     The type of the dequantizer for which the parameters
+	///     are.
+	/// </returns>
+	/// <seealso cref="Dequantizer">
+	/// </seealso>
+	public abstract int DequantizerType { get; }
 }

@@ -24,126 +24,116 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Xml;
-using OpenMetaverse;
 
-namespace OpenMetaverse.Assets
+namespace OpenMetaverse.Assets;
+
+/// <summary>
+///     Archives assets
+/// </summary>
+public class AssetsArchiver
 {
+    ///// <value>
+    ///// Post a message to the log every x assets as a progress bar
+    ///// </value>
+    //static int LOG_ASSET_LOAD_NOTIFICATION_INTERVAL = 50;
+
     /// <summary>
-    /// Archives assets
+    ///     Archive assets
     /// </summary>
-    public class AssetsArchiver
+    protected IDictionary<UUID, Asset> m_assets;
+
+    public AssetsArchiver(IDictionary<UUID, Asset> assets)
     {
-        ///// <value>
-        ///// Post a message to the log every x assets as a progress bar
-        ///// </value>
-        //static int LOG_ASSET_LOAD_NOTIFICATION_INTERVAL = 50;
+        m_assets = assets;
+    }
 
-        /// <summary>
-        /// Archive assets
-        /// </summary>
-        protected IDictionary<UUID, Asset> m_assets;
+    /// <summary>
+    ///     Archive the assets given to this archiver to the given archive.
+    /// </summary>
+    /// <param name="archive"></param>
+    public void Archive(TarArchiveWriter archive)
+    {
+        //WriteMetadata(archive);
+        WriteData(archive);
+    }
 
-        public AssetsArchiver(IDictionary<UUID, Asset> assets)
+    /// <summary>
+    ///     Write an assets metadata file to the given archive
+    /// </summary>
+    /// <param name="archive"></param>
+    protected void WriteMetadata(TarArchiveWriter archive)
+    {
+        var sw = new StringWriter();
+        using (var xtw = new XmlTextWriter(sw))
         {
-            m_assets = assets;
-        }
+            xtw.Formatting = Formatting.Indented;
+            xtw.WriteStartDocument();
 
-        /// <summary>
-        /// Archive the assets given to this archiver to the given archive.
-        /// </summary>
-        /// <param name="archive"></param>
-        public void Archive(TarArchiveWriter archive)
-        {
-            //WriteMetadata(archive);
-            WriteData(archive);
-        }
+            xtw.WriteStartElement("assets");
 
-        /// <summary>
-        /// Write an assets metadata file to the given archive
-        /// </summary>
-        /// <param name="archive"></param>
-        protected void WriteMetadata(TarArchiveWriter archive)
-        {
-            StringWriter sw = new StringWriter();
-            using (XmlTextWriter xtw = new XmlTextWriter(sw))
+            foreach (var uuid in m_assets.Keys)
             {
-                xtw.Formatting = Formatting.Indented;
-                xtw.WriteStartDocument();
+                var asset = m_assets[uuid];
 
-                xtw.WriteStartElement("assets");
-
-                foreach (UUID uuid in m_assets.Keys)
+                if (asset != null)
                 {
-                    Asset asset = m_assets[uuid];
+                    xtw.WriteStartElement("asset");
 
-                    if (asset != null)
-                    {
-                        xtw.WriteStartElement("asset");
+                    var extension = string.Empty;
 
-                        string extension = string.Empty;
+                    if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
+                        extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
 
-                        if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
-                        {
-                            extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
-                        }
+                    xtw.WriteElementString("filename", uuid + extension);
 
-                        xtw.WriteElementString("filename", uuid.ToString() + extension);
+                    xtw.WriteElementString("name", uuid.ToString());
+                    xtw.WriteElementString("description", string.Empty);
+                    xtw.WriteElementString("asset-type", asset.AssetType.ToString());
 
-                        xtw.WriteElementString("name", uuid.ToString());
-                        xtw.WriteElementString("description", String.Empty);
-                        xtw.WriteElementString("asset-type", asset.AssetType.ToString());
-
-                        xtw.WriteEndElement();
-                    }
+                    xtw.WriteEndElement();
                 }
-
-                xtw.WriteEndElement();
-                xtw.WriteEndDocument();
-                archive.WriteFile("assets.xml", sw.ToString());
             }
+
+            xtw.WriteEndElement();
+            xtw.WriteEndDocument();
+            archive.WriteFile("assets.xml", sw.ToString());
         }
+    }
 
-        /// <summary>
-        /// Write asset data files to the given archive
-        /// </summary>
-        /// <param name="archive"></param>
-        protected void WriteData(TarArchiveWriter archive)
+    /// <summary>
+    ///     Write asset data files to the given archive
+    /// </summary>
+    /// <param name="archive"></param>
+    protected void WriteData(TarArchiveWriter archive)
+    {
+        // It appears that gtar, at least, doesn't need the intermediate directory entries in the tar
+        //archive.AddDir("assets");
+
+        var assetsAdded = 0;
+
+        foreach (var uuid in m_assets.Keys)
         {
-            // It appears that gtar, at least, doesn't need the intermediate directory entries in the tar
-            //archive.AddDir("assets");
+            var asset = m_assets[uuid];
 
-            int assetsAdded = 0;
+            var extension = string.Empty;
 
-            foreach (UUID uuid in m_assets.Keys)
-            {
-                Asset asset = m_assets[uuid];
+            if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
+                extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
+            else
+                Logger.Log(string.Format(
+                    "Unrecognized asset type {0} with uuid {1}.  This asset will be saved but not reloaded",
+                    asset.AssetType, asset.AssetID), Helpers.LogLevel.Warning);
 
-                string extension = string.Empty;
+            asset.Encode();
 
-                if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
-                {
-                    extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
-                }
-                else
-                {
-                    Logger.Log(String.Format(
-                        "Unrecognized asset type {0} with uuid {1}.  This asset will be saved but not reloaded",
-                        asset.AssetType, asset.AssetID), Helpers.LogLevel.Warning);
-                }
+            archive.WriteFile(
+                ArchiveConstants.ASSETS_PATH + uuid + extension,
+                asset.AssetData);
 
-                asset.Encode();
-
-                archive.WriteFile(
-                    ArchiveConstants.ASSETS_PATH + uuid.ToString() + extension,
-                    asset.AssetData);
-
-                assetsAdded++;
-            }
+            assetsAdded++;
         }
     }
 }

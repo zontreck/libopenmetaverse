@@ -25,278 +25,306 @@
  */
 
 using System;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public class DoubleDictionary<TKey1, TKey2, TValue>
 {
-    public class DoubleDictionary<TKey1, TKey2, TValue>
+    private readonly Dictionary<TKey1, TValue> Dictionary1;
+    private readonly Dictionary<TKey2, TValue> Dictionary2;
+    private readonly ReaderWriterLockSlim rwLock = new();
+
+    public DoubleDictionary()
     {
-        Dictionary<TKey1, TValue> Dictionary1;
-        Dictionary<TKey2, TValue> Dictionary2;
-        ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+        Dictionary1 = new Dictionary<TKey1, TValue>();
+        Dictionary2 = new Dictionary<TKey2, TValue>();
+    }
 
-        public DoubleDictionary()
+    public DoubleDictionary(int capacity)
+    {
+        Dictionary1 = new Dictionary<TKey1, TValue>(capacity);
+        Dictionary2 = new Dictionary<TKey2, TValue>(capacity);
+    }
+
+    public int Count => Dictionary1.Count;
+
+    public void Add(TKey1 key1, TKey2 key2, TValue value)
+    {
+        rwLock.EnterWriteLock();
+
+        try
         {
-            Dictionary1 = new Dictionary<TKey1,TValue>();
-            Dictionary2 = new Dictionary<TKey2,TValue>();
-        }
-
-        public DoubleDictionary(int capacity)
-        {
-            Dictionary1 = new Dictionary<TKey1, TValue>(capacity);
-            Dictionary2 = new Dictionary<TKey2, TValue>(capacity);
-        }
-
-        public void Add(TKey1 key1, TKey2 key2, TValue value)
-        {
-            rwLock.EnterWriteLock();
-
-            try
+            if (Dictionary1.ContainsKey(key1))
             {
-                if (Dictionary1.ContainsKey(key1))
-                {
-                    if (!Dictionary2.ContainsKey(key2))
-                        throw new ArgumentException("key1 exists in the dictionary but not key2");
-                }
-                else if (Dictionary2.ContainsKey(key2))
-                {
-                    if (!Dictionary1.ContainsKey(key1))
-                        throw new ArgumentException("key2 exists in the dictionary but not key1");
-                }
-
-                Dictionary1[key1] = value;
-                Dictionary2[key2] = value;
+                if (!Dictionary2.ContainsKey(key2))
+                    throw new ArgumentException("key1 exists in the dictionary but not key2");
             }
-            finally { rwLock.ExitWriteLock(); }
-        }
-
-        public bool Remove(TKey1 key1, TKey2 key2)
-        {
-            bool success;
-            rwLock.EnterWriteLock();
-
-            try
+            else if (Dictionary2.ContainsKey(key2))
             {
-                Dictionary1.Remove(key1);
-                success = Dictionary2.Remove(key2);
+                if (!Dictionary1.ContainsKey(key1))
+                    throw new ArgumentException("key2 exists in the dictionary but not key1");
             }
-            finally { rwLock.ExitWriteLock(); }
 
-            return success;
+            Dictionary1[key1] = value;
+            Dictionary2[key2] = value;
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
+        }
+    }
+
+    public bool Remove(TKey1 key1, TKey2 key2)
+    {
+        bool success;
+        rwLock.EnterWriteLock();
+
+        try
+        {
+            Dictionary1.Remove(key1);
+            success = Dictionary2.Remove(key2);
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
         }
 
-        public bool Remove(TKey1 key1)
-        {
-            bool found = false;
-            rwLock.EnterWriteLock();
+        return success;
+    }
 
-            try
-            {
-                // This is an O(n) operation!
-                TValue value;
-                if (Dictionary1.TryGetValue(key1, out value))
-                {
-                    foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
+    public bool Remove(TKey1 key1)
+    {
+        var found = false;
+        rwLock.EnterWriteLock();
+
+        try
+        {
+            // This is an O(n) operation!
+            TValue value;
+            if (Dictionary1.TryGetValue(key1, out value))
+                foreach (var kvp in Dictionary2)
+                    if (kvp.Value.Equals(value))
                     {
-                        if (kvp.Value.Equals(value))
-                        {
-                            Dictionary1.Remove(key1);
-                            Dictionary2.Remove(kvp.Key);
-                            found = true;
-                            break;
-                        }
+                        Dictionary1.Remove(key1);
+                        Dictionary2.Remove(kvp.Key);
+                        found = true;
+                        break;
                     }
-                }
-            }
-            finally { rwLock.ExitWriteLock(); }
-
-            return found;
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
         }
 
-        public bool Remove(TKey2 key2)
-        {
-            bool found = false;
-            rwLock.EnterWriteLock();
+        return found;
+    }
 
-            try
-            {
-                // This is an O(n) operation!
-                TValue value;
-                if (Dictionary2.TryGetValue(key2, out value))
-                {
-                    foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+    public bool Remove(TKey2 key2)
+    {
+        var found = false;
+        rwLock.EnterWriteLock();
+
+        try
+        {
+            // This is an O(n) operation!
+            TValue value;
+            if (Dictionary2.TryGetValue(key2, out value))
+                foreach (var kvp in Dictionary1)
+                    if (kvp.Value.Equals(value))
                     {
-                        if (kvp.Value.Equals(value))
-                        {
-                            Dictionary2.Remove(key2);
-                            Dictionary1.Remove(kvp.Key);
-                            found = true;
-                            break;
-                        }
+                        Dictionary2.Remove(key2);
+                        Dictionary1.Remove(kvp.Key);
+                        found = true;
+                        break;
                     }
-                }
-            }
-            finally { rwLock.ExitWriteLock(); }
-
-            return found;
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
         }
 
-        public void Clear()
+        return found;
+    }
+
+    public void Clear()
+    {
+        rwLock.EnterWriteLock();
+
+        try
         {
+            Dictionary1.Clear();
+            Dictionary2.Clear();
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
+        }
+    }
+
+    public bool ContainsKey(TKey1 key)
+    {
+        return Dictionary1.ContainsKey(key);
+    }
+
+    public bool ContainsKey(TKey2 key)
+    {
+        return Dictionary2.ContainsKey(key);
+    }
+
+    public bool TryGetValue(TKey1 key, out TValue value)
+    {
+        bool success;
+        rwLock.EnterReadLock();
+
+        try
+        {
+            success = Dictionary1.TryGetValue(key, out value);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+
+        return success;
+    }
+
+    public bool TryGetValue(TKey2 key, out TValue value)
+    {
+        bool success;
+        rwLock.EnterReadLock();
+
+        try
+        {
+            success = Dictionary2.TryGetValue(key, out value);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+
+        return success;
+    }
+
+    public void ForEach(Action<TValue> action)
+    {
+        rwLock.EnterReadLock();
+
+        try
+        {
+            foreach (var value in Dictionary1.Values)
+                action(value);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+    }
+
+    public void ForEach(Action<KeyValuePair<TKey1, TValue>> action)
+    {
+        rwLock.EnterReadLock();
+
+        try
+        {
+            foreach (var entry in Dictionary1)
+                action(entry);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+    }
+
+    public void ForEach(Action<KeyValuePair<TKey2, TValue>> action)
+    {
+        rwLock.EnterReadLock();
+
+        try
+        {
+            foreach (var entry in Dictionary2)
+                action(entry);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+    }
+
+    public TValue FindValue(Predicate<TValue> predicate)
+    {
+        rwLock.EnterReadLock();
+        try
+        {
+            foreach (var value in Dictionary1.Values)
+                if (predicate(value))
+                    return value;
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+
+        return default;
+    }
+
+    public IList<TValue> FindAll(Predicate<TValue> predicate)
+    {
+        IList<TValue> list = new List<TValue>();
+        rwLock.EnterReadLock();
+
+        try
+        {
+            foreach (var value in Dictionary1.Values)
+                if (predicate(value))
+                    list.Add(value);
+        }
+        finally
+        {
+            rwLock.ExitReadLock();
+        }
+
+        return list;
+    }
+
+    public int RemoveAll(Predicate<TValue> predicate)
+    {
+        IList<TKey1> list = new List<TKey1>();
+
+        rwLock.EnterUpgradeableReadLock();
+
+        try
+        {
+            foreach (var kvp in Dictionary1)
+                if (predicate(kvp.Value))
+                    list.Add(kvp.Key);
+
+            IList<TKey2> list2 = new List<TKey2>(list.Count);
+            foreach (var kvp in Dictionary2)
+                if (predicate(kvp.Value))
+                    list2.Add(kvp.Key);
+
             rwLock.EnterWriteLock();
 
             try
             {
-                Dictionary1.Clear();
-                Dictionary2.Clear();
+                for (var i = 0; i < list.Count; i++)
+                    Dictionary1.Remove(list[i]);
+
+                for (var i = 0; i < list2.Count; i++)
+                    Dictionary2.Remove(list2[i]);
             }
-            finally { rwLock.ExitWriteLock(); }
-        }
-
-        public int Count
-        {
-            get { return Dictionary1.Count; }
-        }
-
-        public bool ContainsKey(TKey1 key)
-        {
-            return Dictionary1.ContainsKey(key);
-        }
-
-        public bool ContainsKey(TKey2 key)
-        {
-            return Dictionary2.ContainsKey(key);
-        }
-
-        public bool TryGetValue(TKey1 key, out TValue value)
-        {
-            bool success;
-            rwLock.EnterReadLock();
-
-            try { success = Dictionary1.TryGetValue(key, out value); }
-            finally { rwLock.ExitReadLock(); }
-
-            return success;
-        }
-
-        public bool TryGetValue(TKey2 key, out TValue value)
-        {
-            bool success;
-            rwLock.EnterReadLock();
-
-            try { success = Dictionary2.TryGetValue(key, out value); }
-            finally { rwLock.ExitReadLock(); }
-
-            return success;
-        }
-
-        public void ForEach(Action<TValue> action)
-        {
-            rwLock.EnterReadLock();
-
-            try
+            finally
             {
-                foreach (TValue value in Dictionary1.Values)
-                    action(value);
+                rwLock.ExitWriteLock();
             }
-            finally { rwLock.ExitReadLock(); }
         }
-
-        public void ForEach(Action<KeyValuePair<TKey1, TValue>> action)
+        finally
         {
-            rwLock.EnterReadLock();
-
-            try
-            {
-                foreach (KeyValuePair<TKey1, TValue> entry in Dictionary1)
-                    action(entry);
-            }
-            finally { rwLock.ExitReadLock(); }
+            rwLock.ExitUpgradeableReadLock();
         }
 
-        public void ForEach(Action<KeyValuePair<TKey2, TValue>> action)
-        {
-            rwLock.EnterReadLock();
-
-            try
-            {
-                foreach (KeyValuePair<TKey2, TValue> entry in Dictionary2)
-                    action(entry);
-            }
-            finally { rwLock.ExitReadLock(); }
-        }
-
-        public TValue FindValue(Predicate<TValue> predicate)
-        {
-            rwLock.EnterReadLock();
-            try
-            {
-                foreach (TValue value in Dictionary1.Values)
-                {
-                    if (predicate(value))
-                        return value;
-                }
-            }
-            finally { rwLock.ExitReadLock(); }
-
-            return default(TValue);
-        }
-
-        public IList<TValue> FindAll(Predicate<TValue> predicate)
-        {
-            IList<TValue> list = new List<TValue>();
-            rwLock.EnterReadLock();
-
-            try
-            {
-                foreach (TValue value in Dictionary1.Values)
-                {
-                    if (predicate(value))
-                        list.Add(value);
-                }
-            }
-            finally { rwLock.ExitReadLock(); }
-
-            return list;
-        }
-
-        public int RemoveAll(Predicate<TValue> predicate)
-        {
-            IList<TKey1> list = new List<TKey1>();
-
-            rwLock.EnterUpgradeableReadLock();
-
-            try
-            {
-                foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
-                {
-                    if (predicate(kvp.Value))
-                        list.Add(kvp.Key);
-                }
-
-                IList<TKey2> list2 = new List<TKey2>(list.Count);
-                foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
-                {
-                    if (predicate(kvp.Value))
-                        list2.Add(kvp.Key);
-                }
-
-                rwLock.EnterWriteLock();
-
-                try
-                {
-                    for (int i = 0; i < list.Count; i++)
-                        Dictionary1.Remove(list[i]);
-
-                    for (int i = 0; i < list2.Count; i++)
-                        Dictionary2.Remove(list2[i]);
-                }
-                finally { rwLock.ExitWriteLock(); }
-            }
-            finally { rwLock.ExitUpgradeableReadLock(); }
-
-            return list.Count;
-        }
+        return list.Count;
     }
 }

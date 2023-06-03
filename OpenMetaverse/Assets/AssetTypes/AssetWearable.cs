@@ -26,253 +26,307 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
-using OpenMetaverse;
 
-namespace OpenMetaverse.Assets
+namespace OpenMetaverse.Assets;
+
+/// <summary>
+///     Represents a Wearable Asset, Clothing, Hair, Skin, Etc
+/// </summary>
+public abstract class AssetWearable : Asset
 {
+    /// <summary>The <seealso cref="UUID" /> of the assets creator</summary>
+    public UUID Creator;
+
+    /// <summary>A string containing a short description of the asset</summary>
+    public string Description = string.Empty;
+
+    /// <summary>The For-Sale status of the object</summary>
+    public SaleType ForSale;
+
+    /// <summary>The <seealso cref="UUID" /> of the Group this asset is set to</summary>
+    public UUID Group;
+
+    /// <summary>True if the asset is owned by a <seealso cref="Group" /></summary>
+    public bool GroupOwned;
+
+    /// <summary>The <seealso cref="UUID" /> of the assets prior owner</summary>
+    public UUID LastOwner;
+
+    /// <summary>A string containing the name of the asset</summary>
+    public string Name = string.Empty;
+
+    /// <summary>The <seealso cref="UUID" /> of the assets current owner</summary>
+    public UUID Owner;
+
+    /// <summary>A Dictionary containing Key/Value pairs of the objects parameters</summary>
+    public Dictionary<int, float> Params = new();
+
+    /// <summary>The Permissions mask of the asset</summary>
+    public Permissions Permissions;
+
+    /// <summary>An Integer representing the purchase price of the asset</summary>
+    public int SalePrice;
+
     /// <summary>
-    /// Represents a Wearable Asset, Clothing, Hair, Skin, Etc
+    ///     A Dictionary containing Key/Value pairs where the Key is the textures Index and the Value is the Textures
+    ///     <seealso cref="UUID" />
     /// </summary>
-    public abstract class AssetWearable : Asset
+    public Dictionary<AvatarTextureIndex, UUID> Textures = new();
+
+    /// <summary>The Assets WearableType</summary>
+    public WearableType WearableType = WearableType.Shape;
+
+    /// <summary>Initializes a new instance of an AssetWearable object</summary>
+    public AssetWearable()
     {
-        /// <summary>A string containing the name of the asset</summary>
-        public string Name = String.Empty;
-        /// <summary>A string containing a short description of the asset</summary>
-        public string Description = String.Empty;
-        /// <summary>The Assets WearableType</summary>
-        public WearableType WearableType = WearableType.Shape;
-        /// <summary>The For-Sale status of the object</summary>
-        public SaleType ForSale;
-        /// <summary>An Integer representing the purchase price of the asset</summary>
-        public int SalePrice;
-        /// <summary>The <seealso cref="UUID"/> of the assets creator</summary>
-        public UUID Creator;
-        /// <summary>The <seealso cref="UUID"/> of the assets current owner</summary>
-        public UUID Owner;
-        /// <summary>The <seealso cref="UUID"/> of the assets prior owner</summary>
-        public UUID LastOwner;
-        /// <summary>The <seealso cref="UUID"/> of the Group this asset is set to</summary>
-        public UUID Group;
-        /// <summary>True if the asset is owned by a <seealso cref="Group"/></summary>
-        public bool GroupOwned;
-        /// <summary>The Permissions mask of the asset</summary>
-        public Permissions Permissions;
-        /// <summary>A Dictionary containing Key/Value pairs of the objects parameters</summary>
-        public Dictionary<int, float> Params = new Dictionary<int, float>();
-        /// <summary>A Dictionary containing Key/Value pairs where the Key is the textures Index and the Value is the Textures <seealso cref="UUID"/></summary>
-        public Dictionary<AvatarTextureIndex, UUID> Textures = new Dictionary<AvatarTextureIndex, UUID>();
+    }
 
-        /// <summary>Initializes a new instance of an AssetWearable object</summary>
-        public AssetWearable() { }
+    /// <summary>Initializes a new instance of an AssetWearable object with parameters</summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetWearable(UUID assetID, byte[] assetData) : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>Initializes a new instance of an AssetWearable object with parameters</summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetWearable(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+    /// <summary>
+    ///     Decode an assets byte encoded data to a string
+    /// </summary>
+    /// <returns>true if the asset data was decoded successfully</returns>
+    public override bool Decode()
+    {
+        if (AssetData == null || AssetData.Length == 0)
+            return false;
 
-        /// <summary>
-        /// Decode an assets byte encoded data to a string
-        /// </summary>
-        /// <returns>true if the asset data was decoded successfully</returns>
-        public override bool Decode()
+        var version = -1;
+        Permissions = new Permissions();
+
+        try
         {
-            if (AssetData == null || AssetData.Length == 0)
-                return false;
+            var data = Utils.BytesToString(AssetData);
 
-            int version = -1;
-            Permissions = new Permissions();
-
-            try
-            {
-                string data = Utils.BytesToString(AssetData);
-
-                data = data.Replace("\r", String.Empty);
-                string[] lines = data.Split('\n');
-                for (int stri = 0; stri < lines.Length; stri++)
+            data = data.Replace("\r", string.Empty);
+            var lines = data.Split('\n');
+            for (var stri = 0; stri < lines.Length; stri++)
+                if (stri == 0)
                 {
-                    if (stri == 0)
-                    {
-                        string versionstring = lines[stri];
-                        if (versionstring.Split(' ').Length == 1)
-                            version = Int32.Parse(versionstring);
-                        else
-                            version = Int32.Parse(versionstring.Split(' ')[2]);
-                        if (version != 22 && version != 18 && version != 16 && version != 15)
-                            return false;
-                    }
-                    else if (stri == 1)
-                    {
-                        Name = lines[stri];
-                    }
-                    else if (stri == 2)
-                    {
-                        Description = lines[stri];
-                    }
+                    var versionstring = lines[stri];
+                    if (versionstring.Split(' ').Length == 1)
+                        version = int.Parse(versionstring);
                     else
+                        version = int.Parse(versionstring.Split(' ')[2]);
+                    if (version != 22 && version != 18 && version != 16 && version != 15)
+                        return false;
+                }
+                else if (stri == 1)
+                {
+                    Name = lines[stri];
+                }
+                else if (stri == 2)
+                {
+                    Description = lines[stri];
+                }
+                else
+                {
+                    var line = lines[stri].Trim();
+                    var fields = line.Split('\t');
+
+                    if (fields.Length == 1)
                     {
-                        string line = lines[stri].Trim();
-                        string[] fields = line.Split('\t');
-
-                        if (fields.Length == 1)
+                        fields = line.Split(' ');
+                        if (fields[0] == "parameters")
                         {
-                            fields = line.Split(' ');
-                            if (fields[0] == "parameters")
+                            var count = int.Parse(fields[1]) + stri;
+                            for (; stri < count;)
                             {
-                                int count = Int32.Parse(fields[1]) + stri;
-                                for (; stri < count; )
-                                {
-                                    stri++;
-                                    line = lines[stri].Trim();
-                                    fields = line.Split(' ');
+                                stri++;
+                                line = lines[stri].Trim();
+                                fields = line.Split(' ');
 
-                                    int id = 0;
+                                var id = 0;
 
-                                    // Special handling for -0 edge case
-                                    if (fields[0] != "-0")
-                                        id = Int32.Parse(fields[0]);
+                                // Special handling for -0 edge case
+                                if (fields[0] != "-0")
+                                    id = int.Parse(fields[0]);
 
-                                    if (fields[1] == ",")
-                                        fields[1] = "0";
-                                    else
-                                        fields[1] = fields[1].Replace(',', '.');
+                                if (fields[1] == ",")
+                                    fields[1] = "0";
+                                else
+                                    fields[1] = fields[1].Replace(',', '.');
 
-                                    float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
-                                        Utils.EnUsCulture.NumberFormat);
+                                var weight = float.Parse(fields[1], NumberStyles.Float,
+                                    Utils.EnUsCulture.NumberFormat);
 
-                                    Params[id] = weight;
-                                }
+                                Params[id] = weight;
                             }
-                            else if (fields[0] == "textures")
-                            {
-                                int count = Int32.Parse(fields[1]) + stri;
-                                for (; stri < count; )
-                                {
-                                    stri++;
-                                    line = lines[stri].Trim();
-                                    fields = line.Split(' ');
-
-                                    AvatarTextureIndex id = (AvatarTextureIndex)Int32.Parse(fields[0]);
-                                    UUID texture = new UUID(fields[1]);
-
-                                    Textures[id] = texture;
-                                }
-                            }
-                            else if (fields[0] == "type")
-                            {
-                                WearableType = (WearableType)Int32.Parse(fields[1]);
-                            }
-
                         }
-                        else if (fields.Length == 2)
+                        else if (fields[0] == "textures")
                         {
-                            switch (fields[0])
+                            var count = int.Parse(fields[1]) + stri;
+                            for (; stri < count;)
                             {
-                                case "creator_mask":
-                                    // Deprecated, apply this as the base mask
-                                    Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "base_mask":
-                                    Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "owner_mask":
-                                    Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "group_mask":
-                                    Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "everyone_mask":
-                                    Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "next_owner_mask":
-                                    Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "creator_id":
-                                    Creator = new UUID(fields[1]);
-                                    break;
-                                case "owner_id":
-                                    Owner = new UUID(fields[1]);
-                                    break;
-                                case "last_owner_id":
-                                    LastOwner = new UUID(fields[1]);
-                                    break;
-                                case "group_id":
-                                    Group = new UUID(fields[1]);
-                                    break;
-                                case "group_owned":
-                                    GroupOwned = (Int32.Parse(fields[1]) != 0);
-                                    break;
-                                case "sale_type":
-                                    ForSale = Utils.StringToSaleType(fields[1]);
-                                    break;
-                                case "sale_price":
-                                    SalePrice = Int32.Parse(fields[1]);
-                                    break;
-                                case "sale_info":
-                                    // Container for sale_type and sale_price, ignore
-                                    break;
-                                case "perm_mask":
-                                    // Deprecated, apply this as the next owner mask
-                                    Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                default:
-                                    return false;
+                                stri++;
+                                line = lines[stri].Trim();
+                                fields = line.Split(' ');
+
+                                var id = (AvatarTextureIndex)int.Parse(fields[0]);
+                                var texture = new UUID(fields[1]);
+
+                                Textures[id] = texture;
                             }
+                        }
+                        else if (fields[0] == "type")
+                        {
+                            WearableType = (WearableType)int.Parse(fields[1]);
+                        }
+                    }
+                    else if (fields.Length == 2)
+                    {
+                        switch (fields[0])
+                        {
+                            case "creator_mask":
+                                // Deprecated, apply this as the base mask
+                                Permissions.BaseMask = (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "base_mask":
+                                Permissions.BaseMask = (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "owner_mask":
+                                Permissions.OwnerMask = (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "group_mask":
+                                Permissions.GroupMask = (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "everyone_mask":
+                                Permissions.EveryoneMask =
+                                    (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "next_owner_mask":
+                                Permissions.NextOwnerMask =
+                                    (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            case "creator_id":
+                                Creator = new UUID(fields[1]);
+                                break;
+                            case "owner_id":
+                                Owner = new UUID(fields[1]);
+                                break;
+                            case "last_owner_id":
+                                LastOwner = new UUID(fields[1]);
+                                break;
+                            case "group_id":
+                                Group = new UUID(fields[1]);
+                                break;
+                            case "group_owned":
+                                GroupOwned = int.Parse(fields[1]) != 0;
+                                break;
+                            case "sale_type":
+                                ForSale = Utils.StringToSaleType(fields[1]);
+                                break;
+                            case "sale_price":
+                                SalePrice = int.Parse(fields[1]);
+                                break;
+                            case "sale_info":
+                                // Container for sale_type and sale_price, ignore
+                                break;
+                            case "perm_mask":
+                                // Deprecated, apply this as the next owner mask
+                                Permissions.NextOwnerMask =
+                                    (PermissionMask)uint.Parse(fields[1], NumberStyles.HexNumber);
+                                break;
+                            default:
+                                return false;
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log("Failed decoding wearable asset " + this.AssetID + ": " + ex.Message,
-                    Helpers.LogLevel.Warning);
-                return false;
-            }
-
-            return true;
         }
-
-        /// <summary>
-        /// Encode the assets string represantion into a format consumable by the asset server
-        /// </summary>
-        public override void Encode()
+        catch (Exception ex)
         {
-            const string NL = "\n";
-
-            StringBuilder data = new StringBuilder("LLWearable version 22\n");
-            data.Append(Name); data.Append(NL); data.Append(NL);
-            data.Append("\tpermissions 0\n\t{\n");
-            data.Append("\t\tbase_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.BaseMask)); data.Append(NL);
-            data.Append("\t\towner_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.OwnerMask)); data.Append(NL);
-            data.Append("\t\tgroup_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.GroupMask)); data.Append(NL);
-            data.Append("\t\teveryone_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append(NL);
-            data.Append("\t\tnext_owner_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append(NL);
-            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToString()); data.Append(NL);
-            data.Append("\t\towner_id\t"); data.Append(Owner.ToString()); data.Append(NL);
-            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToString()); data.Append(NL);
-            data.Append("\t\tgroup_id\t"); data.Append(Group.ToString()); data.Append(NL);
-            if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
-            data.Append("\t}\n");
-            data.Append("\tsale_info\t0\n");
-            data.Append("\t{\n");
-            data.Append("\t\tsale_type\t"); data.Append(Utils.SaleTypeToString(ForSale)); data.Append(NL);
-            data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append(NL);
-            data.Append("\t}\n");
-            data.Append("type "); data.Append((int)WearableType); data.Append(NL);
-
-            data.Append("parameters "); data.Append(Params.Count); data.Append(NL);
-            foreach (KeyValuePair<int, float> param in Params)
-            {
-                data.Append(param.Key); data.Append(" "); data.Append(Helpers.FloatToTerseString(param.Value)); data.Append(NL);
-            }
-
-            data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
-            foreach (KeyValuePair<AvatarTextureIndex, UUID> texture in Textures)
-            {
-                data.Append((byte)texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
-            }
-
-            AssetData = Utils.StringToBytes(data.ToString());
+            Logger.Log("Failed decoding wearable asset " + AssetID + ": " + ex.Message,
+                Helpers.LogLevel.Warning);
+            return false;
         }
+
+        return true;
+    }
+
+    /// <summary>
+    ///     Encode the assets string represantion into a format consumable by the asset server
+    /// </summary>
+    public override void Encode()
+    {
+        const string NL = "\n";
+
+        var data = new StringBuilder("LLWearable version 22\n");
+        data.Append(Name);
+        data.Append(NL);
+        data.Append(NL);
+        data.Append("\tpermissions 0\n\t{\n");
+        data.Append("\t\tbase_mask\t");
+        data.Append(Utils.UIntToHexString((uint)Permissions.BaseMask));
+        data.Append(NL);
+        data.Append("\t\towner_mask\t");
+        data.Append(Utils.UIntToHexString((uint)Permissions.OwnerMask));
+        data.Append(NL);
+        data.Append("\t\tgroup_mask\t");
+        data.Append(Utils.UIntToHexString((uint)Permissions.GroupMask));
+        data.Append(NL);
+        data.Append("\t\teveryone_mask\t");
+        data.Append(Utils.UIntToHexString((uint)Permissions.EveryoneMask));
+        data.Append(NL);
+        data.Append("\t\tnext_owner_mask\t");
+        data.Append(Utils.UIntToHexString((uint)Permissions.NextOwnerMask));
+        data.Append(NL);
+        data.Append("\t\tcreator_id\t");
+        data.Append(Creator.ToString());
+        data.Append(NL);
+        data.Append("\t\towner_id\t");
+        data.Append(Owner.ToString());
+        data.Append(NL);
+        data.Append("\t\tlast_owner_id\t");
+        data.Append(LastOwner.ToString());
+        data.Append(NL);
+        data.Append("\t\tgroup_id\t");
+        data.Append(Group.ToString());
+        data.Append(NL);
+        if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
+        data.Append("\t}\n");
+        data.Append("\tsale_info\t0\n");
+        data.Append("\t{\n");
+        data.Append("\t\tsale_type\t");
+        data.Append(Utils.SaleTypeToString(ForSale));
+        data.Append(NL);
+        data.Append("\t\tsale_price\t");
+        data.Append(SalePrice);
+        data.Append(NL);
+        data.Append("\t}\n");
+        data.Append("type ");
+        data.Append((int)WearableType);
+        data.Append(NL);
+
+        data.Append("parameters ");
+        data.Append(Params.Count);
+        data.Append(NL);
+        foreach (var param in Params)
+        {
+            data.Append(param.Key);
+            data.Append(" ");
+            data.Append(Helpers.FloatToTerseString(param.Value));
+            data.Append(NL);
+        }
+
+        data.Append("textures ");
+        data.Append(Textures.Count);
+        data.Append(NL);
+        foreach (var texture in Textures)
+        {
+            data.Append((byte)texture.Key);
+            data.Append(" ");
+            data.Append(texture.Value.ToString());
+            data.Append(NL);
+        }
+
+        AssetData = Utils.StringToBytes(data.ToString());
     }
 }

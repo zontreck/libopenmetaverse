@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -43,126 +43,106 @@
 * 
 * 
 */
+
 using System;
-namespace CSJ2K.j2k.util
+
+namespace CSJ2K.j2k.util;
+
+/// <summary>
+///     This class contains a colleaction of utility static methods for arrays.
+/// </summary>
+public class ArrayUtil
 {
-	
-	/// <summary> This class contains a colleaction of utility static methods for arrays.
-	/// 
+	/// <summary>
+	///     The maximum array size to do element by element copying, larger
+	///     arrays are copyied in a n optimized way.
 	/// </summary>
-	public class ArrayUtil
-	{
-		
-		/// <summary>The maximum array size to do element by element copying, larger
-		/// arrays are copyied in a n optimized way. 
-		/// </summary>
-		public const int MAX_EL_COPYING = 8;
-		
-		/// <summary>The number of elements to copy initially in an optimized array copy </summary>
-		public const int INIT_EL_COPYING = 4;
-		
-		/// <summary> Reinitializes an int array to the given value in an optimized way. If
-		/// the length of the array is less than MAX_EL_COPYING, then the array
-		/// is set element by element in the normal way, otherwise the first
-		/// INIT_EL_COPYING elements are set element by element and then
-		/// System.arraycopy is used to set the other parts of the array.
-		/// 
-		/// </summary>
-		/// <param name="arr">The array to set.
-		/// 
-		/// </param>
-		/// <param name="val">The value to set the array to.
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public static void  intArraySet(int[] arr, int val)
-		{
-			int i, len, len2;
-			
-			len = arr.Length;
-			// Set array to 'val' in an optimized way
-			if (len < MAX_EL_COPYING)
-			{
-				// Not worth doing optimized way
-				for (i = len - 1; i >= 0; i--)
-				{
-					// Set elements
-					arr[i] = val;
-				}
-			}
-			else
-			{
-				// Do in optimized way
-				len2 = len >> 1;
-				for (i = 0; i < INIT_EL_COPYING; i++)
-				{
-					// Set first elements
-					arr[i] = val;
-				}
-				for (; i <= len2; i <<= 1)
-				{
-					// Copy values doubling size each time
-					Array.Copy(arr, 0, arr, i, i);
-				}
-				if (i < len)
-				{
-					// Copy values to end
-					Array.Copy(arr, 0, arr, i, len - i);
-				}
-			}
-		}
-		
-		/// <summary> Reinitializes a byte array to the given value in an optimized way. If
-		/// the length of the array is less than MAX_EL_COPYING, then the array
-		/// is set element by element in the normal way, otherwise the first
-		/// INIT_EL_COPYING elements are set element by element and then
-		/// System.arraycopy is used to set the other parts of the array.
-		/// 
-		/// </summary>
-		/// <param name="arr">The array to set.
-		/// 
-		/// </param>
-		/// <param name="val">The value to set the array to.
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public static void  byteArraySet(byte[] arr, byte val)
-		{
-			int i, len, len2;
-			
-			len = arr.Length;
-			// Set array to 'val' in an optimized way
-			if (len < MAX_EL_COPYING)
-			{
-				// Not worth doing optimized way
-				for (i = len - 1; i >= 0; i--)
-				{
-					// Set elements
-					arr[i] = val;
-				}
-			}
-			else
-			{
-				// Do in optimized way
-				len2 = len >> 1;
-				for (i = 0; i < INIT_EL_COPYING; i++)
-				{
-					// Set first elements
-					arr[i] = val;
-				}
-				for (; i <= len2; i <<= 1)
-				{
-					// Copy values doubling size each time
-					Array.Copy(arr, 0, arr, i, i);
-				}
-				if (i < len)
-				{
-					// Copy values to end
-					Array.Copy(arr, 0, arr, i, len - i);
-				}
-			}
-		}
-	}
+	public const int MAX_EL_COPYING = 8;
+
+    /// <summary>The number of elements to copy initially in an optimized array copy </summary>
+    public const int INIT_EL_COPYING = 4;
+
+    /// <summary>
+    ///     Reinitializes an int array to the given value in an optimized way. If
+    ///     the length of the array is less than MAX_EL_COPYING, then the array
+    ///     is set element by element in the normal way, otherwise the first
+    ///     INIT_EL_COPYING elements are set element by element and then
+    ///     System.arraycopy is used to set the other parts of the array.
+    /// </summary>
+    /// <param name="arr">
+    ///     The array to set.
+    /// </param>
+    /// <param name="val">
+    ///     The value to set the array to.
+    /// </param>
+    public static void intArraySet(int[] arr, int val)
+    {
+        int i, len, len2;
+
+        len = arr.Length;
+        // Set array to 'val' in an optimized way
+        if (len < MAX_EL_COPYING)
+        {
+            // Not worth doing optimized way
+            for (i = len - 1; i >= 0; i--)
+                // Set elements
+                arr[i] = val;
+        }
+        else
+        {
+            // Do in optimized way
+            len2 = len >> 1;
+            for (i = 0; i < INIT_EL_COPYING; i++)
+                // Set first elements
+                arr[i] = val;
+            for (; i <= len2; i <<= 1)
+                // Copy values doubling size each time
+                Array.Copy(arr, 0, arr, i, i);
+            if (i < len)
+                // Copy values to end
+                Array.Copy(arr, 0, arr, i, len - i);
+        }
+    }
+
+    /// <summary>
+    ///     Reinitializes a byte array to the given value in an optimized way. If
+    ///     the length of the array is less than MAX_EL_COPYING, then the array
+    ///     is set element by element in the normal way, otherwise the first
+    ///     INIT_EL_COPYING elements are set element by element and then
+    ///     System.arraycopy is used to set the other parts of the array.
+    /// </summary>
+    /// <param name="arr">
+    ///     The array to set.
+    /// </param>
+    /// <param name="val">
+    ///     The value to set the array to.
+    /// </param>
+    public static void byteArraySet(byte[] arr, byte val)
+    {
+        int i, len, len2;
+
+        len = arr.Length;
+        // Set array to 'val' in an optimized way
+        if (len < MAX_EL_COPYING)
+        {
+            // Not worth doing optimized way
+            for (i = len - 1; i >= 0; i--)
+                // Set elements
+                arr[i] = val;
+        }
+        else
+        {
+            // Do in optimized way
+            len2 = len >> 1;
+            for (i = 0; i < INIT_EL_COPYING; i++)
+                // Set first elements
+                arr[i] = val;
+            for (; i <= len2; i <<= 1)
+                // Copy values doubling size each time
+                Array.Copy(arr, 0, arr, i, i);
+            if (i < len)
+                // Copy values to end
+                Array.Copy(arr, 0, arr, i, len - i);
+        }
+    }
 }

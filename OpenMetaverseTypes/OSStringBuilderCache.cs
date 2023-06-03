@@ -34,43 +34,42 @@
 
 using System;
 using System.Text;
-using OpenMetaverse;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public static class osStringBuilderCache
 {
-    public static class osStringBuilderCache
+    [ThreadStatic] private static StringBuilder m_cached;
+
+    public static StringBuilder Acquire(int capacity = 4096)
     {
-        [ThreadStatic]
-        private static StringBuilder m_cached;
-
-        public static StringBuilder Acquire(int capacity = 4096)
+        if (capacity <= 4096)
         {
-            if(capacity <= 4096)
+            var sb = m_cached;
+            if (sb != null)
             {
-                StringBuilder sb = m_cached;
-                if(sb != null)
-                {
-                    m_cached = null;
-                    sb.Clear();
-                    return sb;
-                }
-                capacity = 4096;
+                m_cached = null;
+                sb.Clear();
+                return sb;
             }
-            return new StringBuilder(capacity);
+
+            capacity = 4096;
         }
 
-        public static void Release(StringBuilder sb)
-        {
-            if (sb.Capacity == 4096)
-                m_cached = sb;
-        }
+        return new StringBuilder(capacity);
+    }
 
-        public static string GetStringAndRelease(StringBuilder sb)
-        {
-            string result = sb.ToString();
-            if (sb.Capacity == 4096)
-                m_cached = sb;
-            return result;
-        }
+    public static void Release(StringBuilder sb)
+    {
+        if (sb.Capacity == 4096)
+            m_cached = sb;
+    }
+
+    public static string GetStringAndRelease(StringBuilder sb)
+    {
+        var result = sb.ToString();
+        if (sb.Capacity == 4096)
+            m_cached = sb;
+        return result;
     }
 }

@@ -24,33 +24,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an Animation
+/// </summary>
+public class AssetAnimation : Asset
 {
-    /// <summary>
-    /// Represents an Animation
-    /// </summary>
-    public class AssetAnimation : Asset
+    /// <summary>Default Constructor</summary>
+    public AssetAnimation()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.Animation; } }
+    }
 
-        /// <summary>Default Constructor</summary>
-        public AssetAnimation() { }
+    /// <summary>
+    ///     Construct an Asset object of type Animation
+    /// </summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetAnimation(UUID assetID, byte[] assetData)
+        : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>
-        /// Construct an Asset object of type Animation
-        /// </summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetAnimation(UUID assetID, byte[] assetData)
-            : base(assetID, assetData)
-        {
-        }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.Animation;
 
-        public override void Encode() { }
-        public override bool Decode() { return true; }
+    public override void Encode()
+    {
+    }
+
+    public override bool Decode()
+    {
+        return true;
     }
 }

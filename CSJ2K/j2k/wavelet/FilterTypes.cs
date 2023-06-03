@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,28 +40,30 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.wavelet
+
+namespace CSJ2K.j2k.wavelet;
+
+/// <summary>
+///     This interface defines the identifiers for the different types of filters
+///     that are supported.
+///     <p>
+///         The identifier values are the same as those used in the codestream
+///         syntax, for the filters that are defined in the standard.
+///     </p>
+/// </summary>
+public struct FilterTypes_Fields
 {
-	
-	/// <summary> This interface defines the identifiers for the different types of filters
-	/// that are supported.
-	/// 
-	/// <p>The identifier values are the same as those used in the codestream
-	/// syntax, for the filters that are defined in the standard.</p>
-	/// 
-	/// </summary>
-	public struct FilterTypes_Fields{
-		/// <summary>W7x9 filter: 0x00 </summary>
-		public const int W9X7 = 0;
-		/// <summary>W5x3 filter: 0x01 </summary>
-		public const int W5X3 = 1;
-		/// <summary>User-defined filter: -1 </summary>
-		public const int CUSTOM = - 1;
-	}
-	public interface FilterTypes
-	{
-		//UPGRADE_NOTE: Members of interface 'FilterTypes' were extracted into structure 'FilterTypes_Fields'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1045'"
-		
-	}
+    /// <summary>W7x9 filter: 0x00 </summary>
+    public const int W9X7 = 0;
+
+    /// <summary>W5x3 filter: 0x01 </summary>
+    public const int W5X3 = 1;
+
+    /// <summary>User-defined filter: -1 </summary>
+    public const int CUSTOM = -1;
+}
+
+public interface FilterTypes
+{
+    //UPGRADE_NOTE: Members of interface 'FilterTypes' were extracted into structure 'FilterTypes_Fields'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1045'"
 }

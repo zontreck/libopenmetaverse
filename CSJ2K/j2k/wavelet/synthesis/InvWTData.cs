@@ -11,10 +11,10 @@
 * 
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,51 +40,42 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.wavelet.synthesis
+
+namespace CSJ2K.j2k.wavelet.synthesis;
+
+/// <summary>
+///     This interface extends the MultiResImgData interface with the methods that
+///     are necessary for inverse wavelet data (i.e. data that is the source to an
+///     inverse wavlet trasnform).
+/// </summary>
+public interface InvWTData : MultiResImgData
 {
-	
-	/// <summary> This interface extends the MultiResImgData interface with the methods that
-	/// are necessary for inverse wavelet data (i.e. data that is the source to an
-	/// inverse wavlet trasnform).
-	/// 
+	/// <summary>
+	///     Returns the horizontal code-block partition origin. Allowable values
+	///     are 0 and 1, nothing else.
 	/// </summary>
-	public interface InvWTData:MultiResImgData
-	{
-		/// <summary> Returns the horizontal code-block partition origin. Allowable values
-		/// are 0 and 1, nothing else.
-		/// 
-		/// </summary>
-		int CbULX
-		{
-			get;
-			
-		}
-		/// <summary> Returns the vertical code-block partition origin Allowable values are 0
-		/// and 1, nothing else.
-		/// 
-		/// </summary>
-		int CbULY
-		{
-			get;
-			
-		}
-		
-		/// <summary> Returns the subband tree, for the specified tile-component. This method
-		/// returns the root element of the subband tree structure, see 'Subband'
-		/// and 'SubbandSyn'. The tree comprises all the available resolution
-		/// levels.
-		/// 
-		/// </summary>
-		/// <param name="t">The index of the tile, from 0 to T-1.
-		/// 
-		/// </param>
-		/// <param name="c">The index of the component, from 0 to C-1.
-		/// 
-		/// </param>
-		/// <returns> The root of the tree structure.
-		/// 
-		/// </returns>
-		new SubbandSyn getSynSubbandTree(int t, int c);
-	}
+	int CbULX { get; }
+
+	/// <summary>
+	///     Returns the vertical code-block partition origin Allowable values are 0
+	///     and 1, nothing else.
+	/// </summary>
+	int CbULY { get; }
+
+	/// <summary>
+	///     Returns the subband tree, for the specified tile-component. This method
+	///     returns the root element of the subband tree structure, see 'Subband'
+	///     and 'SubbandSyn'. The tree comprises all the available resolution
+	///     levels.
+	/// </summary>
+	/// <param name="t">
+	///     The index of the tile, from 0 to T-1.
+	/// </param>
+	/// <param name="c">
+	///     The index of the component, from 0 to C-1.
+	/// </param>
+	/// <returns>
+	///     The root of the tree structure.
+	/// </returns>
+	new SubbandSyn getSynSubbandTree(int t, int c);
 }

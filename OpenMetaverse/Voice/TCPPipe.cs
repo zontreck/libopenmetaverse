@@ -27,165 +27,157 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
-namespace OpenMetaverse.Voice
+namespace OpenMetaverse.Voice;
+
+public class TCPPipe
 {
-    public class TCPPipe
+    public delegate void OnDisconnectedCallback(SocketException se);
+
+    public delegate void OnReceiveLineCallback(string line);
+
+    private static readonly char[] splitNull = { '\0' };
+    private static readonly string[] splitLines = { "\r", "\n", "\r\n" };
+    protected string _Buffer = string.Empty;
+    protected AsyncCallback _Callback;
+    protected IAsyncResult _Result;
+
+    protected Socket _TCPSocket;
+
+    public bool Connected
     {
-        protected class SocketPacket
-        {
-            public System.Net.Sockets.Socket TCPSocket;
-            public byte[] DataBuffer = new byte[1];
-        }
-
-        public delegate void OnReceiveLineCallback(string line);
-        public delegate void OnDisconnectedCallback(SocketException se);
-
-        public event OnReceiveLineCallback OnReceiveLine;
-        public event OnDisconnectedCallback OnDisconnected;
-
-        protected Socket _TCPSocket;
-        protected IAsyncResult _Result;
-        protected AsyncCallback _Callback;
-        protected string _Buffer = String.Empty;
-
-        public bool Connected
-        {
-            get
-            {
-                if (_TCPSocket != null && _TCPSocket.Connected)
-                    return true;
-                else
-                    return false;
-            }
-        }
-
-        public TCPPipe()
-        {
-        }
-
-        public SocketException Connect(string address, int port)
+        get
         {
             if (_TCPSocket != null && _TCPSocket.Connected)
-                Disconnect();
-
-            try
-            {
-                IPAddress ip;
-                if (!IPAddress.TryParse(address, out ip))
-                {
-                    IPAddress[] ips = Dns.GetHostAddresses(address);
-                    ip = ips[0];
-                }
-                _TCPSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                IPEndPoint ipEndPoint = new IPEndPoint(ip, port);
-                _TCPSocket.Connect(ipEndPoint);
-                if (_TCPSocket.Connected)
-                {
-                    WaitForData();
-                    return null;
-                }
-                else
-                {
-                    return new SocketException(10000);
-                }
-            }
-            catch (SocketException se)
-            {
-                return se;
-            }
+                return true;
+            return false;
         }
+    }
 
-        public void Disconnect()
-        {
-            _TCPSocket.Disconnect(true);
-        }
+    public event OnReceiveLineCallback OnReceiveLine;
+    public event OnDisconnectedCallback OnDisconnected;
 
-        public void SendData(byte[] data)
-        {
-            if (Connected)
-                _TCPSocket.Send(data);
-            else
-                throw new InvalidOperationException("socket is not connected");
-        }
+    public SocketException Connect(string address, int port)
+    {
+        if (_TCPSocket != null && _TCPSocket.Connected)
+            Disconnect();
 
-        public void SendLine(string message)
+        try
         {
-            if (Connected)
+            IPAddress ip;
+            if (!IPAddress.TryParse(address, out ip))
             {
-                byte[] byData = System.Text.Encoding.ASCII.GetBytes(message + "\n");
-                _TCPSocket.Send(byData);
+                var ips = Dns.GetHostAddresses(address);
+                ip = ips[0];
             }
-            else
-            {
-                throw new InvalidOperationException("socket is not connected");
-            }
-        }
 
-        void WaitForData()
-        {
-            try
+            _TCPSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var ipEndPoint = new IPEndPoint(ip, port);
+            _TCPSocket.Connect(ipEndPoint);
+            if (_TCPSocket.Connected)
             {
-                if (_Callback == null) _Callback = new AsyncCallback(OnDataReceived);
-                SocketPacket packet = new SocketPacket();
-                packet.TCPSocket = _TCPSocket;
-                _Result = _TCPSocket.BeginReceive(packet.DataBuffer, 0, packet.DataBuffer.Length, SocketFlags.None, _Callback, packet);
-            }
-            catch (SocketException se)
-            {
-                Console.WriteLine(se.Message);
-            }
-        }
-
-        static char[] splitNull = { '\0' };
-        static string[] splitLines = { "\r", "\n", "\r\n" };
-
-        void ReceiveData(string data)
-        {
-            if (OnReceiveLine == null) return;
-
-            //string[] splitNull = { "\0" };
-            string[] line = data.Split(splitNull, StringSplitOptions.None);
-            _Buffer += line[0];
-            //string[] splitLines = { "\r\n", "\r", "\n" };
-            string[] lines = _Buffer.Split(splitLines, StringSplitOptions.None);
-            if (lines.Length > 1)
-            {
-                int i;
-                for (i = 0; i < lines.Length - 1; i++)
-                {
-                    if (lines[i].Trim().Length > 0) OnReceiveLine(lines[i]);
-                }
-                _Buffer = lines[i];
-            }
-        }
-
-        void OnDataReceived(IAsyncResult asyn)
-        {
-            try
-            {
-                SocketPacket packet = (SocketPacket)asyn.AsyncState;
-                int end = packet.TCPSocket.EndReceive(asyn);
-                char[] chars = new char[end + 1];
-                System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
-                d.GetChars(packet.DataBuffer, 0, end, chars, 0);
-                System.String data = new System.String(chars);
-                ReceiveData(data);
                 WaitForData();
+                return null;
             }
-            catch (ObjectDisposedException)
-            {
-                Console.WriteLine("WARNING: Socket closed unexpectedly");
-            }
-            catch (SocketException se)
-            {
-                if (!_TCPSocket.Connected)
-                {
-                    if (OnDisconnected != null)
-                        OnDisconnected(se);
-                }
-            }
-        }
 
+            return new SocketException(10000);
+        }
+        catch (SocketException se)
+        {
+            return se;
+        }
+    }
+
+    public void Disconnect()
+    {
+        _TCPSocket.Disconnect(true);
+    }
+
+    public void SendData(byte[] data)
+    {
+        if (Connected)
+            _TCPSocket.Send(data);
+        else
+            throw new InvalidOperationException("socket is not connected");
+    }
+
+    public void SendLine(string message)
+    {
+        if (Connected)
+        {
+            var byData = Encoding.ASCII.GetBytes(message + "\n");
+            _TCPSocket.Send(byData);
+        }
+        else
+        {
+            throw new InvalidOperationException("socket is not connected");
+        }
+    }
+
+    private void WaitForData()
+    {
+        try
+        {
+            if (_Callback == null) _Callback = OnDataReceived;
+            var packet = new SocketPacket();
+            packet.TCPSocket = _TCPSocket;
+            _Result = _TCPSocket.BeginReceive(packet.DataBuffer, 0, packet.DataBuffer.Length, SocketFlags.None,
+                _Callback, packet);
+        }
+        catch (SocketException se)
+        {
+            Console.WriteLine(se.Message);
+        }
+    }
+
+    private void ReceiveData(string data)
+    {
+        if (OnReceiveLine == null) return;
+
+        //string[] splitNull = { "\0" };
+        var line = data.Split(splitNull, StringSplitOptions.None);
+        _Buffer += line[0];
+        //string[] splitLines = { "\r\n", "\r", "\n" };
+        var lines = _Buffer.Split(splitLines, StringSplitOptions.None);
+        if (lines.Length > 1)
+        {
+            int i;
+            for (i = 0; i < lines.Length - 1; i++)
+                if (lines[i].Trim().Length > 0)
+                    OnReceiveLine(lines[i]);
+            _Buffer = lines[i];
+        }
+    }
+
+    private void OnDataReceived(IAsyncResult asyn)
+    {
+        try
+        {
+            var packet = (SocketPacket)asyn.AsyncState;
+            var end = packet.TCPSocket.EndReceive(asyn);
+            var chars = new char[end + 1];
+            var d = Encoding.UTF8.GetDecoder();
+            d.GetChars(packet.DataBuffer, 0, end, chars, 0);
+            var data = new string(chars);
+            ReceiveData(data);
+            WaitForData();
+        }
+        catch (ObjectDisposedException)
+        {
+            Console.WriteLine("WARNING: Socket closed unexpectedly");
+        }
+        catch (SocketException se)
+        {
+            if (!_TCPSocket.Connected)
+                if (OnDisconnected != null)
+                    OnDisconnected(se);
+        }
+    }
+
+    protected class SocketPacket
+    {
+        public byte[] DataBuffer = new byte[1];
+        public Socket TCPSocket;
     }
 }

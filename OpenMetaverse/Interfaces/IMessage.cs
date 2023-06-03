@@ -24,20 +24,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenMetaverse.StructuredData;
 
+namespace OpenMetaverse.Interfaces;
 
-namespace OpenMetaverse.Interfaces
+/// <summary>
+///     Interface requirements for Messaging system
+/// </summary>
+public interface IMessage
 {
-    /// <summary>
-    /// Interface requirements for Messaging system
-    /// </summary>
-    public interface IMessage
-    {
-        OSDMap Serialize();
-        void Deserialize(OSDMap map);
-    }    
+    OSDMap Serialize();
+    void Deserialize(OSDMap map);
 }

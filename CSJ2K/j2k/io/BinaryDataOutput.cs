@@ -12,10 +12,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -44,159 +44,135 @@
 * 
 * 
 */
-using System;
-namespace CSJ2K.j2k.io
+
+namespace CSJ2K.j2k.io;
+
+/// <summary>
+///     This interface defines the output of binary data to streams and/or files.
+///     <P>
+///         Byte level output (i.e., for byte, int, long, float, etc.) should
+///         always be byte aligned. For example, a request to write an
+///         <tt>int</tt> should always realign the output at the byte level.
+///         <P>
+///             The implementation of this interface should clearly define if
+///             multi-byte output data is written in little- or big-endian byte
+///             ordering (least significant byte first or most significant byte
+///             first, respectively).
+/// </summary>
+/// <seealso cref="EndianType">
+/// </seealso>
+public interface BinaryDataOutput
 {
-	
-	/// <summary> This interface defines the output of binary data to streams and/or files.
-	/// 
-	/// <P>Byte level output (i.e., for byte, int, long, float, etc.) should
-	/// always be byte aligned. For example, a request to write an
-	/// <tt>int</tt> should always realign the output at the byte level.
-	/// 
-	/// <P>The implementation of this interface should clearly define if
-	/// multi-byte output data is written in little- or big-endian byte
-	/// ordering (least significant byte first or most significant byte
-	/// first, respectively).
-	/// 
+	/// <summary>
+	///     Returns the endianness (i.e., byte ordering) of the implementing
+	///     class. Note that an implementing class may implement only one
+	///     type of endianness or both, which would be decided at creatiuon
+	///     time.
 	/// </summary>
+	/// <returns>
+	///     Either <tt>EndianType.BIG_ENDIAN</tt> or
+	///     <tt>EndianType.LITTLE_ENDIAN</tt>
+	/// </returns>
 	/// <seealso cref="EndianType">
-	/// 
 	/// </seealso>
-	public interface BinaryDataOutput
-	{
-		/// <summary> Returns the endianness (i.e., byte ordering) of the implementing
-		/// class. Note that an implementing class may implement only one
-		/// type of endianness or both, which would be decided at creatiuon
-		/// time.
-		/// 
-		/// </summary>
-		/// <returns> Either <tt>EndianType.BIG_ENDIAN</tt> or
-		/// <tt>EndianType.LITTLE_ENDIAN</tt>
-		/// 
-		/// </returns>
-		/// <seealso cref="EndianType">
-		/// 
-		/// 
-		/// 
-		/// </seealso>
-		int ByteOrdering
-		{
-			get;
-			
-		}
-		
-		/// <summary> Should write the byte value of <tt>v</tt> (i.e., 8 least
-		/// significant bits) to the output. Prior to writing, the output
-		/// should be realigned at the byte level.
-		/// 
-		/// <P>Signed or unsigned data can be written. To write a signed
-		/// value just pass the <tt>byte</tt> value as an argument. To
-		/// write unsigned data pass the <tt>int</tt> value as an argument
-		/// (it will be automatically casted, and only the 8 least
-		/// significant bits will be written).
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeByte(int v);
-		
-		/// <summary> Should write the short value of <tt>v</tt> (i.e., 16 least
-		/// significant bits) to the output. Prior to writing, the output
-		/// should be realigned at the byte level.
-		/// 
-		/// <P>Signed or unsigned data can be written. To write a signed
-		/// value just pass the <tt>short</tt> value as an argument. To
-		/// write unsigned data pass the <tt>int</tt> value as an argument
-		/// (it will be automatically casted, and only the 16 least
-		/// significant bits will be written).
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeShort(int v);
-		
-		/// <summary> Should write the int value of <tt>v</tt> (i.e., the 32 bits) to
-		/// the output. Prior to writing, the output should be realigned at
-		/// the byte level.
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeInt(int v);
-		
-		/// <summary> Should write the long value of <tt>v</tt> (i.e., the 64 bits)
-		/// to the output. Prior to writing, the output should be realigned
-		/// at the byte level.
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeLong(long v);
-		
-		/// <summary> Should write the IEEE float value <tt>v</tt> (i.e., 32 bits) to
-		/// the output. Prior to writing, the output should be realigned at
-		/// the byte level.
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeFloat(float v);
-		
-		/// <summary> Should write the IEEE double value <tt>v</tt> (i.e., 64 bits)
-		/// to the output. Prior to writing, the output should be realigned
-		/// at the byte level.
-		/// 
-		/// </summary>
-		/// <param name="v">The value to write to the output
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  writeDouble(double v);
-		
-		/// <summary> Any data that has been buffered must be written, and the stream should
-		/// be realigned at the byte level.
-		/// 
-		/// </summary>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// 
-		/// 
-		/// </exception>
-		void  flush();
-	}
+	int ByteOrdering { get; }
+
+	/// <summary>
+	///     Should write the byte value of <tt>v</tt> (i.e., 8 least
+	///     significant bits) to the output. Prior to writing, the output
+	///     should be realigned at the byte level.
+	///     <P>
+	///         Signed or unsigned data can be written. To write a signed
+	///         value just pass the <tt>byte</tt> value as an argument. To
+	///         write unsigned data pass the <tt>int</tt> value as an argument
+	///         (it will be automatically casted, and only the 8 least
+	///         significant bits will be written).
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeByte(int v);
+
+	/// <summary>
+	///     Should write the short value of <tt>v</tt> (i.e., 16 least
+	///     significant bits) to the output. Prior to writing, the output
+	///     should be realigned at the byte level.
+	///     <P>
+	///         Signed or unsigned data can be written. To write a signed
+	///         value just pass the <tt>short</tt> value as an argument. To
+	///         write unsigned data pass the <tt>int</tt> value as an argument
+	///         (it will be automatically casted, and only the 16 least
+	///         significant bits will be written).
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeShort(int v);
+
+	/// <summary>
+	///     Should write the int value of <tt>v</tt> (i.e., the 32 bits) to
+	///     the output. Prior to writing, the output should be realigned at
+	///     the byte level.
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeInt(int v);
+
+	/// <summary>
+	///     Should write the long value of <tt>v</tt> (i.e., the 64 bits)
+	///     to the output. Prior to writing, the output should be realigned
+	///     at the byte level.
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeLong(long v);
+
+	/// <summary>
+	///     Should write the IEEE float value <tt>v</tt> (i.e., 32 bits) to
+	///     the output. Prior to writing, the output should be realigned at
+	///     the byte level.
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeFloat(float v);
+
+	/// <summary>
+	///     Should write the IEEE double value <tt>v</tt> (i.e., 64 bits)
+	///     to the output. Prior to writing, the output should be realigned
+	///     at the byte level.
+	/// </summary>
+	/// <param name="v">
+	///     The value to write to the output
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void writeDouble(double v);
+
+	/// <summary>
+	///     Any data that has been buffered must be written, and the stream should
+	///     be realigned at the byte level.
+	/// </summary>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void flush();
 }

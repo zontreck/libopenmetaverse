@@ -26,178 +26,193 @@
 
 using System;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     A hierarchical token bucket for bandwidth throttling. See
+///     http://en.wikipedia.org/wiki/Token_bucket for more information
+/// </summary>
+public class TokenBucket
 {
+    /// <summary>Number of tokens currently in the bucket</summary>
+    private int content;
+
+    /// <summary>Time of the last drip, in system ticks</summary>
+    private int lastDrip;
+
     /// <summary>
-    /// A hierarchical token bucket for bandwidth throttling. See
-    /// http://en.wikipedia.org/wiki/Token_bucket for more information
+    ///     Size of the bucket in bytes. If zero, the bucket has
+    ///     infinite capacity
     /// </summary>
-    public class TokenBucket
+    private int maxBurst;
+
+    /// <summary>
+    ///     Parent bucket to this bucket, or null if this is a root
+    ///     bucket
+    /// </summary>
+    private readonly TokenBucket parent;
+
+    /// <summary>
+    ///     Rate that the bucket fills, in bytes per millisecond. If
+    ///     zero, the bucket always remains full
+    /// </summary>
+    private int tokensPerMS;
+
+    /// <summary>
+    ///     Default constructor
+    /// </summary>
+    /// <param name="parent">
+    ///     Parent bucket if this is a child bucket, or
+    ///     null if this is a root bucket
+    /// </param>
+    /// <param name="maxBurst">
+    ///     Maximum size of the bucket in bytes, or
+    ///     zero if this bucket has no maximum capacity
+    /// </param>
+    /// <param name="dripRate">
+    ///     Rate that the bucket fills, in bytes per
+    ///     second. If zero, the bucket always remains full
+    /// </param>
+    public TokenBucket(TokenBucket parent, int maxBurst, int dripRate)
     {
-        /// <summary>Parent bucket to this bucket, or null if this is a root
-        /// bucket</summary>
-        TokenBucket parent;
-        /// <summary>Size of the bucket in bytes. If zero, the bucket has 
-        /// infinite capacity</summary>
-        int maxBurst;
-        /// <summary>Rate that the bucket fills, in bytes per millisecond. If
-        /// zero, the bucket always remains full</summary>
-        int tokensPerMS;
-        /// <summary>Number of tokens currently in the bucket</summary>
-        int content;
-        /// <summary>Time of the last drip, in system ticks</summary>
-        int lastDrip;
+        this.parent = parent;
+        MaxBurst = maxBurst;
+        DripRate = dripRate;
+        lastDrip = Environment.TickCount & int.MaxValue;
+    }
 
-        #region Properties
+    /// <summary>
+    ///     Remove a given number of tokens from the bucket
+    /// </summary>
+    /// <param name="amount">Number of tokens to remove from the bucket</param>
+    /// <returns>
+    ///     True if the requested number of tokens were removed from
+    ///     the bucket, otherwise false
+    /// </returns>
+    public bool RemoveTokens(int amount)
+    {
+        bool dummy;
+        return RemoveTokens(amount, out dummy);
+    }
 
-        /// <summary>
-        /// The parent bucket of this bucket, or null if this bucket has no
-        /// parent. The parent bucket will limit the aggregate bandwidth of all
-        /// of its children buckets
-        /// </summary>
-        public TokenBucket Parent
+    /// <summary>
+    ///     Remove a given number of tokens from the bucket
+    /// </summary>
+    /// <param name="amount">Number of tokens to remove from the bucket</param>
+    /// <param name="dripSucceeded">
+    ///     True if tokens were added to the bucket
+    ///     during this call, otherwise false
+    /// </param>
+    /// <returns>
+    ///     True if the requested number of tokens were removed from
+    ///     the bucket, otherwise false
+    /// </returns>
+    public bool RemoveTokens(int amount, out bool dripSucceeded)
+    {
+        if (maxBurst == 0)
         {
-            get { return parent; }
+            dripSucceeded = true;
+            return true;
         }
 
-        /// <summary>
-        /// Maximum burst rate in bytes per second. This is the maximum number
-        /// of tokens that can accumulate in the bucket at any one time
-        /// </summary>
-        public int MaxBurst
+        dripSucceeded = Drip();
+
+        if (content - amount >= 0)
         {
-            get { return maxBurst; }
-            set { maxBurst = (value >= 0 ? value : 0); }
-        }
-
-        /// <summary>
-        /// The speed limit of this bucket in bytes per second. This is the
-        /// number of tokens that are added to the bucket per second
-        /// </summary>
-        /// <remarks>Tokens are added to the bucket any time 
-        /// <seealso cref="RemoveTokens"/> is called, at the granularity of
-        /// the system tick interval (typically around 15-22ms)</remarks>
-        public int DripRate
-        {
-            get { return tokensPerMS * 1000; }
-            set
-            {
-                if (value == 0)
-                    tokensPerMS = 0;
-                else if (value / 1000 <= 0)
-                    tokensPerMS = 1; // 1 byte/ms is the minimum granularity
-                else
-                    tokensPerMS = value / 1000;
-            }
-        }
-
-        /// <summary>
-        /// The number of bytes that can be sent at this moment. This is the
-        /// current number of tokens in the bucket
-        /// <remarks>If this bucket has a parent bucket that does not have
-        /// enough tokens for a request, <seealso cref="RemoveTokens"/> will 
-        /// return false regardless of the content of this bucket</remarks>
-        /// </summary>
-        public int Content
-        {
-            get { return content; }
-        }
-
-        #endregion Properties
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="parent">Parent bucket if this is a child bucket, or
-        /// null if this is a root bucket</param>
-        /// <param name="maxBurst">Maximum size of the bucket in bytes, or
-        /// zero if this bucket has no maximum capacity</param>
-        /// <param name="dripRate">Rate that the bucket fills, in bytes per
-        /// second. If zero, the bucket always remains full</param>
-        public TokenBucket(TokenBucket parent, int maxBurst, int dripRate)
-        {
-            this.parent = parent;
-            MaxBurst = maxBurst;
-            DripRate = dripRate;
-            lastDrip = Environment.TickCount & Int32.MaxValue;
-        }
-
-        /// <summary>
-        /// Remove a given number of tokens from the bucket
-        /// </summary>
-        /// <param name="amount">Number of tokens to remove from the bucket</param>
-        /// <returns>True if the requested number of tokens were removed from
-        /// the bucket, otherwise false</returns>
-        public bool RemoveTokens(int amount)
-        {
-            bool dummy;
-            return RemoveTokens(amount, out dummy);
-        }
-
-        /// <summary>
-        /// Remove a given number of tokens from the bucket
-        /// </summary>
-        /// <param name="amount">Number of tokens to remove from the bucket</param>
-        /// <param name="dripSucceeded">True if tokens were added to the bucket
-        /// during this call, otherwise false</param>
-        /// <returns>True if the requested number of tokens were removed from
-        /// the bucket, otherwise false</returns>
-        public bool RemoveTokens(int amount, out bool dripSucceeded)
-        {
-            if (maxBurst == 0)
-            {
-                dripSucceeded = true;
-                return true;
-            }
-
-            dripSucceeded = Drip();
-
-            if (content - amount >= 0)
-            {
-                if (parent != null && !parent.RemoveTokens(amount))
-                    return false;
-
-                content -= amount;
-                return true;
-            }
-            else
-            {
+            if (parent != null && !parent.RemoveTokens(amount))
                 return false;
-            }
+
+            content -= amount;
+            return true;
         }
 
-        /// <summary>
-        /// Add tokens to the bucket over time. The number of tokens added each
-        /// call depends on the length of time that has passed since the last 
-        /// call to Drip
-        /// </summary>
-        /// <returns>True if tokens were added to the bucket, otherwise false</returns>
-        private bool Drip()
+        return false;
+    }
+
+    /// <summary>
+    ///     Add tokens to the bucket over time. The number of tokens added each
+    ///     call depends on the length of time that has passed since the last
+    ///     call to Drip
+    /// </summary>
+    /// <returns>True if tokens were added to the bucket, otherwise false</returns>
+    private bool Drip()
+    {
+        if (tokensPerMS == 0)
         {
-            if (tokensPerMS == 0)
-            {
-                content = maxBurst;
-                return true;
-            }
-            else
-            {
-                int now = Environment.TickCount & Int32.MaxValue;
-                int deltaMS = now - lastDrip;
+            content = maxBurst;
+            return true;
+        }
 
-                if (deltaMS <= 0)
-                {
-                    if (deltaMS < 0)
-                        lastDrip = now;
-                    return false;
-                }
+        var now = Environment.TickCount & int.MaxValue;
+        var deltaMS = now - lastDrip;
 
-                int dripAmount = deltaMS * tokensPerMS;
-
-                content = Math.Min(content + dripAmount, maxBurst);
+        if (deltaMS <= 0)
+        {
+            if (deltaMS < 0)
                 lastDrip = now;
+            return false;
+        }
 
-                return true;
-            }
+        var dripAmount = deltaMS * tokensPerMS;
+
+        content = Math.Min(content + dripAmount, maxBurst);
+        lastDrip = now;
+
+        return true;
+    }
+
+    #region Properties
+
+    /// <summary>
+    ///     The parent bucket of this bucket, or null if this bucket has no
+    ///     parent. The parent bucket will limit the aggregate bandwidth of all
+    ///     of its children buckets
+    /// </summary>
+    public TokenBucket Parent => parent;
+
+    /// <summary>
+    ///     Maximum burst rate in bytes per second. This is the maximum number
+    ///     of tokens that can accumulate in the bucket at any one time
+    /// </summary>
+    public int MaxBurst
+    {
+        get => maxBurst;
+        set => maxBurst = value >= 0 ? value : 0;
+    }
+
+    /// <summary>
+    ///     The speed limit of this bucket in bytes per second. This is the
+    ///     number of tokens that are added to the bucket per second
+    /// </summary>
+    /// <remarks>
+    ///     Tokens are added to the bucket any time
+    ///     <seealso cref="RemoveTokens" /> is called, at the granularity of
+    ///     the system tick interval (typically around 15-22ms)
+    /// </remarks>
+    public int DripRate
+    {
+        get => tokensPerMS * 1000;
+        set
+        {
+            if (value == 0)
+                tokensPerMS = 0;
+            else if (value / 1000 <= 0)
+                tokensPerMS = 1; // 1 byte/ms is the minimum granularity
+            else
+                tokensPerMS = value / 1000;
         }
     }
+
+    /// <summary>
+    ///     The number of bytes that can be sent at this moment. This is the
+    ///     current number of tokens in the bucket
+    ///     <remarks>
+    ///         If this bucket has a parent bucket that does not have
+    ///         enough tokens for a request, <seealso cref="RemoveTokens" /> will
+    ///         return false regardless of the content of this bucket
+    ///     </remarks>
+    /// </summary>
+    public int Content => content;
+
+    #endregion Properties
 }

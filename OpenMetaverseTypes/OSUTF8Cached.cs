@@ -35,111 +35,107 @@
 */
 
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public static class OSUTF8Cached
 {
-    public static class OSUTF8Cached
+    private const int MAXSIZE = 128; // 16MB
+    private const int PREALLOC = 128;
+    public const int MAXDATASIZE = 128 * 1024;
+
+    private static readonly osUTF8[] m_pool = new osUTF8[MAXSIZE];
+    private static readonly object m_poollock = new();
+    private static int m_poolPtr;
+
+    static OSUTF8Cached()
     {
-        const int MAXSIZE = 128; // 16MB
-        const int PREALLOC = 128;
-        public const int MAXDATASIZE = 128 * 1024;
+        for (var i = 0; i < PREALLOC; ++i)
+            m_pool[i] = new osUTF8(MAXDATASIZE);
+        m_poolPtr = PREALLOC - 1;
+    }
 
-        private static readonly osUTF8[] m_pool = new osUTF8[MAXSIZE];
-        private static readonly object m_poollock = new object();
-        private static int m_poolPtr;
-
-        static OSUTF8Cached()
+    public static osUTF8 Acquire()
+    {
+        lock (m_poollock)
         {
-            for (int i = 0; i < PREALLOC; ++i)
-                m_pool[i] = new osUTF8(MAXDATASIZE);
-            m_poolPtr = PREALLOC - 1;
+            if (m_poolPtr >= 0)
+            {
+                var os = m_pool[m_poolPtr];
+                m_pool[m_poolPtr] = null;
+                m_poolPtr--;
+                os.Clear();
+                return os;
+            }
         }
 
-        public static osUTF8 Acquire()
-        {
+        return new osUTF8(MAXDATASIZE);
+    }
+
+    public static osUTF8 Acquire(int capacity)
+    {
+        if (capacity <= MAXDATASIZE)
             lock (m_poollock)
             {
                 if (m_poolPtr >= 0)
                 {
-                    osUTF8 os = m_pool[m_poolPtr];
+                    var os = m_pool[m_poolPtr];
                     m_pool[m_poolPtr] = null;
                     m_poolPtr--;
                     os.Clear();
                     return os;
                 }
-            }
-            return new osUTF8(MAXDATASIZE);
-        }
 
-        public static osUTF8 Acquire(int capacity)
-        {
-            if(capacity <= MAXDATASIZE)
+                capacity = MAXDATASIZE;
+            }
+
+        return new osUTF8(capacity);
+    }
+
+    public static void Release(osUTF8 os)
+    {
+        if (os.m_data.Length == MAXDATASIZE)
+            lock (m_poollock)
             {
-                lock (m_poollock)
+                if (m_poolPtr < MAXSIZE - 1)
                 {
-                    if (m_poolPtr >= 0)
-                    {
-                        osUTF8 os = m_pool[m_poolPtr];
-                        m_pool[m_poolPtr] = null;
-                        m_poolPtr--;
-                        os.Clear();
-                        return os;
-                    }
-                    capacity = MAXDATASIZE;
+                    os.Clear();
+                    m_poolPtr++;
+                    m_pool[m_poolPtr] = os;
                 }
             }
-            return new osUTF8(capacity);
-        }
+    }
 
-        public static void Release(osUTF8 os)
-        {
-            if (os.m_data.Length == MAXDATASIZE)
+    public static byte[] GetArrayAndRelease(osUTF8 os)
+    {
+        var result = os.ToArray();
+        if (os.m_data.Length == MAXDATASIZE)
+            lock (m_poollock)
             {
-                lock (m_poollock)
+                if (m_poolPtr < MAXSIZE - 1)
                 {
-                    if (m_poolPtr < MAXSIZE - 1)
-                    {
-                        os.Clear();
-                        m_poolPtr++;
-                        m_pool[m_poolPtr] = os;
-                    }
+                    os.Clear();
+                    m_poolPtr++;
+                    m_pool[m_poolPtr] = os;
                 }
             }
-        }
 
-        public static byte[] GetArrayAndRelease(osUTF8 os)
-        {
-            byte[] result = os.ToArray();
-            if (os.m_data.Length == MAXDATASIZE)
+        return result;
+    }
+
+    public static string GetStringAndRelease(osUTF8 os)
+    {
+        var ret = os.ToString();
+        if (os.m_data.Length == MAXDATASIZE)
+            lock (m_poollock)
             {
-                lock (m_poollock)
+                if (m_poolPtr < MAXSIZE - 1)
                 {
-                    if (m_poolPtr < MAXSIZE - 1)
-                    {
-                        os.Clear();
-                        m_poolPtr++;
-                        m_pool[m_poolPtr] = os;
-                    }
+                    os.Clear();
+                    m_poolPtr++;
+                    m_pool[m_poolPtr] = os;
                 }
             }
-            return result;
-        }
 
-        public static string GetStringAndRelease(osUTF8 os)
-        {
-            string ret = os.ToString();
-            if (os.m_data.Length == MAXDATASIZE)
-            {
-                lock (m_poollock)
-                {
-                    if (m_poolPtr < MAXSIZE - 1)
-                    {
-                        os.Clear();
-                        m_poolPtr++;
-                        m_pool[m_poolPtr] = os;
-                    }
-                }
-            }
-            return ret;
-        }
+        return ret;
     }
 }

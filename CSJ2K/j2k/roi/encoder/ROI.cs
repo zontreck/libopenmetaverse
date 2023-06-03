@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,139 +40,130 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 */
-using System;
-using CSJ2K.j2k.codestream.writer;
-using CSJ2K.j2k.wavelet.analysis;
-using CSJ2K.j2k.quantization;
+
 using CSJ2K.j2k.image.input;
-using CSJ2K.j2k.wavelet;
-using CSJ2K.j2k.image;
-using CSJ2K.j2k.util;
-using CSJ2K.j2k.roi;
-namespace CSJ2K.j2k.roi.encoder
+
+namespace CSJ2K.j2k.roi.encoder;
+
+/// <summary>
+///     This class contains the shape of a single ROI. In the current
+///     implementation only rectangles and circles are supported.
+/// </summary>
+/// <seealso cref="ROIMaskGenerator">
+/// </seealso>
+public class ROI
 {
-	
-	/// <summary> This class contains the shape of a single ROI. In the current 
-	/// implementation only rectangles and circles are supported.
-	/// 
-	/// </summary>
-	/// <seealso cref="ROIMaskGenerator">
-	/// </seealso>
-	public class ROI
-	{
-		
-		/// <summary>ImgReaderPGM object with the arbrtrary ROI </summary>
-		public ImgReaderPGM maskPGM = null;
-		
-		/// <summary>Where or not the ROI shape is arbitrary </summary>
-		public bool arbShape;
-		
-		/// <summary>Flag indicating whether the ROI is rectangular or not </summary>
-		public bool rect;
-		
-		/// <summary>The components for which the ROI is relevant </summary>
-		public int comp;
-		
-		/// <summary>x coordinate of upper left corner of rectangular ROI </summary>
-		public int ulx;
-		
-		/// <summary>y coordinate of upper left corner of rectangular ROI </summary>
-		public int uly;
-		
-		/// <summary>width of rectangular ROI  </summary>
-		public int w;
-		
-		/// <summary>height of rectangular ROI </summary>
-		public int h;
-		
-		/// <summary>x coordinate of center of circular ROI </summary>
-		public int x;
-		
-		/// <summary>y coordinate of center of circular ROI </summary>
-		public int y;
-		
-		/// <summary>radius of circular ROI  </summary>
-		public int r;
-		
-		
-		/// <summary> Constructor for ROI with arbitrary shape
-		/// 
-		/// </summary>
-		/// <param name="comp">The component the ROI belongs to
-		/// 
-		/// </param>
-		/// <param name="maskPGM">ImgReaderPGM containing the ROI
-		/// </param>
-		public ROI(int comp, ImgReaderPGM maskPGM)
-		{
-			arbShape = true;
-			rect = false;
-			this.comp = comp;
-			this.maskPGM = maskPGM;
-		}
-		
-		/// <summary> Constructor for rectangular ROIs
-		/// 
-		/// </summary>
-		/// <param name="comp">The component the ROI belongs to
-		/// 
-		/// </param>
-		/// <param name="x">x-coordinate of upper left corner of ROI
-		/// 
-		/// </param>
-		/// <param name="y">y-coordinate of upper left corner of ROI
-		/// 
-		/// </param>
-		/// <param name="w">width of ROI
-		/// 
-		/// </param>
-		/// <param name="h">height of ROI
-		/// </param>
-		public ROI(int comp, int ulx, int uly, int w, int h)
-		{
-			arbShape = false;
-			this.comp = comp;
-			this.ulx = ulx;
-			this.uly = uly;
-			this.w = w;
-			this.h = h;
-			rect = true;
-		}
-		
-		/// <summary> Constructor for circular ROIs
-		/// 
-		/// </summary>
-		/// <param name="comp">The component the ROI belongs to
-		/// 
-		/// </param>
-		/// <param name="x">x-coordinate of center of ROI
-		/// 
-		/// </param>
-		/// <param name="y">y-coordinate of center of ROI
-		/// 
-		/// </param>
-		/// <param name="w">radius of ROI
-		/// </param>
-		public ROI(int comp, int x, int y, int rad)
-		{
-			arbShape = false;
-			this.comp = comp;
-			this.x = x;
-			this.y = y;
-			this.r = rad;
-		}
-		
-		/// <summary> This function prints all relevant data for the ROI</summary>
-		public override System.String ToString()
-		{
-			if (arbShape)
-			{
-				return "ROI with arbitrary shape, PGM file= " + maskPGM;
-			}
-			else if (rect)
-				return "Rectangular ROI, comp=" + comp + " ulx=" + ulx + " uly=" + uly + " w=" + w + " h=" + h;
-			else
-				return "Circular ROI,  comp=" + comp + " x=" + x + " y=" + y + " radius=" + r;
-		}
-	}
+    /// <summary>Where or not the ROI shape is arbitrary </summary>
+    public bool arbShape;
+
+    /// <summary>The components for which the ROI is relevant </summary>
+    public int comp;
+
+    /// <summary>height of rectangular ROI </summary>
+    public int h;
+
+    /// <summary>ImgReaderPGM object with the arbrtrary ROI </summary>
+    public ImgReaderPGM maskPGM;
+
+    /// <summary>radius of circular ROI  </summary>
+    public int r;
+
+    /// <summary>Flag indicating whether the ROI is rectangular or not </summary>
+    public bool rect;
+
+    /// <summary>x coordinate of upper left corner of rectangular ROI </summary>
+    public int ulx;
+
+    /// <summary>y coordinate of upper left corner of rectangular ROI </summary>
+    public int uly;
+
+    /// <summary>width of rectangular ROI  </summary>
+    public int w;
+
+    /// <summary>x coordinate of center of circular ROI </summary>
+    public int x;
+
+    /// <summary>y coordinate of center of circular ROI </summary>
+    public int y;
+
+
+    /// <summary>
+    ///     Constructor for ROI with arbitrary shape
+    /// </summary>
+    /// <param name="comp">
+    ///     The component the ROI belongs to
+    /// </param>
+    /// <param name="maskPGM">
+    ///     ImgReaderPGM containing the ROI
+    /// </param>
+    public ROI(int comp, ImgReaderPGM maskPGM)
+    {
+        arbShape = true;
+        rect = false;
+        this.comp = comp;
+        this.maskPGM = maskPGM;
+    }
+
+    /// <summary>
+    ///     Constructor for rectangular ROIs
+    /// </summary>
+    /// <param name="comp">
+    ///     The component the ROI belongs to
+    /// </param>
+    /// <param name="x">
+    ///     x-coordinate of upper left corner of ROI
+    /// </param>
+    /// <param name="y">
+    ///     y-coordinate of upper left corner of ROI
+    /// </param>
+    /// <param name="w">
+    ///     width of ROI
+    /// </param>
+    /// <param name="h">
+    ///     height of ROI
+    /// </param>
+    public ROI(int comp, int ulx, int uly, int w, int h)
+    {
+        arbShape = false;
+        this.comp = comp;
+        this.ulx = ulx;
+        this.uly = uly;
+        this.w = w;
+        this.h = h;
+        rect = true;
+    }
+
+    /// <summary>
+    ///     Constructor for circular ROIs
+    /// </summary>
+    /// <param name="comp">
+    ///     The component the ROI belongs to
+    /// </param>
+    /// <param name="x">
+    ///     x-coordinate of center of ROI
+    /// </param>
+    /// <param name="y">
+    ///     y-coordinate of center of ROI
+    /// </param>
+    /// <param name="w">
+    ///     radius of ROI
+    /// </param>
+    public ROI(int comp, int x, int y, int rad)
+    {
+        arbShape = false;
+        this.comp = comp;
+        this.x = x;
+        this.y = y;
+        r = rad;
+    }
+
+    /// <summary> This function prints all relevant data for the ROI</summary>
+    public override string ToString()
+    {
+        if (arbShape)
+            return "ROI with arbitrary shape, PGM file= " + maskPGM;
+        if (rect)
+            return "Rectangular ROI, comp=" + comp + " ulx=" + ulx + " uly=" + uly + " w=" + w + " h=" + h;
+        return "Circular ROI,  comp=" + comp + " x=" + x + " y=" + y + " radius=" + r;
+    }
 }

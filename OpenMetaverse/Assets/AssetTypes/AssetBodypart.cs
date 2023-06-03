@@ -24,25 +24,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an <seealso cref="AssetWearable" /> that represents an avatars body ie: Hair, Etc.
+/// </summary>
+public class AssetBodypart : AssetWearable
 {
-    /// <summary>
-    /// Represents an <seealso cref="AssetWearable"/> that represents an avatars body ie: Hair, Etc.
-    /// </summary>
-    public class AssetBodypart : AssetWearable
+    /// <summary>Initializes a new instance of an AssetBodyPart object</summary>
+    public AssetBodypart()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.Bodypart; } }
-
-        /// <summary>Initializes a new instance of an AssetBodyPart object</summary>
-        public AssetBodypart() { }
-
-        /// <summary>Initializes a new instance of an AssetBodyPart object with parameters</summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetBodypart(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
     }
+
+    /// <summary>Initializes a new instance of an AssetBodyPart object with parameters</summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetBodypart(UUID assetID, byte[] assetData) : base(assetID, assetData)
+    {
+    }
+
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.Bodypart;
 }

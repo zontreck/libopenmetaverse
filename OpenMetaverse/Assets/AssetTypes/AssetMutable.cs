@@ -24,40 +24,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an Animation
+/// </summary>
+public class AssetMutable : Asset
 {
-    /// <summary>
-    /// Represents an Animation
-    /// </summary>
-    public class AssetMutable : Asset
+    public AssetType currentType;
+
+    /// <summary>Default Constructor</summary>
+    public AssetMutable(AssetType type)
     {
-        public AssetType currentType;
+        currentType = type;
+    }
 
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return currentType; } }
+    /// <summary>
+    ///     Construct an Asset object of type Animation
+    /// </summary>
+    /// <param name="type">Asset type</param>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetMutable(AssetType type, UUID assetID, byte[] assetData)
+        : base(assetID, assetData)
+    {
+        currentType = type;
+    }
 
-        /// <summary>Default Constructor</summary>
-        public AssetMutable(AssetType type)
-        {
-            currentType = type;
-        }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => currentType;
 
-        /// <summary>
-        /// Construct an Asset object of type Animation
-        /// </summary>
-        /// <param name="type">Asset type</param>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetMutable(AssetType type, UUID assetID, byte[] assetData)
-            : base(assetID, assetData)
-        {
-            currentType = type;
-        }
+    public override void Encode()
+    {
+    }
 
-        public override void Encode() { }
-        public override bool Decode() { return true; }
+    public override bool Decode()
+    {
+        return true;
     }
 }

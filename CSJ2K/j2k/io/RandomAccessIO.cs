@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,132 +40,124 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.io
+
+namespace CSJ2K.j2k.io;
+
+/// <summary>
+///     This abstract class defines the interface to perform random access I/O. It
+///     implements the <tt>BinaryDataInput</tt> and <tt>BinaryDataOutput</tt>
+///     interfaces so that binary data input/output can be performed.
+///     <p>This interface supports streams of up to 2 GB in length.</p>
+/// </summary>
+/// <seealso cref="BinaryDataInput">
+/// </seealso>
+/// <seealso cref="BinaryDataOutput">
+/// </seealso>
+public interface RandomAccessIO : BinaryDataInput, BinaryDataOutput
 {
-	
-	/// <summary> This abstract class defines the interface to perform random access I/O. It
-	/// implements the <tt>BinaryDataInput</tt> and <tt>BinaryDataOutput</tt>
-	/// interfaces so that binary data input/output can be performed.
-	/// 
-	/// <p>This interface supports streams of up to 2 GB in length.</p>
-	/// 
+	/// <summary>
+	///     Returns the current position in the stream, which is the position from
+	///     where the next byte of data would be read. The first byte in the stream
+	///     is in position <tt>0</tt>.
 	/// </summary>
-	/// <seealso cref="BinaryDataInput">
-	/// </seealso>
-	/// <seealso cref="BinaryDataOutput">
-	/// 
-	/// </seealso>
-	public interface RandomAccessIO:BinaryDataInput, BinaryDataOutput
-	{
-		/// <summary> Returns the current position in the stream, which is the position from
-		/// where the next byte of data would be read. The first byte in the stream
-		/// is in position <tt>0</tt>.
-		/// 
-		/// </summary>
-		/// <returns> The offset of the current position, in bytes.
-		/// 
-		/// </returns>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// </exception>
-		int Pos
-		{
-			get;
-			
-		}
-		
-		/// <summary> Closes the I/O stream. Prior to closing the stream, any buffered data
-		/// (at the bit and byte level) should be written.
-		/// 
-		/// </summary>
-		/// <exception cref="IOException">If an I/O error ocurred. 
-		/// 
-		/// </exception>
-		void  close();
-		
-		/// <summary> Returns the current length of the stream, in bytes, taking into account
-		/// any buffering.
-		/// 
-		/// </summary>
-		/// <returns> The length of the stream, in bytes.
-		/// 
-		/// </returns>
-		/// <exception cref="IOException">If an I/O error ocurred. 
-		/// 
-		/// </exception>
-		int length();
-		
-		/// <summary> Moves the current position for the next read or write operation to
-		/// offset. The offset is measured from the beginning of the stream. The
-		/// offset may be set beyond the end of the file, if in write mode. Setting
-		/// the offset beyond the end of the file does not change the file
-		/// length. The file length will change only by writing after the offset
-		/// has been set beyond the end of the file.
-		/// 
-		/// </summary>
-		/// <param name="off">The offset where to move to.
-		/// 
-		/// </param>
-		/// <exception cref="EOFException">If in read-only and seeking beyond EOF.
-		/// 
-		/// </exception>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// </exception>
-		void  seek(int off);
-		
-		/// <summary> Reads a byte of data from the stream. Prior to reading, the stream is
-		/// realigned at the byte level.
-		/// 
-		/// </summary>
-		/// <returns> The byte read, as an int.
-		/// 
-		/// </returns>
-		/// <exception cref="EOFException">If the end-of file was reached.
-		/// 
-		/// </exception>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// </exception>
-		byte read();
-		
-		/// <summary> Reads up to len bytes of data from this file into an array of
-		/// bytes. This method reads repeatedly from the stream until all the bytes
-		/// are read. This method blocks until all the bytes are read, the end of
-		/// the stream is detected, or an exception is thrown.
-		/// 
-		/// </summary>
-		/// <param name="b">The buffer into which the data is to be read. It must be long
-		/// enough.
-		/// 
-		/// </param>
-		/// <param name="off">The index in 'b' where to place the first byte read.
-		/// 
-		/// </param>
-		/// <param name="len">The number of bytes to read.
-		/// 
-		/// </param>
-		/// <exception cref="EOFException">If the end-of file was reached before
-		/// getting all the necessary data.
-		/// 
-		/// </exception>
-		/// <exception cref="IOException">If an I/O error ocurred.
-		/// 
-		/// </exception>
-		void  readFully(byte[] b, int off, int len);
-		
-		/// <summary> Writes a byte to the stream. Prior to writing, the stream is realigned
-		/// at the byte level.
-		/// 
-		/// </summary>
-		/// <param name="b">The byte to write. The lower 8 bits of <tt>b</tt> are
-		/// written.
-		/// 
-		/// </param>
-		/// <exception cref="IOException">If an I/O error ocurred. 
-		/// 
-		/// </exception>
-		void  write(byte b);
-	}
+	/// <returns>
+	///     The offset of the current position, in bytes.
+	/// </returns>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	int Pos { get; }
+
+	/// <summary>
+	///     Closes the I/O stream. Prior to closing the stream, any buffered data
+	///     (at the bit and byte level) should be written.
+	/// </summary>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void close();
+
+	/// <summary>
+	///     Returns the current length of the stream, in bytes, taking into account
+	///     any buffering.
+	/// </summary>
+	/// <returns>
+	///     The length of the stream, in bytes.
+	/// </returns>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	int length();
+
+	/// <summary>
+	///     Moves the current position for the next read or write operation to
+	///     offset. The offset is measured from the beginning of the stream. The
+	///     offset may be set beyond the end of the file, if in write mode. Setting
+	///     the offset beyond the end of the file does not change the file
+	///     length. The file length will change only by writing after the offset
+	///     has been set beyond the end of the file.
+	/// </summary>
+	/// <param name="off">
+	///     The offset where to move to.
+	/// </param>
+	/// <exception cref="EOFException">
+	///     If in read-only and seeking beyond EOF.
+	/// </exception>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void seek(int off);
+
+	/// <summary>
+	///     Reads a byte of data from the stream. Prior to reading, the stream is
+	///     realigned at the byte level.
+	/// </summary>
+	/// <returns>
+	///     The byte read, as an int.
+	/// </returns>
+	/// <exception cref="EOFException">
+	///     If the end-of file was reached.
+	/// </exception>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	byte read();
+
+	/// <summary>
+	///     Reads up to len bytes of data from this file into an array of
+	///     bytes. This method reads repeatedly from the stream until all the bytes
+	///     are read. This method blocks until all the bytes are read, the end of
+	///     the stream is detected, or an exception is thrown.
+	/// </summary>
+	/// <param name="b">
+	///     The buffer into which the data is to be read. It must be long
+	///     enough.
+	/// </param>
+	/// <param name="off">
+	///     The index in 'b' where to place the first byte read.
+	/// </param>
+	/// <param name="len">
+	///     The number of bytes to read.
+	/// </param>
+	/// <exception cref="EOFException">
+	///     If the end-of file was reached before
+	///     getting all the necessary data.
+	/// </exception>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void readFully(byte[] b, int off, int len);
+
+	/// <summary>
+	///     Writes a byte to the stream. Prior to writing, the stream is realigned
+	///     at the byte level.
+	/// </summary>
+	/// <param name="b">
+	///     The byte to write. The lower 8 bits of <tt>b</tt> are
+	///     written.
+	/// </param>
+	/// <exception cref="IOException">
+	///     If an I/O error ocurred.
+	/// </exception>
+	void write(byte b);
 }

@@ -25,10 +25,8 @@
  */
 
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Reflection;
 using System.Runtime.InteropServices;
+using IronSoftware.Drawing;
 
 namespace OpenMetaverse.Imaging
 {
@@ -212,7 +210,7 @@ namespace OpenMetaverse.Imaging
         /// <param name="managedImage">ManagedImage object to decode to</param>
         /// <param name="image">Image object to decode to</param>
         /// <returns>True if the decode succeeds, otherwise false</returns>
-        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage, out Image image)
+        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage, out AnyBitmap image)
         {
             managedImage = null;
             image = null;
@@ -463,75 +461,9 @@ namespace OpenMetaverse.Imaging
         /// <param name="bitmap">The source <seealso cref="System.Drawing.Bitmap"/> object to encode</param>
         /// <param name="lossless">true to enable lossless decoding</param>
         /// <returns>A byte array containing the source Bitmap object</returns>
-        public unsafe static byte[] EncodeFromImage(Bitmap bitmap, bool lossless)
+        public static byte[] EncodeFromImage(AnyBitmap bitmap, bool lossless)
         {
-            BitmapData bd;
-            ManagedImage decoded;
-
-            int bitmapWidth = bitmap.Width;
-            int bitmapHeight = bitmap.Height;
-            int pixelCount = bitmapWidth * bitmapHeight;
-            int i;
-
-            if ((bitmap.PixelFormat & PixelFormat.Alpha) != 0 || (bitmap.PixelFormat & PixelFormat.PAlpha) != 0)
-            {
-                // Four layers, RGBA
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
-                    ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
-                    ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                byte* pixel = (byte*)bd.Scan0;
-
-                for (i = 0; i < pixelCount; i++)
-                {
-                    // GDI+ gives us BGRA and we need to turn that in to RGBA
-                    decoded.Blue[i] = *(pixel++);
-                    decoded.Green[i] = *(pixel++);
-                    decoded.Red[i] = *(pixel++);
-                    decoded.Alpha[i] = *(pixel++);
-                }
-            }
-            else if (bitmap.PixelFormat == PixelFormat.Format16bppGrayScale)
-            {
-                // One layer
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
-                    ManagedImage.ImageChannels.Color);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
-                    ImageLockMode.ReadOnly, PixelFormat.Format16bppGrayScale);
-                byte* pixel = (byte*)bd.Scan0;
-
-                for (i = 0; i < pixelCount; i++)
-                {
-                    // Normalize 16-bit data down to 8-bit
-                    ushort origVal = (byte)(*(pixel) + (*(pixel + 1) << 8));
-                    byte val = (byte)(((double)origVal / (double)UInt32.MaxValue) * (double)Byte.MaxValue);
-
-                    decoded.Red[i] = val;
-                    decoded.Green[i] = val;
-                    decoded.Blue[i] = val;
-                    pixel += 2;
-                }
-            }
-            else
-            {
-                // Three layers, RGB
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
-                    ManagedImage.ImageChannels.Color);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
-                    ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-                byte* pixel = (byte*)bd.Scan0;
-
-                for (i = 0; i < pixelCount; i++)
-                {
-                    decoded.Blue[i] = *(pixel++);
-                    decoded.Green[i] = *(pixel++);
-                    decoded.Red[i] = *(pixel++);
-                }
-            }
-
-            bitmap.UnlockBits(bd);
-            byte[] encoded = Encode(decoded, lossless);
-            return encoded;
+            return Encode(new ManagedImage(bitmap), lossless);
         }
     }
 }

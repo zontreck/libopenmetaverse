@@ -24,48 +24,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an LSL Text object containing a string of UTF encoded characters
+/// </summary>
+public class AssetScriptText : Asset
 {
-    /// <summary>
-    /// Represents an LSL Text object containing a string of UTF encoded characters
-    /// </summary>
-    public class AssetScriptText : Asset
+    /// <summary>A string of characters represting the script contents</summary>
+    public string Source;
+
+    /// <summary>Initializes a new AssetScriptText object</summary>
+    public AssetScriptText()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.LSLText; } }
+    }
 
-        /// <summary>A string of characters represting the script contents</summary>
-        public string Source;
+    /// <summary>
+    ///     Initializes a new AssetScriptText object with parameters
+    /// </summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetScriptText(UUID assetID, byte[] assetData) : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>Initializes a new AssetScriptText object</summary>
-        public AssetScriptText() { }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.LSLText;
 
-        /// <summary>
-        /// Initializes a new AssetScriptText object with parameters
-        /// </summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetScriptText(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+    /// <summary>
+    ///     Encode a string containing the scripts contents into byte encoded AssetData
+    /// </summary>
+    public override void Encode()
+    {
+        AssetData = Utils.StringToBytes(Source);
+    }
 
-        /// <summary>
-        /// Encode a string containing the scripts contents into byte encoded AssetData
-        /// </summary>
-        public override void Encode()
-        {
-            AssetData = Utils.StringToBytes(Source);
-        }
-
-        /// <summary>
-        /// Decode a byte array containing the scripts contents into a string
-        /// </summary>
-        /// <returns>true if decoding is successful</returns>
-        public override bool Decode()
-        {
-            Source = Utils.BytesToString(AssetData);
-            return true;
-        }
+    /// <summary>
+    ///     Decode a byte array containing the scripts contents into a string
+    /// </summary>
+    /// <returns>true if decoding is successful</returns>
+    public override bool Decode()
+    {
+        Source = Utils.BytesToString(AssetData);
+        return true;
     }
 }

@@ -27,175 +27,162 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using OpenMetaverse;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     Same as Queue except Dequeue function blocks until there is an object to return.
+///     Note: This class does not need to be synchronized
+/// </summary>
+public class BlockingQueue<T> : Queue<T>
 {
+    private bool open;
+    private readonly object SyncRoot;
+
     /// <summary>
-    /// Same as Queue except Dequeue function blocks until there is an object to return.
-    /// Note: This class does not need to be synchronized
+    ///     Create new BlockingQueue.
     /// </summary>
-    public class BlockingQueue<T> : Queue<T>
+    /// <param name="col">The System.Collections.ICollection to copy elements from</param>
+    public BlockingQueue(IEnumerable<T> col)
+        : base(col)
     {
-        private object SyncRoot;
-        private bool open;
+        SyncRoot = new object();
+        open = true;
+    }
 
-        /// <summary>
-        /// Create new BlockingQueue.
-        /// </summary>
-        /// <param name="col">The System.Collections.ICollection to copy elements from</param>
-        public BlockingQueue(IEnumerable<T> col)
-            : base(col)
+    /// <summary>
+    ///     Create new BlockingQueue.
+    /// </summary>
+    /// <param name="capacity">The initial number of elements that the queue can contain</param>
+    public BlockingQueue(int capacity)
+        : base(capacity)
+    {
+        SyncRoot = new object();
+        open = true;
+    }
+
+    /// <summary>
+    ///     Create new BlockingQueue.
+    /// </summary>
+    public BlockingQueue()
+    {
+        SyncRoot = new object();
+        open = true;
+    }
+
+    /// <summary>
+    ///     Gets flag indicating if queue has been closed.
+    /// </summary>
+    public bool Closed => !open;
+
+    /// <summary>
+    ///     BlockingQueue Destructor (Close queue, resume any waiting thread).
+    /// </summary>
+    ~BlockingQueue()
+    {
+        Close();
+    }
+
+    /// <summary>
+    ///     Remove all objects from the Queue.
+    /// </summary>
+    public new void Clear()
+    {
+        lock (SyncRoot)
         {
-            SyncRoot = new object();
-            open = true;
+            base.Clear();
         }
+    }
 
-        /// <summary>
-        /// Create new BlockingQueue.
-        /// </summary>
-        /// <param name="capacity">The initial number of elements that the queue can contain</param>
-        public BlockingQueue(int capacity)
-            : base(capacity)
+    /// <summary>
+    ///     Remove all objects from the Queue, resume all dequeue threads.
+    /// </summary>
+    public void Close()
+    {
+        lock (SyncRoot)
         {
-            SyncRoot = new object();
-            open = true;
+            open = false;
+            base.Clear();
+            Monitor.PulseAll(SyncRoot); // resume any waiting threads
         }
+    }
 
-        /// <summary>
-        /// Create new BlockingQueue.
-        /// </summary>
-        public BlockingQueue()
-            : base()
+    /// <summary>
+    ///     Removes and returns the object at the beginning of the Queue.
+    /// </summary>
+    /// <returns>Object in queue.</returns>
+    public new T Dequeue()
+    {
+        return Dequeue(Timeout.Infinite);
+    }
+
+    /// <summary>
+    ///     Removes and returns the object at the beginning of the Queue.
+    /// </summary>
+    /// <param name="timeout">time to wait before returning</param>
+    /// <returns>Object in queue.</returns>
+    public T Dequeue(TimeSpan timeout)
+    {
+        return Dequeue(timeout.Milliseconds);
+    }
+
+    /// <summary>
+    ///     Removes and returns the object at the beginning of the Queue.
+    /// </summary>
+    /// <param name="timeout">time to wait before returning (in milliseconds)</param>
+    /// <returns>Object in queue.</returns>
+    public T Dequeue(int timeout)
+    {
+        lock (SyncRoot)
         {
-            SyncRoot = new object();
-            open = true;
+            while (open && Count == 0)
+                if (!Monitor.Wait(SyncRoot, timeout))
+                    throw new InvalidOperationException("Timeout");
+            if (open)
+                return base.Dequeue();
+            throw new InvalidOperationException("Queue Closed");
         }
+    }
 
-        /// <summary>
-        /// BlockingQueue Destructor (Close queue, resume any waiting thread).
-        /// </summary>
-        ~BlockingQueue()
+    public bool Dequeue(int timeout, ref T obj)
+    {
+        lock (SyncRoot)
         {
-            Close();
-        }
-
-        /// <summary>
-        /// Remove all objects from the Queue.
-        /// </summary>
-        public new void Clear()
-        {
-            lock (SyncRoot)
-            {
-                base.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Remove all objects from the Queue, resume all dequeue threads.
-        /// </summary>
-        public void Close()
-        {
-            lock (SyncRoot)
-            {
-                open = false;
-                base.Clear();
-                Monitor.PulseAll(SyncRoot); // resume any waiting threads
-            }
-        }
-
-        /// <summary>
-        /// Removes and returns the object at the beginning of the Queue.
-        /// </summary>
-        /// <returns>Object in queue.</returns>
-        public new T Dequeue()
-        {
-            return Dequeue(Timeout.Infinite);
-        }
-
-        /// <summary>
-        /// Removes and returns the object at the beginning of the Queue.
-        /// </summary>
-        /// <param name="timeout">time to wait before returning</param>
-        /// <returns>Object in queue.</returns>
-        public T Dequeue(TimeSpan timeout)
-        {
-            return Dequeue(timeout.Milliseconds);
-        }
-
-        /// <summary>
-        /// Removes and returns the object at the beginning of the Queue.
-        /// </summary>
-        /// <param name="timeout">time to wait before returning (in milliseconds)</param>
-        /// <returns>Object in queue.</returns>
-        public T Dequeue(int timeout)
-        {
-            lock (SyncRoot)
-            {
-                while (open && (base.Count == 0))
-                {
-                    if (!Monitor.Wait(SyncRoot, timeout))
-                        throw new InvalidOperationException("Timeout");
-                }
-                if (open)
-                    return base.Dequeue();
-                else
-                    throw new InvalidOperationException("Queue Closed");
-            }
-        }
-
-        public bool Dequeue(int timeout, ref T obj)
-        {
-            lock (SyncRoot)
-            {
-                while (open && (base.Count == 0))
-                {
-                    if (!Monitor.Wait(SyncRoot, timeout))
-                        return false;
-                }
-                if (open)
-                {
-                    obj = base.Dequeue();
-                    return true;
-                }
-                else
-                {
-                    obj = default(T);
+            while (open && Count == 0)
+                if (!Monitor.Wait(SyncRoot, timeout))
                     return false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds an object to the end of the Queue
-        /// </summary>
-        /// <param name="obj">Object to put in queue</param>
-        public new void Enqueue(T obj)
-        {
-            lock (SyncRoot)
+            if (open)
             {
-                base.Enqueue(obj);
-                Monitor.Pulse(SyncRoot);
+                obj = base.Dequeue();
+                return true;
             }
-        }
 
-        /// <summary>
-        /// Open Queue.
-        /// </summary>
-        public void Open()
-        {
-            lock (SyncRoot)
-            {
-                open = true;
-            }
+            obj = default;
+            return false;
         }
+    }
 
-        /// <summary>
-        /// Gets flag indicating if queue has been closed.
-        /// </summary>
-        public bool Closed
+    /// <summary>
+    ///     Adds an object to the end of the Queue
+    /// </summary>
+    /// <param name="obj">Object to put in queue</param>
+    public new void Enqueue(T obj)
+    {
+        lock (SyncRoot)
         {
-            get { return !open; }
+            base.Enqueue(obj);
+            Monitor.Pulse(SyncRoot);
+        }
+    }
+
+    /// <summary>
+    ///     Open Queue.
+    /// </summary>
+    public void Open()
+    {
+        lock (SyncRoot)
+        {
+            open = true;
         }
     }
 }

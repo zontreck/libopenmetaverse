@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,71 +40,68 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.codestream.reader
+
+namespace CSJ2K.j2k.codestream.reader;
+
+/// <summary>
+///     This class defines an object used to countain informations about a packet
+///     to which the current code-block belongs.
+/// </summary>
+/// <seealso cref="CBlkInfo">
+/// </seealso>
+public class PktInfo
 {
-	
-	/// <summary> This class defines an object used to countain informations about a packet
-	/// to which the current code-block belongs.
-	/// 
-	/// </summary>
-	/// <seealso cref="CBlkInfo">
-	/// 
-	/// </seealso>
-	public class PktInfo
-	{
-		
-		/// <summary>Index of the packet </summary>
-		public int packetIdx;
-		
-		/// <summary>The layer associated with the current code-block in this packet. </summary>
-		public int layerIdx;
-		
-		/// <summary>The code-block offset in the codestream (for this packet) </summary>
-		public int cbOff = 0;
-		
-		/// <summary>The length of the code-block in this packet (in bytes) </summary>
-		public int cbLength;
-		
-		/// <summary> The length of each terminated segment in the packet. The total is the
-		/// same as 'cbLength'. It can be null if there is only one terminated
-		/// segment, in which case 'cbLength' holds the legth of that segment 
-		/// 
-		/// </summary>
-		public int[] segLengths;
-		
-		/// <summary> The number of truncation points that appear in this packet, and all
-		/// previous packets, for this code-block. This is the number of passes
-		/// that can be decoded with the information in this packet and all
-		/// previous ones. 
-		/// 
-		/// </summary>
-		public int numTruncPnts;
-		
-		/// <summary> Classe's constructor.
-		/// 
-		/// </summary>
-		/// <param name="lyIdx">The layer index for the code-block in this packet
-		/// 
-		/// </param>
-		/// <param name="pckIdx">The packet index
-		/// 
-		/// </param>
-		public PktInfo(int lyIdx, int pckIdx)
-		{
-			layerIdx = lyIdx;
-			packetIdx = pckIdx;
-		}
-		
-		/// <summary> Object information in a string.
-		/// 
-		/// </summary>
-		/// <returns> Object information
-		/// 
-		/// </returns>
-		public override System.String ToString()
-		{
-			return "packet " + packetIdx + " (lay:" + layerIdx + ", off:" + cbOff + ", len:" + cbLength + ", numTruncPnts:" + numTruncPnts + ")\n";
-		}
-	}
+    /// <summary>The length of the code-block in this packet (in bytes) </summary>
+    public int cbLength;
+
+    /// <summary>The code-block offset in the codestream (for this packet) </summary>
+    public int cbOff = 0;
+
+    /// <summary>The layer associated with the current code-block in this packet. </summary>
+    public int layerIdx;
+
+    /// <summary>
+    ///     The number of truncation points that appear in this packet, and all
+    ///     previous packets, for this code-block. This is the number of passes
+    ///     that can be decoded with the information in this packet and all
+    ///     previous ones.
+    /// </summary>
+    public int numTruncPnts;
+
+    /// <summary>Index of the packet </summary>
+    public int packetIdx;
+
+    /// <summary>
+    ///     The length of each terminated segment in the packet. The total is the
+    ///     same as 'cbLength'. It can be null if there is only one terminated
+    ///     segment, in which case 'cbLength' holds the legth of that segment
+    /// </summary>
+    public int[] segLengths;
+
+    /// <summary>
+    ///     Classe's constructor.
+    /// </summary>
+    /// <param name="lyIdx">
+    ///     The layer index for the code-block in this packet
+    /// </param>
+    /// <param name="pckIdx">
+    ///     The packet index
+    /// </param>
+    public PktInfo(int lyIdx, int pckIdx)
+    {
+        layerIdx = lyIdx;
+        packetIdx = pckIdx;
+    }
+
+    /// <summary>
+    ///     Object information in a string.
+    /// </summary>
+    /// <returns>
+    ///     Object information
+    /// </returns>
+    public override string ToString()
+    {
+        return "packet " + packetIdx + " (lay:" + layerIdx + ", off:" + cbOff + ", len:" + cbLength +
+               ", numTruncPnts:" + numTruncPnts + ")\n";
+    }
 }

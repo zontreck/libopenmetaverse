@@ -24,26 +24,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents an <seealso cref="AssetWearable" /> that can be worn on an avatar
+///     such as a Shirt, Pants, etc.
+/// </summary>
+public class AssetClothing : AssetWearable
 {
-    /// <summary>
-    /// Represents an <seealso cref="AssetWearable"/> that can be worn on an avatar
-    /// such as a Shirt, Pants, etc.
-    /// </summary>
-    public class AssetClothing : AssetWearable
+    /// <summary>Initializes a new instance of an AssetScriptBinary object</summary>
+    public AssetClothing()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.Clothing; } }
-
-        /// <summary>Initializes a new instance of an AssetScriptBinary object</summary>
-        public AssetClothing() { }
-
-        /// <summary>Initializes a new instance of an AssetScriptBinary object with parameters</summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetClothing(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
     }
+
+    /// <summary>Initializes a new instance of an AssetScriptBinary object with parameters</summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetClothing(UUID assetID, byte[] assetData) : base(assetID, assetData)
+    {
+    }
+
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.Clothing;
 }

@@ -24,126 +24,132 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Threading;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     A thread-safe lockless queue that supports multiple readers and
+///     multiple writers
+/// </summary>
+public sealed class LocklessQueue<T>
 {
+    /// <summary>Queue item count</summary>
+    private int count;
+
+    /// <summary>Queue head</summary>
+    private SingleLinkNode head;
+
+    /// <summary>Queue tail</summary>
+    private SingleLinkNode tail;
+
     /// <summary>
-    /// A thread-safe lockless queue that supports multiple readers and 
-    /// multiple writers
+    ///     Constructor
     /// </summary>
-    public sealed class LocklessQueue<T>
+    public LocklessQueue()
     {
-        /// <summary>
-        /// Provides a node container for data in a singly linked list
-        /// </summary>
-        private sealed class SingleLinkNode
+        count = 0;
+        head = tail = new SingleLinkNode();
+    }
+
+    /// <summary>
+    ///     Gets the current number of items in the queue. Since this
+    ///     is a lockless collection this value should be treated as a close
+    ///     estimate
+    /// </summary>
+    public int Count => count;
+
+    /// <summary>
+    ///     Enqueue an item
+    /// </summary>
+    /// <param name="item">Item to enqeue</param>
+    public void Enqueue(T item)
+    {
+        var newNode = new SingleLinkNode { Item = item };
+
+        while (true)
         {
-            /// <summary>Pointer to the next node in list</summary>
-            public SingleLinkNode Next;
-            /// <summary>The data contained by the node</summary>
-            public T Item;
+            var oldTail = tail;
+            var oldTailNext = oldTail.Next;
 
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            public SingleLinkNode() { }
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            public SingleLinkNode(T item)
+            if (tail == oldTail)
             {
-                this.Item = item;
-            }
-        }
-
-        /// <summary>Queue head</summary>
-        SingleLinkNode head;
-        /// <summary>Queue tail</summary>
-        SingleLinkNode tail;
-        /// <summary>Queue item count</summary>
-        int count;
-
-        /// <summary>Gets the current number of items in the queue. Since this
-        /// is a lockless collection this value should be treated as a close
-        /// estimate</summary>
-        public int Count { get { return count; } }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public LocklessQueue()
-        {
-            count = 0;
-            head = tail = new SingleLinkNode();
-        }
-
-        /// <summary>
-        /// Enqueue an item
-        /// </summary>
-        /// <param name="item">Item to enqeue</param>
-        public void Enqueue(T item)
-        {
-            SingleLinkNode newNode = new SingleLinkNode { Item = item };
-
-            while (true)
-            {
-                SingleLinkNode oldTail = tail;
-                SingleLinkNode oldTailNext = oldTail.Next;
-
-                if (tail == oldTail)
+                if (oldTailNext != null)
                 {
-                    if (oldTailNext != null)
-                    {
-                        CAS(ref tail, oldTail, oldTailNext);
-                    }
-                    else if (CAS(ref tail.Next, null, newNode))
-                    {
-                        CAS(ref tail, oldTail, newNode);
-                        Interlocked.Increment(ref count);
-                        return;
-                    }
+                    CAS(ref tail, oldTail, oldTailNext);
+                }
+                else if (CAS(ref tail.Next, null, newNode))
+                {
+                    CAS(ref tail, oldTail, newNode);
+                    Interlocked.Increment(ref count);
+                    return;
                 }
             }
         }
+    }
 
-        /// <summary>
-        /// Try to dequeue an item
-        /// </summary>
-        /// <param name="item">Dequeued item if the dequeue was successful</param>
-        /// <returns>True if an item was successfully deqeued, otherwise false</returns>
-        public bool TryDequeue(out T item)
+    /// <summary>
+    ///     Try to dequeue an item
+    /// </summary>
+    /// <param name="item">Dequeued item if the dequeue was successful</param>
+    /// <returns>True if an item was successfully deqeued, otherwise false</returns>
+    public bool TryDequeue(out T item)
+    {
+        while (true)
         {
-            while (true)
-            {
-                SingleLinkNode oldHead = head;
-                SingleLinkNode oldHeadNext = oldHead.Next;
+            var oldHead = head;
+            var oldHeadNext = oldHead.Next;
 
-                if (oldHead == head)
+            if (oldHead == head)
+            {
+                if (oldHeadNext == null)
                 {
-                    if (oldHeadNext == null)
-                    {
-                        item = default(T);
-                        count = 0;
-                        return false;
-                    }
-                    if (CAS(ref head, oldHead, oldHeadNext))
-                    {
-                        item = oldHeadNext.Item;
-                        Interlocked.Decrement(ref count);
-                        return true;
-                    }
+                    item = default;
+                    count = 0;
+                    return false;
+                }
+
+                if (CAS(ref head, oldHead, oldHeadNext))
+                {
+                    item = oldHeadNext.Item;
+                    Interlocked.Decrement(ref count);
+                    return true;
                 }
             }
         }
+    }
 
-        private static bool CAS(ref SingleLinkNode location, SingleLinkNode comparand, SingleLinkNode newValue)
+    private static bool CAS(ref SingleLinkNode location, SingleLinkNode comparand, SingleLinkNode newValue)
+    {
+        return
+            comparand ==
+            Interlocked.CompareExchange(ref location, newValue, comparand);
+    }
+
+    /// <summary>
+    ///     Provides a node container for data in a singly linked list
+    /// </summary>
+    private sealed class SingleLinkNode
+    {
+        /// <summary>The data contained by the node</summary>
+        public T Item;
+
+        /// <summary>Pointer to the next node in list</summary>
+        public SingleLinkNode Next;
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public SingleLinkNode()
         {
-            return
-                (object)comparand ==
-                (object)Interlocked.CompareExchange<SingleLinkNode>(ref location, newValue, comparand);
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public SingleLinkNode(T item)
+        {
+            Item = item;
         }
     }
 }

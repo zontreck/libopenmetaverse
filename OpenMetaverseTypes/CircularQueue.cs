@@ -24,113 +24,109 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
+namespace OpenMetaverse;
 
-namespace OpenMetaverse
+public class CircularQueue<T>
 {
-    public class CircularQueue<T>
+    public readonly T[] Items;
+    private readonly int capacity;
+
+    private readonly object syncRoot;
+
+    public CircularQueue(int capacity)
     {
-        public readonly T[] Items;
+        this.capacity = capacity;
+        Items = new T[capacity];
+        syncRoot = new object();
+    }
 
-        int first;
-        int next;
-        int capacity;
-        object syncRoot;
-
-        public int First { get { return first; } }
-        public int Next { get { return next; } }
-
-        public CircularQueue(int capacity)
+    /// <summary>
+    ///     Copy constructor
+    /// </summary>
+    /// <param name="queue">Circular queue to copy</param>
+    public CircularQueue(CircularQueue<T> queue)
+    {
+        lock (queue.syncRoot)
         {
-            this.capacity = capacity;
+            capacity = queue.capacity;
             Items = new T[capacity];
             syncRoot = new object();
+
+            for (var i = 0; i < capacity; i++)
+                Items[i] = queue.Items[i];
+
+            First = queue.First;
+            Next = queue.Next;
         }
+    }
 
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="queue">Circular queue to copy</param>
-        public CircularQueue(CircularQueue<T> queue)
+    public int First { get; private set; }
+
+    public int Next { get; private set; }
+
+    public void Clear()
+    {
+        lock (syncRoot)
         {
-            lock (queue.syncRoot)
-            {
-                capacity = queue.capacity;
-                Items = new T[capacity];
-                syncRoot = new object();
+            // Explicitly remove references to help garbage collection
+            for (var i = 0; i < capacity; i++)
+                Items[i] = default;
 
-                for (int i = 0; i < capacity; i++)
-                    Items[i] = queue.Items[i];
-
-                first = queue.first;
-                next = queue.next;
-            }
+            First = Next;
         }
+    }
 
-        public void Clear()
+    public void Enqueue(T value)
+    {
+        lock (syncRoot)
         {
-            lock (syncRoot)
-            {
-                // Explicitly remove references to help garbage collection
-                for (int i = 0; i < capacity; i++)
-                    Items[i] = default(T);
-
-                first = next;
-            }
+            Items[Next] = value;
+            Next = (Next + 1) % capacity;
+            if (Next == First) First = (First + 1) % capacity;
         }
+    }
 
-        public void Enqueue(T value)
+    public T Dequeue()
+    {
+        lock (syncRoot)
         {
-            lock (syncRoot)
-            {
-                Items[next] = value;
-                next = (next + 1) % capacity;
-                if (next == first) first = (first + 1) % capacity;
-            }
+            var value = Items[First];
+            Items[First] = default;
+
+            if (First != Next)
+                First = (First + 1) % capacity;
+
+            return value;
         }
+    }
 
-        public T Dequeue()
+    public T DequeueLast()
+    {
+        lock (syncRoot)
         {
-            lock (syncRoot)
+            // If the next element is right behind the first element (queue is full),
+            // back up the first element by one
+            var firstTest = First - 1;
+            if (firstTest < 0) firstTest = capacity - 1;
+
+            if (firstTest == Next)
             {
-                T value = Items[first];
-                Items[first] = default(T);
+                --Next;
+                if (Next < 0) Next = capacity - 1;
 
-                if (first != next)
-                    first = (first + 1) % capacity;
-
-                return value;
+                --First;
+                if (First < 0) First = capacity - 1;
             }
-        }
-
-        public T DequeueLast()
-        {
-            lock (syncRoot)
+            else if (First != Next)
             {
-                // If the next element is right behind the first element (queue is full),
-                // back up the first element by one
-                int firstTest = first - 1;
-                if (firstTest < 0) firstTest = capacity - 1;
-
-                if (firstTest == next)
-                {
-                    --next;
-                    if (next < 0) next = capacity - 1;
-
-                    --first;
-                    if (first < 0) first = capacity - 1;
-                }
-                else if (first != next)
-                {
-                    --next;
-                    if (next < 0) next = capacity - 1;
-                }
-
-                T value = Items[next];
-                Items[next] = default(T);
-
-                return value;
+                --Next;
+                if (Next < 0) Next = capacity - 1;
             }
+
+            var value = Items[Next];
+            Items[Next] = default;
+
+            return value;
         }
     }
 }

@@ -12,10 +12,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -41,46 +41,49 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.codestream
+
+namespace CSJ2K.j2k.codestream;
+
+/// <summary>
+///     This interface defines the identifiers for the different codestream
+///     profiles and progression types.
+///     <p>
+///         Each progressive type has a different number: 'LY_RES_COMP_POS_PROG',
+///         'RES_LY_COMP_POS_PROG', 'RES_POS_COMP_LY_PROG', 'POS_COMP_RES_LY_PROG' or
+///         'COMP_POS_RES_LY_PROG'.  These are the same identifiers are used in the
+///         codestream syntax.
+///         <p>
+///             This interface defines the constants only. In order to use the constants
+///             in any other class you can either use the fully qualified name (e.g.,
+///             <tt>ProgressionType.LY_RES_COMP_POS_PROG</tt>) or declare this interface in
+///             the implements clause of the class and then access the identifier
+///             directly.
+///         </p>
+/// </summary>
+public struct ProgressionType
 {
-	
-	/// <summary> This interface defines the identifiers for the different codestream
-	/// profiles and progression types.
-	/// 
-	/// <p>Each progressive type has a different number: 'LY_RES_COMP_POS_PROG',
-	/// 'RES_LY_COMP_POS_PROG', 'RES_POS_COMP_LY_PROG', 'POS_COMP_RES_LY_PROG' or
-	/// 'COMP_POS_RES_LY_PROG'.  These are the same identifiers are used in the
-	/// codestream syntax.
-	/// 
-	/// <p>This interface defines the constants only. In order to use the constants
-	/// in any other class you can either use the fully qualified name (e.g.,
-	/// <tt>ProgressionType.LY_RES_COMP_POS_PROG</tt>) or declare this interface in
-	/// the implements clause of the class and then access the identifier
-	/// directly.</p>
-	/// 
+	/// <summary>
+	///     The codestream is Layer/Resolution/Component/Position progressive : 0
 	/// </summary>
-	public struct ProgressionType
-    {
-		/// <summary>The codestream is Layer/Resolution/Component/Position progressive : 0
-		/// 
-		/// </summary>
-		public const int LY_RES_COMP_POS_PROG = 0;
-		/// <summary>The codestream is Resolution/Layer/Component/Position progressive : 1
-		/// 
-		/// </summary>
-		public const int RES_LY_COMP_POS_PROG = 1;
-		/// <summary>The codestream is Resolution/Position/Component/Layer progressive : 2
-		/// 
-		/// </summary>
-		public const int RES_POS_COMP_LY_PROG = 2;
-		/// <summary>The codestream is Position/Component/Resolution/Layer progressive : 3
-		/// 
-		/// </summary>
-		public const int POS_COMP_RES_LY_PROG = 3;
-		/// <summary>The codestream is Component/Position/Resolution/Layer progressive : 4
-		/// 
-		/// </summary>
-		public const int COMP_POS_RES_LY_PROG = 4;
-	}
+	public const int LY_RES_COMP_POS_PROG = 0;
+
+	/// <summary>
+	///     The codestream is Resolution/Layer/Component/Position progressive : 1
+	/// </summary>
+	public const int RES_LY_COMP_POS_PROG = 1;
+
+	/// <summary>
+	///     The codestream is Resolution/Position/Component/Layer progressive : 2
+	/// </summary>
+	public const int RES_POS_COMP_LY_PROG = 2;
+
+	/// <summary>
+	///     The codestream is Position/Component/Resolution/Layer progressive : 3
+	/// </summary>
+	public const int POS_COMP_RES_LY_PROG = 3;
+
+	/// <summary>
+	///     The codestream is Component/Position/Resolution/Layer progressive : 4
+	/// </summary>
+	public const int COMP_POS_RES_LY_PROG = 4;
 }

@@ -24,67 +24,72 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+using System.Globalization;
 
-namespace OpenMetaverse.Assets
+namespace OpenMetaverse.Assets;
+
+/// <summary>
+///     Represents a Landmark with RegionID and Position vector
+/// </summary>
+public class AssetLandmark : Asset
 {
-    /// <summary>
-    /// Represents a Landmark with RegionID and Position vector
-    /// </summary>
-    public class AssetLandmark : Asset
+    /// <summary> Local position of the target </summary>
+    public Vector3 Position = Vector3.Zero;
+
+    /// <summary>UUID of the Landmark target region</summary>
+    public UUID RegionID = UUID.Zero;
+
+    /// <summary>Construct an Asset of type Landmark</summary>
+    public AssetLandmark()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.Landmark; } }
+    }
 
-        /// <summary>UUID of the Landmark target region</summary>
-        public UUID RegionID = UUID.Zero;
-        /// <summary> Local position of the target </summary>
-        public Vector3 Position = Vector3.Zero;
+    /// <summary>
+    ///     Construct an Asset object of type Landmark
+    /// </summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetLandmark(UUID assetID, byte[] assetData)
+        : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>Construct an Asset of type Landmark</summary>
-        public AssetLandmark() { }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.Landmark;
 
-        /// <summary>
-        /// Construct an Asset object of type Landmark
-        /// </summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetLandmark(UUID assetID, byte[] assetData)
-            : base(assetID, assetData)
+    /// <summary>
+    ///     Encode the raw contents of a string with the specific Landmark format
+    /// </summary>
+    public override void Encode()
+    {
+        var temp = "Landmark version 2\n";
+        temp += "region_id " + RegionID + "\n";
+        temp += string.Format(Utils.EnUsCulture, "local_pos {0:0.00} {1:0.00} {2:0.00}\n", Position.X, Position.Y,
+            Position.Z);
+        AssetData = Utils.StringToBytes(temp);
+    }
+
+    /// <summary>
+    ///     Decode the raw asset data, populating the RegionID and Position
+    /// </summary>
+    /// <returns>true if the AssetData was successfully decoded to a UUID and Vector</returns>
+    public override bool Decode()
+    {
+        var text = Utils.BytesToString(AssetData);
+        if (text.ToLower().Contains("landmark version 2"))
         {
-        }
-
-        /// <summary>
-        /// Encode the raw contents of a string with the specific Landmark format
-        /// </summary>
-        public override void Encode()
-        {
-            string temp = "Landmark version 2\n";
-            temp += "region_id " + RegionID + "\n";
-            temp += String.Format(Utils.EnUsCulture, "local_pos {0:0.00} {1:0.00} {2:0.00}\n", Position.X, Position.Y, Position.Z);
-            AssetData = Utils.StringToBytes(temp);
-        }
-
-        /// <summary>
-        /// Decode the raw asset data, populating the RegionID and Position
-        /// </summary>
-        /// <returns>true if the AssetData was successfully decoded to a UUID and Vector</returns>
-        public override bool Decode()
-        {
-            String text = Utils.BytesToString(AssetData);
-            if (text.ToLower().Contains("landmark version 2"))
+            RegionID = new UUID(text.Substring(text.IndexOf("region_id") + 10, 36));
+            var vecDelim = " ";
+            var vecStrings = text.Substring(text.IndexOf("local_pos") + 10).Split(vecDelim.ToCharArray());
+            if (vecStrings.Length == 3)
             {
-                RegionID = new UUID(text.Substring(text.IndexOf("region_id") + 10, 36));
-                String vecDelim = " ";
-                String[] vecStrings = text.Substring(text.IndexOf("local_pos") + 10).Split(vecDelim.ToCharArray());
-                if (vecStrings.Length == 3)
-                {
-                    Position = new Vector3(float.Parse(vecStrings[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[1], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[2], System.Globalization.CultureInfo.InvariantCulture));
-                    return true;
-                }
+                Position = new Vector3(float.Parse(vecStrings[0], CultureInfo.InvariantCulture),
+                    float.Parse(vecStrings[1], CultureInfo.InvariantCulture),
+                    float.Parse(vecStrings[2], CultureInfo.InvariantCulture));
+                return true;
             }
-            return false;
         }
+
+        return false;
     }
 }

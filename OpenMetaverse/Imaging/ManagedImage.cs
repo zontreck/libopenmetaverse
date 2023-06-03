@@ -25,6 +25,8 @@
  */
 
 using System;
+using IronSoftware.Drawing;
+using OpenSim.Linq;
 
 namespace OpenMetaverse.Imaging
 {
@@ -116,109 +118,42 @@ namespace OpenMetaverse.Imaging
                 Bump = new byte[n];
         }
 
-#if !NO_UNSAFE
         /// <summary>
         /// 
         /// </summary>
         /// <param name="bitmap"></param>
-        public ManagedImage(System.Drawing.Bitmap bitmap)
+        public ManagedImage(AnyBitmap bitmap)
         {
             Width = bitmap.Width;
             Height = bitmap.Height;
 
             int pixelCount = Width * Height;
 
-            if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+            Channels = ImageChannels.Alpha | ImageChannels.Color;
+            Red = new byte[pixelCount];
+            Green = new byte[pixelCount];
+            Blue = new byte[pixelCount];
+            Alpha = new byte[pixelCount];
+
+            Color[] colors = bitmap.GetAllColors();
+
+            int i = 0;
+            foreach (var color in colors)
             {
-                Channels = ImageChannels.Alpha | ImageChannels.Color;
-                Red = new byte[pixelCount];
-                Green = new byte[pixelCount];
-                Blue = new byte[pixelCount];
-                Alpha = new byte[pixelCount];
+                Red[i] = color.R;
+                Green[i] = color.G;
+                Blue[i] = color.B;
+                Alpha[i] = color.A;
 
-                System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
-                    System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                unsafe
-                {
-                    byte* pixel = (byte*)bd.Scan0;
-
-                    for (int i = 0; i < pixelCount; i++)
-                    {
-                        // GDI+ gives us BGRA and we need to turn that in to RGBA
-                        Blue[i] = *(pixel++);
-                        Green[i] = *(pixel++);
-                        Red[i] = *(pixel++);
-                        Alpha[i] = *(pixel++);
-                    }
-                }
-
-                bitmap.UnlockBits(bd);
+                i++;
             }
-            else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format16bppGrayScale)
-            {
-                Channels = ImageChannels.Gray;
-                Red = new byte[pixelCount];
 
-                throw new NotImplementedException("16bpp grayscale image support is incomplete");
-            }
-            else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb)
+            if (Alpha.AllAreIdentical())
             {
+                Alpha = null;
                 Channels = ImageChannels.Color;
-                Red = new byte[pixelCount];
-                Green = new byte[pixelCount];
-                Blue = new byte[pixelCount];
-
-                System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
-                        System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-                unsafe
-                {
-                    byte* pixel = (byte*)bd.Scan0;
-
-                    for (int i = 0; i < pixelCount; i++)
-                    {
-                        // GDI+ gives us BGR and we need to turn that in to RGB
-                        Blue[i] = *(pixel++);
-                        Green[i] = *(pixel++);
-                        Red[i] = *(pixel++);
-                    }
-                }
-
-                bitmap.UnlockBits(bd);
-            }
-			else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppRgb)
-			{
-				Channels = ImageChannels.Color;
-				Red = new byte[pixelCount];
-				Green = new byte[pixelCount];
-				Blue = new byte[pixelCount];
-
-				System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
-						System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-
-				unsafe
-				{
-					byte* pixel = (byte*)bd.Scan0;
-
-					for (int i = 0; i < pixelCount; i++)
-					{
-						// GDI+ gives us BGR and we need to turn that in to RGB
-						Blue[i] = *(pixel++);
-						Green[i] = *(pixel++);
-						Red[i] = *(pixel++);
-						pixel++;	// Skip over the empty byte where the Alpha info would normally be
-					}
-				}
-
-				bitmap.UnlockBits(bd);
-			}
-			else
-            {
-                throw new NotSupportedException("Unrecognized pixel format: " + bitmap.PixelFormat.ToString());
             }
         }
-#endif
 
         /// <summary>
         /// Convert the channels in the image. Channels are created or destroyed as required.
@@ -382,7 +317,7 @@ namespace OpenMetaverse.Imaging
         /// origin, suitable for feeding directly into OpenGL
         /// </summary>
         /// <returns>A byte array containing raw texture data</returns>
-        public System.Drawing.Bitmap ExportBitmap()
+        public AnyBitmap ExportBitmap()
         {
             byte[] raw = new byte[Width * Height * 4];
 
@@ -423,20 +358,7 @@ namespace OpenMetaverse.Imaging
                 }
             }
 
-            System.Drawing.Bitmap b = new System.Drawing.Bitmap(
-                        Width,
-                        Height,
-                        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-            System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
-                System.Drawing.Imaging.ImageLockMode.WriteOnly,
-                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-            System.Runtime.InteropServices.Marshal.Copy(raw, 0, bd.Scan0, Width * Height * 4);
-
-            b.UnlockBits(bd);
-
-            return b;
+            return AnyBitmap.FromBytes(raw);
         }
 
         public byte[] ExportTGA()

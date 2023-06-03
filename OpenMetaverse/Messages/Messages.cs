@@ -29,79 +29,76 @@ using System.Collections.Generic;
 using System.Net;
 using OpenMetaverse.StructuredData;
 
-namespace OpenMetaverse.Messages
+namespace OpenMetaverse.Messages;
+
+public static partial class MessageUtils
 {
-    public static partial class MessageUtils
+    public static IPAddress ToIP(OSD osd)
     {
-        public static IPAddress ToIP(OSD osd)
+        var binary = osd.AsBinary();
+        if (binary != null && binary.Length == 4)
+            return new IPAddress(binary);
+        return IPAddress.Any;
+    }
+
+    public static OSD FromIP(IPAddress address)
+    {
+        if (address != null && address != IPAddress.Any)
+            return OSD.FromBinary(address.GetAddressBytes());
+        return new OSD();
+    }
+
+    public static Dictionary<string, string> ToDictionaryString(OSD osd)
+    {
+        if (osd.Type == OSDType.Map)
         {
-            byte[] binary = osd.AsBinary();
-            if (binary != null && binary.Length == 4)
-                return new IPAddress(binary);
-            else
-                return IPAddress.Any;
+            var map = (OSDMap)osd;
+            var dict = new Dictionary<string, string>(map.Count);
+            foreach (KeyValuePair<string, OSD> entry in map)
+                dict.Add(entry.Key, entry.Value.AsString());
+            return dict;
         }
 
-        public static OSD FromIP(IPAddress address)
+        return new Dictionary<string, string>(0);
+    }
+
+    public static Dictionary<Uri, Uri> ToDictionaryUri(OSD osd)
+    {
+        if (osd.Type == OSDType.Map)
         {
-            if (address != null && address != IPAddress.Any)
-                return OSD.FromBinary(address.GetAddressBytes());
-            else
-                return new OSD();
+            var map = (OSDMap)osd;
+            var dict = new Dictionary<Uri, Uri>(map.Count);
+            foreach (KeyValuePair<string, OSD> entry in map)
+                dict.Add(new Uri(entry.Key), entry.Value.AsUri());
+            return dict;
         }
 
-        public static Dictionary<string, string> ToDictionaryString(OSD osd)
-        {
-            if (osd.Type == OSDType.Map)
-            {
-                OSDMap map = (OSDMap)osd;
-                Dictionary<string, string> dict = new Dictionary<string, string>(map.Count);
-                foreach (KeyValuePair<string, OSD> entry in map)
-                    dict.Add(entry.Key, entry.Value.AsString());
-                return dict;
-            }
+        return new Dictionary<Uri, Uri>(0);
+    }
 
-            return new Dictionary<string, string>(0);
+    public static OSDMap FromDictionaryString(Dictionary<string, string> dict)
+    {
+        if (dict != null)
+        {
+            var map = new OSDMap(dict.Count);
+            foreach (var entry in dict)
+                map.Add(entry.Key, OSD.FromString(entry.Value));
+            return map;
         }
 
-        public static Dictionary<Uri, Uri> ToDictionaryUri(OSD osd)
-        {
-            if (osd.Type == OSDType.Map)
-            {
-                OSDMap map = (OSDMap)osd;
-                Dictionary<Uri, Uri> dict = new Dictionary<Uri, Uri>(map.Count);
-                foreach (KeyValuePair<string, OSD> entry in map)
-                    dict.Add(new Uri(entry.Key), entry.Value.AsUri());
-                return dict;
-            }
+        return new OSDMap(0);
+    }
 
-            return new Dictionary<Uri, Uri>(0);
+    public static OSDMap FromDictionaryUri(Dictionary<Uri, Uri> dict)
+    {
+        if (dict != null)
+        {
+            var map = new OSDMap(dict.Count);
+            foreach (var entry in dict)
+                map.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
+            return map;
         }
 
-        public static OSDMap FromDictionaryString(Dictionary<string, string> dict)
-        {
-            if (dict != null)
-            {
-                OSDMap map = new OSDMap(dict.Count);
-                foreach (KeyValuePair<string, string> entry in dict)
-                    map.Add(entry.Key, OSD.FromString(entry.Value));
-                return map;
-            }
-
-            return new OSDMap(0);
-        }
-
-        public static OSDMap FromDictionaryUri(Dictionary<Uri, Uri> dict)
-        {
-            if (dict != null)
-            {
-                OSDMap map = new OSDMap(dict.Count);
-                foreach (KeyValuePair<Uri, Uri> entry in dict)
-                    map.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
-                return map;
-            }
-
-            return new OSDMap(0);
-        }
+        return new OSDMap(0);
     }
 }

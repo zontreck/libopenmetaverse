@@ -11,10 +11,10 @@
 * 
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,36 +40,31 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 */
-using System;
-using CSJ2K.j2k;
-namespace CSJ2K.j2k.roi
+
+namespace CSJ2K.j2k.roi;
+
+/// <summary>
+///     This class contains the maxshift scaling value for each tile-component.
+///     The scaling values used are calculated in the ROIScaler class
+/// </summary>
+public class MaxShiftSpec : ModuleSpec
 {
-	
-	/// <summary> This class contains the maxshift scaling value for each tile-component.
-	/// The scaling values used are calculated in the ROIScaler class
-	/// 
+	/// <summary>
+	///     Constructs a 'ModuleSpec' object, initializing all the components and
+	///     tiles to the 'SPEC_DEF' spec type, for the specified number of
+	///     components and tiles.
 	/// </summary>
-	
-	public class MaxShiftSpec:ModuleSpec
-	{
-		
-		/// <summary> Constructs a 'ModuleSpec' object, initializing all the components and 
-		/// tiles to the 'SPEC_DEF' spec type, for the specified number of 
-		/// components and tiles.
-		/// 
-		/// </summary>
-		/// <param name="nt">The number of tiles
-		/// 
-		/// </param>
-		/// <param name="nc">The number of components
-		/// 
-		/// </param>
-		/// <param name="type">the type of the specification module i.e. tile specific,
-		/// component specific or both.
-		/// 
-		/// </param>
-		public MaxShiftSpec(int nt, int nc, byte type):base(nt, nc, type)
-		{
-		}
-	}
+	/// <param name="nt">
+	///     The number of tiles
+	/// </param>
+	/// <param name="nc">
+	///     The number of components
+	/// </param>
+	/// <param name="type">
+	///     the type of the specification module i.e. tile specific,
+	///     component specific or both.
+	/// </param>
+	public MaxShiftSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    {
+    }
 }

@@ -25,76 +25,65 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public class Lazy<T>
 {
-    public class Lazy<T>
+    private volatile bool _isValueCreated;
+    private readonly object _lock;
+    private T _value;
+    private Func<T> _valueFactory;
+
+    public Lazy()
+        : this(() => Activator.CreateInstance<T>())
     {
-        private T _value = default(T);
-        private volatile bool _isValueCreated = false;
-        private Func<T> _valueFactory = null;
-        private object _lock;
+    }
 
-        public bool IsValueCreated { get { return _isValueCreated; } }
+    public Lazy(bool isThreadSafe)
+        : this(() => Activator.CreateInstance<T>(), isThreadSafe)
+    {
+    }
 
-        public Lazy()
-            : this(() => Activator.CreateInstance<T>())
+    public Lazy(Func<T> valueFactory) :
+        this(valueFactory, true)
+    {
+    }
+
+    public Lazy(Func<T> valueFactory, bool isThreadSafe)
+    {
+        if (isThreadSafe) _lock = new object();
+
+        _valueFactory = valueFactory;
+    }
+
+    public bool IsValueCreated => _isValueCreated;
+
+
+    public T Value
+    {
+        get
         {
-        }
-
-        public Lazy(bool isThreadSafe)
-            : this(() => Activator.CreateInstance<T>(), isThreadSafe)
-        {
-        }
-
-        public Lazy(Func<T> valueFactory) :
-            this(valueFactory, true)
-        {
-        }
-
-        public Lazy(Func<T> valueFactory, bool isThreadSafe)
-        {
-            if (isThreadSafe)
+            if (!_isValueCreated)
             {
-                this._lock = new object();
-            }
+                if (_lock != null) Monitor.Enter(_lock);
 
-            this._valueFactory = valueFactory;
-        }
-
-
-        public T Value
-        {
-            get
-            {
-                if (!this._isValueCreated)
+                try
                 {
-                    if (this._lock != null)
-                    {
-                        Monitor.Enter(this._lock);
-                    }
-
-                    try
-                    {
-                        T value = this._valueFactory.Invoke();
-                        this._valueFactory = null;
-                        Thread.MemoryBarrier();
-                        this._value = value;
-                        this._isValueCreated = true;
-                    }
-                    finally
-                    {
-                        if (this._lock != null)
-                        {
-                            Monitor.Exit(this._lock);
-                        }
-                    }
+                    var value = _valueFactory.Invoke();
+                    _valueFactory = null;
+                    Thread.MemoryBarrier();
+                    _value = value;
+                    _isValueCreated = true;
                 }
-                return this._value;
+                finally
+                {
+                    if (_lock != null) Monitor.Exit(_lock);
+                }
             }
+
+            return _value;
         }
     }
 }

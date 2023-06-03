@@ -30,11 +30,13 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml;
-using System.Drawing;
 using System.Xml.Serialization;
+using IronSoftware.Drawing;
 using OpenMetaverse.ImportExport.Collada14;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Imaging;
+using OpenSim.Linq;
+using SixLabors.ImageSharp;
 
 namespace OpenMetaverse.ImportExport
 {
@@ -114,7 +116,7 @@ namespace OpenMetaverse.ImportExport
             {
                 string ext = System.IO.Path.GetExtension(material.Texture).ToLower();
 
-                Bitmap bitmap = null;
+                AnyBitmap bitmap = null;
 
                 if (ext == ".jp2" || ext == ".j2c")
                 {
@@ -128,7 +130,7 @@ namespace OpenMetaverse.ImportExport
                 }
                 else
                 {
-                    bitmap = (Bitmap)Image.FromFile(fname);
+                    bitmap = AnyBitmap.FromFile(fname);
                 }
 
                 int width = bitmap.Width;
@@ -148,16 +150,8 @@ namespace OpenMetaverse.ImportExport
 
                     Logger.Log("Image has irregular dimensions " + origWidth + "x" + origHieght + ". Resizing to " + width + "x" + height, Helpers.LogLevel.Info);
 
-                    Bitmap resized = new Bitmap(width, height, bitmap.PixelFormat);
-                    Graphics graphics = Graphics.FromImage(resized);
-
-                    graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                    graphics.InterpolationMode =
-                       System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(bitmap, 0, 0, width, height);
-
-                    bitmap.Dispose();
-                    bitmap = resized;
+                    bitmap.Resize(new Size(width,height));
+                    
                 }
 
                 material.TextureData = OpenJPEG.EncodeFromImage(bitmap, false);

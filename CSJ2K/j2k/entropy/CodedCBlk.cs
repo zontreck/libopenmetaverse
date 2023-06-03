@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -40,81 +40,79 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
-namespace CSJ2K.j2k.entropy
+
+namespace CSJ2K.j2k.entropy;
+
+/// <summary>
+///     This is the generic class to store coded (compressed) code-block. It stores
+///     the compressed data as well as the necessary side-information.
+///     <p>
+///         This class is normally not used. Instead the EncRDCBlk, EncLyrdCBlk and
+///         the DecLyrdCBlk subclasses are used.
+///     </p>
+/// </summary>
+/// <seealso cref="jj2000.j2k.entropy.encoder.CBlkRateDistStats">
+/// </seealso>
+/// <seealso cref="jj2000.j2k.entropy.decoder.DecLyrdCBlk">
+/// </seealso>
+public class CodedCBlk
 {
-	
-	/// <summary> This is the generic class to store coded (compressed) code-block. It stores
-	/// the compressed data as well as the necessary side-information.
-	/// 
-	/// <p>This class is normally not used. Instead the EncRDCBlk, EncLyrdCBlk and
-	/// the DecLyrdCBlk subclasses are used.</p>
-	/// 
-	/// </summary>
-	/// <seealso cref="jj2000.j2k.entropy.encoder.CBlkRateDistStats">
-	/// </seealso>
-	/// <seealso cref="jj2000.j2k.entropy.decoder.DecLyrdCBlk">
-	/// 
-	/// </seealso>
-	public class CodedCBlk
-	{
-		
-		/// <summary>The horizontal index of the code-block, within the subband. </summary>
-		public int n;
-		
-		/// <summary>The vertical index of the code-block, within the subband. </summary>
-		public int m;
-		
-		/// <summary>The number of skipped most significant bit-planes. </summary>
-		public int skipMSBP;
-		
-		/// <summary>The compressed data </summary>
-		public byte[] data;
-		
-		/// <summary> Creates a new CodedCBlk object wit the default values and without
-		/// allocating any space for its members.
-		/// 
-		/// </summary>
-		public CodedCBlk()
-		{
-		}
-		
-		/// <summary> Creates a new CodedCBlk object with the specified values.
-		/// 
-		/// </summary>
-		/// <param name="m">The horizontal index of the code-block, within the subband.
-		/// 
-		/// </param>
-		/// <param name="n">The vertical index of the code-block, within the subband.
-		/// 
-		/// </param>
-		/// <param name="skipMSBP">The number of skipped most significant bit-planes for
-		/// this code-block.
-		/// 
-		/// </param>
-		/// <param name="data">The compressed data. This array is referenced by this
-		/// object so it should not be modified after.
-		/// 
-		/// </param>
-		public CodedCBlk(int m, int n, int skipMSBP, byte[] data)
-		{
-			this.m = m;
-			this.n = n;
-			this.skipMSBP = skipMSBP;
-			this.data = data;
-		}
-		
-		/// <summary> Returns the contents of the object in a string. The string contains the
-		/// following data: 'm', 'n', 'skipMSBP' and 'data.length. This is used for
-		/// debugging.
-		/// 
-		/// </summary>
-		/// <returns> A string with the contents of the object
-		/// 
-		/// </returns>
-		public override System.String ToString()
-		{
-			return "m=" + m + ", n=" + n + ", skipMSBP=" + skipMSBP + ", data.length=" + ((data != null)?"" + data.Length:"(null)");
-		}
-	}
+    /// <summary>The compressed data </summary>
+    public byte[] data;
+
+    /// <summary>The vertical index of the code-block, within the subband. </summary>
+    public int m;
+
+    /// <summary>The horizontal index of the code-block, within the subband. </summary>
+    public int n;
+
+    /// <summary>The number of skipped most significant bit-planes. </summary>
+    public int skipMSBP;
+
+    /// <summary>
+    ///     Creates a new CodedCBlk object wit the default values and without
+    ///     allocating any space for its members.
+    /// </summary>
+    public CodedCBlk()
+    {
+    }
+
+    /// <summary>
+    ///     Creates a new CodedCBlk object with the specified values.
+    /// </summary>
+    /// <param name="m">
+    ///     The horizontal index of the code-block, within the subband.
+    /// </param>
+    /// <param name="n">
+    ///     The vertical index of the code-block, within the subband.
+    /// </param>
+    /// <param name="skipMSBP">
+    ///     The number of skipped most significant bit-planes for
+    ///     this code-block.
+    /// </param>
+    /// <param name="data">
+    ///     The compressed data. This array is referenced by this
+    ///     object so it should not be modified after.
+    /// </param>
+    public CodedCBlk(int m, int n, int skipMSBP, byte[] data)
+    {
+        this.m = m;
+        this.n = n;
+        this.skipMSBP = skipMSBP;
+        this.data = data;
+    }
+
+    /// <summary>
+    ///     Returns the contents of the object in a string. The string contains the
+    ///     following data: 'm', 'n', 'skipMSBP' and 'data.length. This is used for
+    ///     debugging.
+    /// </summary>
+    /// <returns>
+    ///     A string with the contents of the object
+    /// </returns>
+    public override string ToString()
+    {
+        return "m=" + m + ", n=" + n + ", skipMSBP=" + skipMSBP + ", data.length=" +
+               (data != null ? "" + data.Length : "(null)");
+    }
 }

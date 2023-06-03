@@ -24,39 +24,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using OpenMetaverse;
+namespace OpenMetaverse.Assets;
 
-namespace OpenMetaverse.Assets
+/// <summary>
+///     Represents a Sound Asset
+/// </summary>
+public class AssetSound : Asset
 {
-    /// <summary>
-    /// Represents a Sound Asset
-    /// </summary>
-    public class AssetSound : Asset
+    /// <summary>Initializes a new instance of an AssetSound object</summary>
+    public AssetSound()
     {
-        /// <summary>Override the base classes AssetType</summary>
-        public override AssetType AssetType { get { return AssetType.Sound; } }
+    }
 
-        /// <summary>Initializes a new instance of an AssetSound object</summary>
-        public AssetSound() { }
+    /// <summary>Initializes a new instance of an AssetSound object with parameters</summary>
+    /// <param name="assetID">A unique <see cref="UUID" /> specific to this asset</param>
+    /// <param name="assetData">A byte array containing the raw asset data</param>
+    public AssetSound(UUID assetID, byte[] assetData)
+        : base(assetID, assetData)
+    {
+    }
 
-        /// <summary>Initializes a new instance of an AssetSound object with parameters</summary>
-        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
-        /// <param name="assetData">A byte array containing the raw asset data</param>
-        public AssetSound(UUID assetID, byte[] assetData)
-            : base(assetID, assetData)
-        {
-        }
+    /// <summary>Override the base classes AssetType</summary>
+    public override AssetType AssetType => AssetType.Sound;
 
-        /// <summary>
-        /// TODO: Encodes a sound file
-        /// </summary>
-        public override void Encode() { }
+    /// <summary>
+    ///     TODO: Encodes a sound file
+    /// </summary>
+    public override void Encode()
+    {
+    }
 
-        /// <summary>
-        /// TODO: Decode a sound file
-        /// </summary>
-        /// <returns>true</returns>
-        public override bool Decode() { return true; }
+    /// <summary>
+    ///     TODO: Decode a sound file
+    /// </summary>
+    /// <returns>true</returns>
+    public override bool Decode()
+    {
+        return true;
     }
 }

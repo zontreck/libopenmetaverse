@@ -11,10 +11,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -43,202 +43,191 @@
 * 
 * 
 */
+
 using System;
-namespace CSJ2K.j2k.util
+using System.IO;
+using System.Text;
+
+namespace CSJ2K.j2k.util;
+
+/// <summary>
+///     This class implements the MsgLogger interface for streams. Streams can
+///     be simple files, terminals, stdout, stderr, etc. The messages or simple
+///     strings are formatted using the linewidth given to the constructor.
+///     <P>
+///         Messages are printed to the 'err' stream if they are of severity WARNING
+///         or ERROR, otherwise they are printed to the 'out' stream. Simple strings
+///         are always printed the 'out' stream.
+/// </summary>
+public class StreamMsgLogger : MsgLogger
 {
-	
-	/// <summary> This class implements the MsgLogger interface for streams. Streams can
-	/// be simple files, terminals, stdout, stderr, etc. The messages or simple
-	/// strings are formatted using the linewidth given to the constructor.
-	/// 
-	/// <P>Messages are printed to the 'err' stream if they are of severity WARNING
-	/// or ERROR, otherwise they are printed to the 'out' stream. Simple strings
-	/// are always printed the 'out' stream.
-	/// 
-	/// </summary>
-	public class StreamMsgLogger : MsgLogger
-	{
-		
-		/// <summary>The 'out' stream </summary>
-		private System.IO.StreamWriter out_Renamed;
-		
-		/// <summary>The 'err' stream </summary>
-		private System.IO.StreamWriter err;
-		
-		/// <summary>The printer that formats the text </summary>
-		private MsgPrinter mp;
-		
-		/// <summary> Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
-		/// and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
-		/// be System.out and System.err.
-		/// 
-		/// </summary>
-		/// <param name="outstr">Where to print simple strings and LOG and INFO messages.
-		/// 
-		/// </param>
-		/// <param name="errstr">Where to print WARNING and ERROR messages
-		/// 
-		/// </param>
-		/// <param name="lw">The line width to use in formatting
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public StreamMsgLogger(System.IO.Stream outstr, System.IO.Stream errstr, int lw)
-		{
-			System.IO.StreamWriter temp_writer;
-			temp_writer = new System.IO.StreamWriter(outstr, System.Text.Encoding.Default);
-			temp_writer.AutoFlush = true;
-			out_Renamed = temp_writer;
-			System.IO.StreamWriter temp_writer2;
-			temp_writer2 = new System.IO.StreamWriter(errstr, System.Text.Encoding.Default);
-			temp_writer2.AutoFlush = true;
-			err = temp_writer2;
-			mp = new MsgPrinter(lw);
-		}
-		
-		/// <summary> Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
-		/// and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
-		/// be System.out and System.err.
-		/// 
-		/// </summary>
-		/// <param name="outstr">Where to print simple strings and LOG and INFO messages.
-		/// 
-		/// </param>
-		/// <param name="errstr">Where to print WARNING and ERROR messages
-		/// 
-		/// </param>
-		/// <param name="lw">The line width to use in formatting
-		/// 
-		/// 
-		/// 
-		/// </param>
-		//UPGRADE_ISSUE: Class hierarchy differences between 'java.io.Writer' and 'System.IO.StreamWriter' may cause compilation errors. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1186'"
-		public StreamMsgLogger(System.IO.StreamWriter outstr, System.IO.StreamWriter errstr, int lw)
-		{
-			System.IO.StreamWriter temp_writer;
-			temp_writer = new System.IO.StreamWriter(outstr.BaseStream, outstr.Encoding);
-			temp_writer.AutoFlush = true;
-			out_Renamed = temp_writer;
-			System.IO.StreamWriter temp_writer2;
-			temp_writer2 = new System.IO.StreamWriter(errstr.BaseStream, errstr.Encoding);
-			temp_writer2.AutoFlush = true;
-			err = temp_writer2;
-			mp = new MsgPrinter(lw);
-		}
-		
-		/// <summary> Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
-		/// and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
-		/// be System.out and System.err.
-		/// 
-		/// </summary>
-		/// <param name="outstr">Where to print simple strings and LOG and INFO messages.
-		/// 
-		/// </param>
-		/// <param name="errstr">Where to print WARNING and ERROR messages
-		/// 
-		/// </param>
-		/// <param name="lw">The line width to use in formatting
-		/// 
-		/// 
-		/// 
-		/// </param>
-        /// 
-        /*
-		public StreamMsgLogger(System.IO.StreamWriter outstr, System.IO.StreamWriter errstr, int lw)
-		{
-			out_Renamed = outstr;
-			err = errstr;
-			mp = new MsgPrinter(lw);
-		}
-		*/
-		/// <summary> Prints the message 'msg' to the output device, appending a newline,
-		/// with severity 'sev'. The severity of the message is prepended to the
-		/// message.
-		/// 
-		/// </summary>
-		/// <param name="sev">The message severity (LOG, INFO, etc.)
-		/// 
-		/// </param>
-		/// <param name="msg">The message to display
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public virtual void  printmsg(int sev, System.String msg)
-		{
-			System.IO.StreamWriter lout;
-			//int ind;
-			System.String prefix;
-			
-			switch (sev)
-			{
-				
-				case CSJ2K.j2k.util.MsgLogger_Fields.LOG: 
-					prefix = "[LOG]: ";
-					lout = out_Renamed;
-					break;
-				
-				case CSJ2K.j2k.util.MsgLogger_Fields.INFO: 
-					prefix = "[INFO]: ";
-					lout = out_Renamed;
-					break;
-				
-				case CSJ2K.j2k.util.MsgLogger_Fields.WARNING: 
-					prefix = "[WARNING]: ";
-					lout = err;
-					break;
-				
-				case CSJ2K.j2k.util.MsgLogger_Fields.ERROR: 
-					prefix = "[ERROR]: ";
-					lout = err;
-					break;
-				
-				default: 
-					throw new System.ArgumentException("Severity " + sev + " not valid.");
-				
-			}
-			
-			mp.print(lout, 0, prefix.Length, prefix + msg);
-			lout.Flush();
-		}
-		
-		/// <summary> Prints the string 'str' to the 'out' stream, appending a newline. The
-		/// message is reformatted to the line width given to the constructors and
-		/// using 'flind' characters to indent the first line and 'ind' characters
-		/// to indent the second line. However, any newlines appearing in 'str' are
-		/// respected. The output device may or may not display the string until
-		/// flush() is called, depending on the autoflush state of the PrintWriter,
-		/// to be sure flush() should be called to write the string to the
-		/// device. This method just prints the string, the string does not make
-		/// part of a "message" in the sense that noe severity is associated to it.
-		/// 
-		/// </summary>
-		/// <param name="str">The string to print
-		/// 
-		/// </param>
-		/// <param name="flind">Indentation of the first line
-		/// 
-		/// </param>
-		/// <param name="ind">Indentation of any other lines.
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public virtual void  println(System.String str, int flind, int ind)
-		{
-			mp.print(out_Renamed, flind, ind, str);
-		}
-		
-		/// <summary> Writes any buffered data from the print() and println() methods to the
-		/// device.
-		/// 
-		/// 
-		/// 
-		/// </summary>
-		public virtual void  flush()
-		{
-			out_Renamed.Flush();
-		}
-	}
+    /// <summary>The 'err' stream </summary>
+    private readonly StreamWriter err;
+
+    /// <summary>The printer that formats the text </summary>
+    private readonly MsgPrinter mp;
+
+    /// <summary>The 'out' stream </summary>
+    private readonly StreamWriter out_Renamed;
+
+    /// <summary>
+    ///     Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
+    ///     and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
+    ///     be System.out and System.err.
+    /// </summary>
+    /// <param name="outstr">
+    ///     Where to print simple strings and LOG and INFO messages.
+    /// </param>
+    /// <param name="errstr">
+    ///     Where to print WARNING and ERROR messages
+    /// </param>
+    /// <param name="lw">
+    ///     The line width to use in formatting
+    /// </param>
+    public StreamMsgLogger(Stream outstr, Stream errstr, int lw)
+    {
+        StreamWriter temp_writer;
+        temp_writer = new StreamWriter(outstr, Encoding.Default);
+        temp_writer.AutoFlush = true;
+        out_Renamed = temp_writer;
+        StreamWriter temp_writer2;
+        temp_writer2 = new StreamWriter(errstr, Encoding.Default);
+        temp_writer2.AutoFlush = true;
+        err = temp_writer2;
+        mp = new MsgPrinter(lw);
+    }
+
+    /// <summary>
+    ///     Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
+    ///     and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
+    ///     be System.out and System.err.
+    /// </summary>
+    /// <param name="outstr">
+    ///     Where to print simple strings and LOG and INFO messages.
+    /// </param>
+    /// <param name="errstr">
+    ///     Where to print WARNING and ERROR messages
+    /// </param>
+    /// <param name="lw">
+    ///     The line width to use in formatting
+    /// </param>
+    //UPGRADE_ISSUE: Class hierarchy differences between 'java.io.Writer' and 'System.IO.StreamWriter' may cause compilation errors. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1186'"
+    public StreamMsgLogger(StreamWriter outstr, StreamWriter errstr, int lw)
+    {
+        StreamWriter temp_writer;
+        temp_writer = new StreamWriter(outstr.BaseStream, outstr.Encoding);
+        temp_writer.AutoFlush = true;
+        out_Renamed = temp_writer;
+        StreamWriter temp_writer2;
+        temp_writer2 = new StreamWriter(errstr.BaseStream, errstr.Encoding);
+        temp_writer2.AutoFlush = true;
+        err = temp_writer2;
+        mp = new MsgPrinter(lw);
+    }
+
+    /// <summary> Constructs a StreamMsgLogger that uses 'outstr' as the 'out' stream,
+    /// and 'errstr' as the 'err' stream. Note that 'outstr' and 'errstr' can
+    /// be System.out and System.err.
+    /// 
+    /// </summary>
+    /// <param name="outstr">Where to print simple strings and LOG and INFO messages.
+    /// 
+    /// </param>
+    /// <param name="errstr">Where to print WARNING and ERROR messages
+    /// 
+    /// </param>
+    /// <param name="lw">The line width to use in formatting
+    /// 
+    /// 
+    /// 
+    /// </param>
+    /// 
+    /*
+    public StreamMsgLogger(System.IO.StreamWriter outstr, System.IO.StreamWriter errstr, int lw)
+    {
+        out_Renamed = outstr;
+        err = errstr;
+        mp = new MsgPrinter(lw);
+    }
+    */
+    /// <summary>
+    ///     Prints the message 'msg' to the output device, appending a newline,
+    ///     with severity 'sev'. The severity of the message is prepended to the
+    ///     message.
+    /// </summary>
+    /// <param name="sev">
+    ///     The message severity (LOG, INFO, etc.)
+    /// </param>
+    /// <param name="msg">
+    ///     The message to display
+    /// </param>
+    public virtual void printmsg(int sev, string msg)
+    {
+        StreamWriter lout;
+        //int ind;
+        string prefix;
+
+        switch (sev)
+        {
+            case MsgLogger_Fields.LOG:
+                prefix = "[LOG]: ";
+                lout = out_Renamed;
+                break;
+
+            case MsgLogger_Fields.INFO:
+                prefix = "[INFO]: ";
+                lout = out_Renamed;
+                break;
+
+            case MsgLogger_Fields.WARNING:
+                prefix = "[WARNING]: ";
+                lout = err;
+                break;
+
+            case MsgLogger_Fields.ERROR:
+                prefix = "[ERROR]: ";
+                lout = err;
+                break;
+
+            default:
+                throw new ArgumentException("Severity " + sev + " not valid.");
+        }
+
+        mp.print(lout, 0, prefix.Length, prefix + msg);
+        lout.Flush();
+    }
+
+    /// <summary>
+    ///     Prints the string 'str' to the 'out' stream, appending a newline. The
+    ///     message is reformatted to the line width given to the constructors and
+    ///     using 'flind' characters to indent the first line and 'ind' characters
+    ///     to indent the second line. However, any newlines appearing in 'str' are
+    ///     respected. The output device may or may not display the string until
+    ///     flush() is called, depending on the autoflush state of the PrintWriter,
+    ///     to be sure flush() should be called to write the string to the
+    ///     device. This method just prints the string, the string does not make
+    ///     part of a "message" in the sense that noe severity is associated to it.
+    /// </summary>
+    /// <param name="str">
+    ///     The string to print
+    /// </param>
+    /// <param name="flind">
+    ///     Indentation of the first line
+    /// </param>
+    /// <param name="ind">
+    ///     Indentation of any other lines.
+    /// </param>
+    public virtual void println(string str, int flind, int ind)
+    {
+        mp.print(out_Renamed, flind, ind, str);
+    }
+
+    /// <summary>
+    ///     Writes any buffered data from the print() and println() methods to the
+    ///     device.
+    /// </summary>
+    public virtual void flush()
+    {
+        out_Renamed.Flush();
+    }
 }

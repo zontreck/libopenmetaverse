@@ -27,132 +27,119 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public class ThreadSafeDictionary<TKey, TValue>
 {
-    public class ThreadSafeDictionary<TKey, TValue>
+    private readonly Dictionary<TKey, TValue> Dictionary;
+    private readonly object syncObject = new();
+
+    public ThreadSafeDictionary()
     {
-        Dictionary<TKey, TValue> Dictionary;
-        object syncObject = new object();
+        Dictionary = new Dictionary<TKey, TValue>();
+    }
 
-        public ThreadSafeDictionary()
+    public ThreadSafeDictionary(int capacity)
+    {
+        Dictionary = new Dictionary<TKey, TValue>(capacity);
+    }
+
+    public int Count => Dictionary.Count;
+
+    public TValue this[TKey key] => Dictionary[key];
+
+    public void Add(TKey key, TValue value)
+    {
+        lock (syncObject)
         {
-            Dictionary = new Dictionary<TKey, TValue>();
+            Dictionary[key] = value;
+        }
+    }
+
+    public bool Remove(TKey key)
+    {
+        lock (syncObject)
+        {
+            return Dictionary.Remove(key);
+        }
+    }
+
+    public void Clear()
+    {
+        lock (syncObject)
+        {
+            Dictionary.Clear();
+        }
+    }
+
+    public bool ContainsKey(TKey key)
+    {
+        return Dictionary.ContainsKey(key);
+    }
+
+    public bool TryGetValue(TKey key, out TValue value)
+    {
+        return Dictionary.TryGetValue(key, out value);
+    }
+
+    public void ForEach(Action<TValue> action)
+    {
+        lock (syncObject)
+        {
+            foreach (var value in Dictionary.Values)
+                action(value);
+        }
+    }
+
+    public void ForEach(Action<KeyValuePair<TKey, TValue>> action)
+    {
+        lock (syncObject)
+        {
+            foreach (var entry in Dictionary)
+                action(entry);
+        }
+    }
+
+    public TValue FindValue(Predicate<TValue> predicate)
+    {
+        lock (syncObject)
+        {
+            foreach (var value in Dictionary.Values)
+                if (predicate(value))
+                    return value;
         }
 
-        public ThreadSafeDictionary(int capacity)
+        return default;
+    }
+
+    public IList<TValue> FindAll(Predicate<TValue> predicate)
+    {
+        IList<TValue> list = new List<TValue>();
+
+        lock (syncObject)
         {
-            Dictionary = new Dictionary<TKey, TValue>(capacity);
+            foreach (var value in Dictionary.Values)
+                if (predicate(value))
+                    list.Add(value);
         }
 
-        public void Add(TKey key, TValue value)
+        return list;
+    }
+
+    public int RemoveAll(Predicate<TValue> predicate)
+    {
+        IList<TKey> list = new List<TKey>();
+
+        lock (syncObject)
         {
-            lock (syncObject)
-            {
-                Dictionary[key] = value;
-            }
+            foreach (var kvp in Dictionary)
+                if (predicate(kvp.Value))
+                    list.Add(kvp.Key);
+
+            for (var i = 0; i < list.Count; i++)
+                Dictionary.Remove(list[i]);
         }
 
-        public bool Remove(TKey key)
-        {
-            lock (syncObject)
-            {
-                return Dictionary.Remove(key);
-            }
-        }
-
-        public void Clear()
-        {
-            lock (syncObject)
-            {
-                Dictionary.Clear();
-            }
-        }
-
-        public int Count
-        {
-            get { return Dictionary.Count; }
-        }
-
-        public bool ContainsKey(TKey key)
-        {
-            return Dictionary.ContainsKey(key);
-        }
-
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            return Dictionary.TryGetValue(key, out value);
-        }
-
-        public void ForEach(Action<TValue> action)
-        {
-            lock (syncObject)
-            {
-                foreach (TValue value in Dictionary.Values)
-                    action(value);
-            }
-        }
-
-        public void ForEach(Action<KeyValuePair<TKey, TValue>> action)
-        {
-            lock (syncObject)
-            {
-                foreach (KeyValuePair<TKey, TValue> entry in Dictionary)
-                    action(entry);
-            }
-        }
-
-        public TValue FindValue(Predicate<TValue> predicate)
-        {
-            lock (syncObject)
-            {
-                foreach (TValue value in Dictionary.Values)
-                {
-                    if (predicate(value))
-                        return value;
-                }
-            }
-
-            return default(TValue);
-        }
-
-        public IList<TValue> FindAll(Predicate<TValue> predicate)
-        {
-            IList<TValue> list = new List<TValue>();
-
-            lock (syncObject)
-            {
-                foreach (TValue value in Dictionary.Values)
-                {
-                    if (predicate(value))
-                        list.Add(value);
-                }
-            }
-
-            return list;
-        }
-
-        public int RemoveAll(Predicate<TValue> predicate)
-        {
-            IList<TKey> list = new List<TKey>();
-
-            lock (syncObject)
-            {
-                foreach (KeyValuePair<TKey, TValue> kvp in Dictionary)
-                {
-                    if (predicate(kvp.Value))
-                        list.Add(kvp.Key);
-                }
-
-                for (int i = 0; i < list.Count; i++)
-                    Dictionary.Remove(list[i]);
-            }
-
-            return list.Count;
-        }
-
-        public TValue this[TKey key]
-        {
-            get { return Dictionary[key]; }
-        }
+        return list.Count;
     }
 }

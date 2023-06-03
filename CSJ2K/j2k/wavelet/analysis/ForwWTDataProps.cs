@@ -12,10 +12,10 @@
 * 
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -41,72 +41,62 @@
 * 
 * Copyright (c) 1999/2000 JJ2000 Partners.
 * */
-using System;
+
 using CSJ2K.j2k.image;
-using CSJ2K.j2k.wavelet;
-namespace CSJ2K.j2k.wavelet.analysis
+
+namespace CSJ2K.j2k.wavelet.analysis;
+
+/// <summary>
+///     This interface extends the ImgData interface with methods that are
+///     necessary for forward wavelet data (i.e. data that is produced by a forward
+///     wavelet transform).
+/// </summary>
+public interface ForwWTDataProps : ImgData
 {
-	
-	/// <summary> This interface extends the ImgData interface with methods that are
-	/// necessary for forward wavelet data (i.e. data that is produced by a forward
-	/// wavelet transform).  
+	/// <summary>
+	///     Returns the horizontal offset of the code-block partition. Allowable
+	///     values are 0 and 1, nothing else.
 	/// </summary>
-	public interface ForwWTDataProps:ImgData
-	{
-		/// <summary> Returns the horizontal offset of the code-block partition. Allowable
-		/// values are 0 and 1, nothing else.
-		/// 
-		/// </summary>
-		int CbULX
-		{
-			get;
-			
-		}
-		/// <summary> Returns the vertical offset of the code-block partition. Allowable
-		/// values are 0 and 1, nothing else.
-		/// 
-		/// </summary>
-		int CbULY
-		{
-			get;
-			
-		}
-		
-		/// <summary> Returns the reversibility of the given tile-component. Data is
-		/// reversible when it is suitable for lossless and lossy-to-lossless
-		/// compression.
-		/// 
-		/// </summary>
-		/// <param name="t">Tile index
-		/// 
-		/// </param>
-		/// <param name="c">Component index
-		/// 
-		/// </param>
-		/// <returns> true is the data is reversible, false if not.
-		/// 
-		/// </returns>
-		bool isReversible(int t, int c);
-		
-		/// <summary> Returns a reference to the root of subband tree structure representing
-		/// the subband decomposition for the specified tile-component.
-		/// 
-		/// </summary>
-		/// <param name="t">The index of the tile.
-		/// 
-		/// </param>
-		/// <param name="c">The index of the component.
-		/// 
-		/// </param>
-		/// <returns> The root of the subband tree structure, see Subband.
-		/// 
-		/// </returns>
-		/// <seealso cref="SubbandAn">
-		/// 
-		/// </seealso>
-		/// <seealso cref="Subband">
-		/// 
-		/// </seealso>
-		SubbandAn getAnSubbandTree(int t, int c);
-	}
+	int CbULX { get; }
+
+	/// <summary>
+	///     Returns the vertical offset of the code-block partition. Allowable
+	///     values are 0 and 1, nothing else.
+	/// </summary>
+	int CbULY { get; }
+
+	/// <summary>
+	///     Returns the reversibility of the given tile-component. Data is
+	///     reversible when it is suitable for lossless and lossy-to-lossless
+	///     compression.
+	/// </summary>
+	/// <param name="t">
+	///     Tile index
+	/// </param>
+	/// <param name="c">
+	///     Component index
+	/// </param>
+	/// <returns>
+	///     true is the data is reversible, false if not.
+	/// </returns>
+	bool isReversible(int t, int c);
+
+	/// <summary>
+	///     Returns a reference to the root of subband tree structure representing
+	///     the subband decomposition for the specified tile-component.
+	/// </summary>
+	/// <param name="t">
+	///     The index of the tile.
+	/// </param>
+	/// <param name="c">
+	///     The index of the component.
+	/// </param>
+	/// <returns>
+	///     The root of the subband tree structure, see Subband.
+	/// </returns>
+	/// <seealso cref="SubbandAn">
+	/// </seealso>
+	/// <seealso cref="Subband">
+	/// </seealso>
+	SubbandAn getAnSubbandTree(int t, int c);
 }

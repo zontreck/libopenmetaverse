@@ -12,10 +12,10 @@
 *
 * COPYRIGHT:
 * 
-* This software module was originally developed by Raphaël Grosbois and
+* This software module was originally developed by Raphaï¿½l Grosbois and
 * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
-* Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
-* Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+* Askelï¿½f (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+* Bouchard, Fï¿½lix Henry, Gerard Mozelle and Patrice Onno (Canon Research
 * Centre France S.A) in the course of development of the JPEG2000
 * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
 * software module is an implementation of a part of the JPEG 2000
@@ -44,37 +44,32 @@
 * 
 * 
 */
+
 using System;
-namespace CSJ2K.j2k.util
+
+namespace CSJ2K.j2k.util;
+
+/// <summary>
+///     Thrown to indicate that the application has attempted to parse a
+///     badly formatted string.
+/// </summary>
+[Serializable]
+public class StringFormatException : ArgumentException
 {
-	
-	/// <summary> Thrown to indicate that the application has attempted to parse a
-	/// badly formatted string.
-	/// 
+	/// <summary>
+	///     Creates the exception with an empty messgage.
 	/// </summary>
-	[Serializable]
-	public class StringFormatException:System.ArgumentException
-	{
-		
-		/// <summary> Creates the exception with an empty messgage.
-		/// 
-		/// 
-		/// 
-		/// </summary>
-		public StringFormatException():base()
-		{
-		}
-		
-		/// <summary> Creates the exception with the specified detail message.
-		/// 
-		/// </summary>
-		/// <param name="s">The detail message
-		/// 
-		/// 
-		/// 
-		/// </param>
-		public StringFormatException(System.String s):base(s)
-		{
-		}
-	}
+	public StringFormatException()
+    {
+    }
+
+	/// <summary>
+	///     Creates the exception with the specified detail message.
+	/// </summary>
+	/// <param name="s">
+	///     The detail message
+	/// </param>
+	public StringFormatException(string s) : base(s)
+    {
+    }
 }

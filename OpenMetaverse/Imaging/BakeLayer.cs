@@ -28,7 +28,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
-using System.Drawing;
+using IronSoftware.Drawing;
 using OpenMetaverse.Assets;
 using log4net;
 
@@ -340,7 +340,7 @@ namespace OpenMetaverse.Imaging
         {
             try
             {
-                Bitmap bitmap = null;
+                AnyBitmap bitmap = null;
                 lock (ResourceSync)
                 {
                     using (Stream stream = Helpers.GetResourceStream(fileName, Settings.RESOURCE_DIR))

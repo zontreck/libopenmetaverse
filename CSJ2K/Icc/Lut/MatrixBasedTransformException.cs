@@ -6,37 +6,38 @@
 /// $Date $
 /// ***************************************************************************
 /// </summary>
+
 using System;
-namespace CSJ2K.Icc.Lut
+
+namespace CSJ2K.Icc.Lut;
+
+/// <summary>
+///     Thrown by MatrixBasedTransformTosRGB
+/// </summary>
+/// <seealso cref="jj2000.j2k.icc.lut.MatrixBasedTransformTosRGB">
+/// </seealso>
+/// <version>
+///     1.0
+/// </version>
+/// <author>
+///     Bruce A. Kern
+/// </author>
+[Serializable]
+public class MatrixBasedTransformException : Exception
 {
-	
-	/// <summary> Thrown by MatrixBasedTransformTosRGB
-	/// 
-	/// </summary>
-	/// <seealso cref="jj2000.j2k.icc.lut.MatrixBasedTransformTosRGB">
-	/// </seealso>
-	/// <version> 	1.0
-	/// </version>
-	/// <author> 	Bruce A. Kern
-	/// </author>
-	
-	[Serializable]
-	public class MatrixBasedTransformException:System.Exception
-	{
-		
-		/// <summary> Contruct with message</summary>
-		/// <param name="msg">returned by getMessage()
-		/// </param>
-		internal MatrixBasedTransformException(System.String msg):base(msg)
-		{
-		}
-		
-		
-		/// <summary> Empty constructor</summary>
-		internal MatrixBasedTransformException()
-		{
-		}
-		
-		/* end class MatrixBasedTransformException */
-	}
+	/// <summary> Contruct with message</summary>
+	/// <param name="msg">
+	///     returned by getMessage()
+	/// </param>
+	internal MatrixBasedTransformException(string msg) : base(msg)
+    {
+    }
+
+
+    /// <summary> Empty constructor</summary>
+    internal MatrixBasedTransformException()
+    {
+    }
+
+    /* end class MatrixBasedTransformException */
 }
