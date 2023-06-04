@@ -56,22 +56,22 @@ namespace CSJ2K.j2k;
 [Serializable]
 public class NoNextElementException : SystemException
 {
-	/// <summary>
-	///     Constructs a new <tt>NoNextElementException</tt> exception with no
-	///     detail message.
-	/// </summary>
-	public NoNextElementException()
+    /// <summary>
+    ///     Constructs a new <tt>NoNextElementException</tt> exception with no
+    ///     detail message.
+    /// </summary>
+    public NoNextElementException()
     {
     }
 
-	/// <summary>
-	///     Constructs a new <tt>NoNextElementException</tt> exception with
-	///     the specified detail message.
-	/// </summary>
-	/// <param name="s">
-	///     The detail message.
-	/// </param>
-	public NoNextElementException(string s) : base(s)
+    /// <summary>
+    ///     Constructs a new <tt>NoNextElementException</tt> exception with
+    ///     the specified detail message.
+    /// </summary>
+    /// <param name="s">
+    ///     The detail message.
+    /// </param>
+    public NoNextElementException(string s) : base(s)
     {
     }
 }

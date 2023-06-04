@@ -54,55 +54,55 @@ namespace CSJ2K.j2k;
 /// </seealso>
 public class StringSpec : ModuleSpec
 {
-	/// <summary>
-	///     Constructs an empty 'StringSpec' with specified number of
-	///     tile and components. This constructor is called by the decoder.
-	/// </summary>
-	/// <param name="nt">
-	///     Number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     Number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	public StringSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs an empty 'StringSpec' with specified number of
+    ///     tile and components. This constructor is called by the decoder.
+    /// </summary>
+    /// <param name="nt">
+    ///     Number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     Number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    public StringSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
     }
 
-	/// <summary>
-	///     Constructs a new 'StringSpec' for the specified number of
-	///     components:tiles and the arguments of <tt>optName</tt>
-	///     option. This constructor is called by the encoder. It also
-	///     checks that the arguments belongs to the recognized arguments
-	///     list.
-	///     <P>
-	///         <u>Note:</u> The arguments must not start with 't' or 'c'
-	///         since it is reserved for respectively tile and components
-	///         indexes specification.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	/// <param name="name">
-	///     of the option using boolean spec.
-	/// </param>
-	/// <param name="list">
-	///     The list of all recognized argument in a String array
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList
-	/// </param>
-	public StringSpec(int nt, int nc, byte type, string optName, string[] list, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs a new 'StringSpec' for the specified number of
+    ///     components:tiles and the arguments of <tt>optName</tt>
+    ///     option. This constructor is called by the encoder. It also
+    ///     checks that the arguments belongs to the recognized arguments
+    ///     list.
+    ///     <P>
+    ///         <u>Note:</u> The arguments must not start with 't' or 'c'
+    ///         since it is reserved for respectively tile and components
+    ///         indexes specification.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    /// <param name="name">
+    ///     of the option using boolean spec.
+    /// </param>
+    /// <param name="list">
+    ///     The list of all recognized argument in a String array
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList
+    /// </param>
+    public StringSpec(int nt, int nc, byte type, string optName, string[] list, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter(optName);
         var recognized = false;

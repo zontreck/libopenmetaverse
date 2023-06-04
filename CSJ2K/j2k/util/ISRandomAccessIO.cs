@@ -85,6 +85,13 @@ namespace CSJ2K.j2k.util;
 /// </summary>
 public class ISRandomAccessIO : RandomAccessIO
 {
+    /* The increment, in bytes, for the in-memory buffer size */
+    private readonly int inc;
+
+    /* Tha maximum size, in bytes, of the in memory buffer. The maximum size
+    * includes the EOF. */
+    private readonly int maxsize;
+
     /* The in-memory buffer to cache received data */
     private byte[] buf;
 
@@ -92,18 +99,11 @@ public class ISRandomAccessIO : RandomAccessIO
     * has been reached. */
     private bool complete;
 
-    /* The increment, in bytes, for the in-memory buffer size */
-    private readonly int inc;
-
     /// <summary>The InputStream that is wrapped </summary>
     private Stream is_Renamed;
 
     /* The length of the already received data */
     private int len;
-
-    /* Tha maximum size, in bytes, of the in memory buffer. The maximum size
-    * includes the EOF. */
-    private readonly int maxsize;
 
     /* The position of the next byte to be read from the in-memory buffer */
     private int pos;

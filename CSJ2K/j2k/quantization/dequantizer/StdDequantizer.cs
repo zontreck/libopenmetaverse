@@ -88,6 +88,12 @@ public class StdDequantizer : Dequantizer
     /// <summary>The number of guard bits spec </summary>
     private readonly GuardBitsSpec gbs;
 
+    /// <summary>The quantizer step sizes  spec </summary>
+    private readonly QuantStepSizeSpec qsss;
+
+    /// <summary>The quantizer type spec </summary>
+    private readonly QuantTypeSpec qts;
+
     /// <summary>The decoding parameters of the dequantizer </summary>
     //private StdDequantizerParams params_Renamed;
 
@@ -99,12 +105,6 @@ public class StdDequantizer : Dequantizer
 
     /// <summary>Type of the current output data </summary>
     private int outdtype;
-
-    /// <summary>The quantizer step sizes  spec </summary>
-    private readonly QuantStepSizeSpec qsss;
-
-    /// <summary>The quantizer type spec </summary>
-    private readonly QuantTypeSpec qts;
 
     /// <summary>
     ///     Initializes the source of compressed data. And sets the number of range

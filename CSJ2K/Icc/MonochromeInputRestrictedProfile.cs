@@ -23,36 +23,36 @@ namespace CSJ2K.Icc;
 /// </author>
 public class MonochromeInputRestrictedProfile : RestrictedICCProfile
 {
-	/// <summary> Construct a 1 component RestrictedICCProfile</summary>
-	/// <param name="c">
-	///     Gray TRC curve
-	/// </param>
-	private MonochromeInputRestrictedProfile(ICCCurveType c) : base(c)
+    /// <summary> Construct a 1 component RestrictedICCProfile</summary>
+    /// <param name="c">
+    ///     Gray TRC curve
+    /// </param>
+    private MonochromeInputRestrictedProfile(ICCCurveType c) : base(c)
     {
     }
 
-	/// <summary> Get the type of RestrictedICCProfile for this object</summary>
-	/// <returns>
-	///     kMonochromeInput
-	/// </returns>
-	public override int Type => kMonochromeInput;
+    /// <summary> Get the type of RestrictedICCProfile for this object</summary>
+    /// <returns>
+    ///     kMonochromeInput
+    /// </returns>
+    public override int Type => kMonochromeInput;
 
-	/// <summary> Factory method which returns a 1 component RestrictedICCProfile</summary>
-	/// <param name="c">
-	///     Gray TRC curve
-	/// </param>
-	/// <returns>
-	///     the RestrictedICCProfile
-	/// </returns>
-	public new static RestrictedICCProfile createInstance(ICCCurveType c)
+    /// <summary> Factory method which returns a 1 component RestrictedICCProfile</summary>
+    /// <param name="c">
+    ///     Gray TRC curve
+    /// </param>
+    /// <returns>
+    ///     the RestrictedICCProfile
+    /// </returns>
+    public new static RestrictedICCProfile createInstance(ICCCurveType c)
     {
         return new MonochromeInputRestrictedProfile(c);
     }
 
-	/// <returns>
-	///     String representation of a MonochromeInputRestrictedProfile
-	/// </returns>
-	public override string ToString()
+    /// <returns>
+    ///     String representation of a MonochromeInputRestrictedProfile
+    /// </returns>
+    public override string ToString()
     {
         var rep = new StringBuilder("Monochrome Input Restricted ICC profile" + eol);
 

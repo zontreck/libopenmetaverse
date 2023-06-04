@@ -25,11 +25,11 @@ namespace CSJ2K.Icc.Lut;
 [Serializable]
 public class MatrixBasedTransformException : Exception
 {
-	/// <summary> Contruct with message</summary>
-	/// <param name="msg">
-	///     returned by getMessage()
-	/// </param>
-	internal MatrixBasedTransformException(string msg) : base(msg)
+    /// <summary> Contruct with message</summary>
+    /// <param name="msg">
+    ///     returned by getMessage()
+    /// </param>
+    internal MatrixBasedTransformException(string msg) : base(msg)
     {
     }
 

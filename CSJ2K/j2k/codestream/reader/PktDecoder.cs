@@ -64,23 +64,11 @@ public class PktDecoder
     /// <summary>The wrapper to read bits for the packet heads </summary>
     private readonly PktHeaderBitReader bin;
 
-    /// <summary>
-    ///     List of code-blocks found in last read packet head (one list
-    ///     per subband)
-    /// </summary>
-    private ArrayList[] cblks;
-
-    /// <summary>The component in which the ncb quit condition was reached </summary>
-    private int cQuit;
-
     /// <summary>Reference to decoder specifications </summary>
     private readonly DecoderSpecs decSpec;
 
     /// <summary>Reference to the stream where to read from </summary>
     private readonly RandomAccessIO ehs;
-
-    /// <summary>Whether or not EPH marker are used </summary>
-    private bool ephUsed;
 
     /// <summary>Reference to the HeaderDecoder </summary>
     private readonly HeaderDecoder hd;
@@ -96,6 +84,27 @@ public class PktDecoder
     private readonly bool isTruncMode;
 
     /// <summary>
+    ///     Maximum number of codeblocks to read before ncb quit condition is
+    ///     reached
+    /// </summary>
+    private readonly int maxCB;
+
+    /// <summary>Reference to the codestream reader agent </summary>
+    private readonly BitstreamReaderAgent src;
+
+    /// <summary>
+    ///     List of code-blocks found in last read packet head (one list
+    ///     per subband)
+    /// </summary>
+    private ArrayList[] cblks;
+
+    /// <summary>The component in which the ncb quit condition was reached </summary>
+    private int cQuit;
+
+    /// <summary>Whether or not EPH marker are used </summary>
+    private bool ephUsed;
+
+    /// <summary>
     ///     Lblock value used to read code size information in each packet head:
     ///     <ul>
     ///         <li> 1st dim: component index.</li>
@@ -105,12 +114,6 @@ public class PktDecoder
     ///     </ul>
     /// </summary>
     private int[][][][][] lblock;
-
-    /// <summary>
-    ///     Maximum number of codeblocks to read before ncb quit condition is
-    ///     reached
-    /// </summary>
-    private readonly int maxCB;
 
     /// <summary>The number of components </summary>
     private int nc;
@@ -163,9 +166,6 @@ public class PktDecoder
 
     /// <summary>The subband in which the ncb quit condition was reached </summary>
     private int sQuit;
-
-    /// <summary>Reference to the codestream reader agent </summary>
-    private readonly BitstreamReaderAgent src;
 
     /// <summary>Index of the current tile </summary>
     private int tIdx;

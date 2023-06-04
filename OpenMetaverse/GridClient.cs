@@ -24,124 +24,144 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
+using OpenMetaverse.Stats;
+using Type = System.Type;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     Main class to expose grid functionality to clients. All of the
+///     classes needed for sending and receiving data are accessible through
+///     this class.
+/// </summary>
+/// <example>
+///     <code>
+/// // Example minimum code required to instantiate class and 
+/// // connect to a simulator.
+/// using System;
+/// using System.Collections.Generic;
+/// using System.Text;
+/// using OpenMetaverse;
+/// 
+/// namespace FirstBot
+/// {
+///     class Bot
+///     {
+///         public static GridClient Client;
+///         static void Main(string[] args)
+///         {
+///             Client = new GridClient(); // instantiates the GridClient class
+///                                        // to the global Client object
+///             // Login to Simulator
+///             Client.Network.Login("FirstName", "LastName", "Password", "FirstBot", "1.0");
+///             // Wait for a Keypress
+///             Console.ReadLine();
+///             // Logout of simulator
+///             Client.Network.Logout();
+///         }
+///     }
+/// }
+/// </code>
+/// </example>
+public class GridClient
 {
+    /// <summary>Appearance subsystem</summary>
+    public AppearanceManager Appearance;
+
+    /// <summary>Asset subsystem</summary>
+    public AssetManager Assets;
+
+    /// <summary>Other avatars subsystem</summary>
+    public AvatarManager Avatars;
+
     /// <summary>
-    /// Main class to expose grid functionality to clients. All of the
-    /// classes needed for sending and receiving data are accessible through 
-    /// this class.
+    ///     Directory searches including classifieds, people, land
+    ///     sales, etc
     /// </summary>
-    /// <example>
-    /// <code>
-    /// // Example minimum code required to instantiate class and 
-    /// // connect to a simulator.
-    /// using System;
-    /// using System.Collections.Generic;
-    /// using System.Text;
-    /// using OpenMetaverse;
-    /// 
-    /// namespace FirstBot
-    /// {
-    ///     class Bot
-    ///     {
-    ///         public static GridClient Client;
-    ///         static void Main(string[] args)
-    ///         {
-    ///             Client = new GridClient(); // instantiates the GridClient class
-    ///                                        // to the global Client object
-    ///             // Login to Simulator
-    ///             Client.Network.Login("FirstName", "LastName", "Password", "FirstBot", "1.0");
-    ///             // Wait for a Keypress
-    ///             Console.ReadLine();
-    ///             // Logout of simulator
-    ///             Client.Network.Logout();
-    ///         }
-    ///     }
-    /// }
-    /// </code>
-    /// </example>
-    public class GridClient
+    public DirectoryManager Directory;
+
+    /// <summary>Estate subsystem</summary>
+    public EstateTools Estate;
+
+    /// <summary>Friends list subsystem</summary>
+    public FriendsManager Friends;
+
+    /// <summary>Grid (aka simulator group) subsystem</summary>
+    public GridManager Grid;
+
+    /// <summary>Group subsystem</summary>
+    public GroupManager Groups;
+
+    /// <summary>Inventory subsystem</summary>
+    public InventoryManager Inventory;
+
+    /// <summary>Networking subsystem</summary>
+    public NetworkManager Network;
+
+    /// <summary>Object subsystem</summary>
+    public ObjectManager Objects;
+
+    /// <summary>Parcel (subdivided simulator lots) subsystem</summary>
+    public ParcelManager Parcels;
+
+    /// <summary>Our own avatars subsystem</summary>
+    public AgentManager Self;
+
+    /// <summary>
+    ///     Settings class including constant values and changeable
+    ///     parameters for everything
+    /// </summary>
+    public Settings Settings;
+
+    /// <summary>Handles sound-related networking</summary>
+    public SoundManager Sound;
+
+    public UtilizationStatistics Stats;
+
+    /// <summary>Handles land, wind, and cloud heightmaps</summary>
+    public TerrainManager Terrain;
+
+    /// <summary>
+    ///     Throttling total bandwidth usage, or allocating bandwidth
+    ///     for specific data stream types
+    /// </summary>
+    public AgentThrottle Throttle;
+
+    /// <summary>
+    ///     Default constructor
+    /// </summary>
+    public GridClient()
     {
-        /// <summary>Networking subsystem</summary>
-        public NetworkManager Network;
-        /// <summary>Settings class including constant values and changeable
-        /// parameters for everything</summary>
-        public Settings Settings;
-        /// <summary>Parcel (subdivided simulator lots) subsystem</summary>
-        public ParcelManager Parcels;
-        /// <summary>Our own avatars subsystem</summary>
-        public AgentManager Self;
-        /// <summary>Other avatars subsystem</summary>
-        public AvatarManager Avatars;
-        /// <summary>Estate subsystem</summary>
-        public EstateTools Estate;
-        /// <summary>Friends list subsystem</summary>
-        public FriendsManager Friends;
-        /// <summary>Grid (aka simulator group) subsystem</summary>
-        public GridManager Grid;
-        /// <summary>Object subsystem</summary>
-        public ObjectManager Objects;
-        /// <summary>Group subsystem</summary>
-        public GroupManager Groups;
-        /// <summary>Asset subsystem</summary>
-        public AssetManager Assets;
-        /// <summary>Appearance subsystem</summary>
-        public AppearanceManager Appearance;
-        /// <summary>Inventory subsystem</summary>
-        public InventoryManager Inventory;
-        /// <summary>Directory searches including classifieds, people, land 
-        /// sales, etc</summary>
-        public DirectoryManager Directory;
-        /// <summary>Handles land, wind, and cloud heightmaps</summary>
-        public TerrainManager Terrain;
-        /// <summary>Handles sound-related networking</summary>
-        public SoundManager Sound;
-        /// <summary>Throttling total bandwidth usage, or allocating bandwidth
-        /// for specific data stream types</summary>
-        public AgentThrottle Throttle;
+        // Initialise SmartThreadPool when using mono
+        if (Type.GetType("Mono.Runtime") != null) WorkPool.Init(true);
 
-        public Stats.UtilizationStatistics Stats;
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public GridClient()
-        {
-            // Initialise SmartThreadPool when using mono
-            if (Type.GetType("Mono.Runtime") != null)
-            {
-                WorkPool.Init(true);
-            }
+        // These are order-dependant
+        Network = new NetworkManager(this);
+        Settings = new Settings(this);
+        Parcels = new ParcelManager(this);
+        Self = new AgentManager(this);
+        Avatars = new AvatarManager(this);
+        Estate = new EstateTools(this);
+        Friends = new FriendsManager(this);
+        Grid = new GridManager(this);
+        Objects = new ObjectManager(this);
+        Groups = new GroupManager(this);
+        Assets = new AssetManager(this);
+        Appearance = new AppearanceManager(this);
+        Inventory = new InventoryManager(this);
+        Directory = new DirectoryManager(this);
+        Terrain = new TerrainManager(this);
+        Sound = new SoundManager(this);
+        Throttle = new AgentThrottle(this);
+        Stats = new UtilizationStatistics();
+    }
 
-            // These are order-dependant
-            Network = new NetworkManager(this);
-            Settings = new Settings(this);
-            Parcels = new ParcelManager(this);
-            Self = new AgentManager(this);
-            Avatars = new AvatarManager(this);
-            Estate = new EstateTools(this);
-            Friends = new FriendsManager(this);
-            Grid = new GridManager(this);
-            Objects = new ObjectManager(this);
-            Groups = new GroupManager(this);
-            Assets = new AssetManager(this);
-            Appearance = new AppearanceManager(this);
-            Inventory = new InventoryManager(this);
-            Directory = new DirectoryManager(this);
-            Terrain = new TerrainManager(this);
-            Sound = new SoundManager(this);
-            Throttle = new AgentThrottle(this);
-            Stats = new OpenMetaverse.Stats.UtilizationStatistics();            
-        }
-
-        /// <summary>
-        /// Return the full name of this instance
-        /// </summary>
-        /// <returns>Client avatars full name</returns>
-        public override string ToString()
-        {
-            return Self.Name;
-        }
+    /// <summary>
+    ///     Return the full name of this instance
+    /// </summary>
+    /// <returns>Client avatars full name</returns>
+    public override string ToString()
+    {
+        return Self.Name;
     }
 }

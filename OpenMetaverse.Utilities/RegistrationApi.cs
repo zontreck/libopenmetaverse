@@ -37,12 +37,12 @@ namespace OpenMetaverse;
 public class RegistrationApi
 {
     private const int REQUEST_TIMEOUT = 1000 * 100;
-    private RegistrationCaps _caps;
     private readonly Dictionary<int, string> _errors = new();
-    private int _initializing;
     private readonly List<LastName> _lastNames = new();
 
     private readonly UserInfo _userInfo;
+    private RegistrationCaps _caps;
+    private int _initializing;
 
     public RegistrationApi(string firstName, string lastName, string password)
     {

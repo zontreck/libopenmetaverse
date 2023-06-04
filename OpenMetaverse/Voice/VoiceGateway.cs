@@ -505,7 +505,7 @@ public partial class VoiceGateway
         StopDaemon();
         daemonLoopSignal.Set();
 
-        var thread = new Thread(()=>
+        var thread = new Thread(() =>
         {
             while (daemonLoopSignal.WaitOne(500, false))
             {

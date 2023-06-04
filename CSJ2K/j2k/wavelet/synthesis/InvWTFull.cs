@@ -83,15 +83,6 @@ namespace CSJ2K.j2k.wavelet.synthesis;
 /// </seealso>
 public class InvWTFull : InverseWT
 {
-    /// <summary>The total number of code-blocks to decode </summary>
-    private int cblkToDecode;
-
-    /// <summary>Current data type </summary>
-    private int dtype;
-
-    /// <summary>The number of already decoded code-blocks </summary>
-    private int nDecCblk;
-
     /// <summary>Number of decomposition levels in each component </summary>
     private readonly int[] ndl;
 
@@ -111,6 +102,15 @@ public class InvWTFull : InverseWT
 
     /// <summary>the code-block buffer's source i.e. the quantizer </summary>
     private readonly CBlkWTDataSrcDec src;
+
+    /// <summary>The total number of code-blocks to decode </summary>
+    private int cblkToDecode;
+
+    /// <summary>Current data type </summary>
+    private int dtype;
+
+    /// <summary>The number of already decoded code-blocks </summary>
+    private int nDecCblk;
     //private bool[][] reversible;
 
     /// <summary>

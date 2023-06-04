@@ -87,13 +87,13 @@ namespace CSJ2K.j2k.wavelet.analysis;
 /// </seealso>
 public abstract class CBlkWTData
 {
-	/// <summary>
-	///     The value by which the absolute value of the data has to be divided in
-	///     order to get the real absolute value. This value is useful to obtain
-	///     the complement of 2 representation of a coefficient that is currently
-	///     using the sign-magnitude representation.
-	/// </summary>
-	public double convertFactor = 1.0;
+    /// <summary>
+    ///     The value by which the absolute value of the data has to be divided in
+    ///     order to get the real absolute value. This value is useful to obtain
+    ///     the complement of 2 representation of a coefficient that is currently
+    ///     using the sign-magnitude representation.
+    /// </summary>
+    public double convertFactor = 1.0;
 
     /// <summary>The height of the code-block </summary>
     public int h;

@@ -71,6 +71,21 @@ namespace CSJ2K.j2k.io;
 /// </seealso>
 public abstract class BufferedRandomAccessFile : RandomAccessIO, EndianType
 {
+    /// <summary>The name of the current file </summary>
+    private readonly string fileName;
+
+    /// <summary>
+    ///     Whether the opened file is read only or not (defined by the constructor
+    ///     arguments)
+    /// </summary>
+    private readonly bool isReadOnly = true;
+
+    /// <summary>
+    ///     The RandomAccessFile associated with the buffer
+    /// </summary>
+    //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
+    private readonly FileStream theFile;
+
     /* The endianess of the class */
     protected internal int byte_Ordering;
 
@@ -86,19 +101,10 @@ public abstract class BufferedRandomAccessFile : RandomAccessIO, EndianType
     /// </summary>
     protected internal bool byteBufferChanged;
 
-    /// <summary>The name of the current file </summary>
-    private readonly string fileName;
-
     /// <summary>
     ///     Whether the end of the file is in the current buffer or not
     /// </summary>
     protected internal bool isEOFInBuffer;
-
-    /// <summary>
-    ///     Whether the opened file is read only or not (defined by the constructor
-    ///     arguments)
-    /// </summary>
-    private readonly bool isReadOnly = true;
 
     /// <summary>
     ///     The maximum number of bytes that can be read from the buffer
@@ -115,12 +121,6 @@ public abstract class BufferedRandomAccessFile : RandomAccessIO, EndianType
     ///     The current position in the byte-buffer
     /// </summary>
     protected internal int position;
-
-    /// <summary>
-    ///     The RandomAccessFile associated with the buffer
-    /// </summary>
-    //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
-    private readonly FileStream theFile;
 
     /// <summary>
     ///     Constructor. Always needs a size for the buffer.

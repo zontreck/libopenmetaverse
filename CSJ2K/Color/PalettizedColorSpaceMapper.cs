@@ -30,10 +30,10 @@ namespace CSJ2K.Color;
 /// </author>
 public class PalettizedColorSpaceMapper : ColorSpaceMapper
 {
-    internal int[] outShiftValueArray;
-
     /// <summary>Access to the palette box information. </summary>
     private readonly PaletteBox pbox;
+
+    internal int[] outShiftValueArray;
 
     internal int srcChannel = 0;
 

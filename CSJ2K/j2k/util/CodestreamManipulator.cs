@@ -58,49 +58,21 @@ public class CodestreamManipulator
     /// <summary>The length of a SOT plus a SOD marker </summary>
     private static readonly int TP_HEAD_LEN = 14;
 
-    /// <summary>The main header </summary>
-    private byte[] mainHeader;
-
-    /// <summary>The maximum number of a tile part index (TPsot) </summary>
-    //private static int MAX_TPSOT = 16;
-
-    /// <summary>The maximum number of tile parts in any tile </summary>
-    private int maxtp;
-
     /// <summary>The number of tiles in the image </summary>
     private readonly int nt;
 
     /// <summary>The name of the outfile </summary>
     private readonly string outname;
 
-    /// <summary>Buffers containing the packet data </summary>
-    private byte[][][] packetData;
-
-    /// <summary>Buffers contaning the packet headers </summary>
-    private byte[][][] packetHeaders;
-
-    /// <summary>The positions of the SOT, SOP and EPH markers </summary>
-    private int[] positions;
-
     /// <summary>
     ///     Flag indicating whether packed packet headers in main header is used
     /// </summary>
     private readonly bool ppmUsed;
 
-    /// <summary>The number of packets per tile </summary>
-    //UPGRADE_NOTE: The initialization of  'ppt' was moved to method 'InitBlock'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1005'"
-    private int[] ppt;
-
-    /// <summary>The number of packets per tile-part </summary>
-    private int pptp;
-
     /// <summary>
     ///     Flag indicating whether packed packet headers in tile headers is used
     /// </summary>
     private readonly bool pptUsed;
-
-    /// <summary>Buffers containing the SOP marker segments </summary>
-    private byte[][][] sopMarkSeg;
 
     /// <summary>
     ///     Flag indicating whether EPH marker was only intended for parsing in
@@ -113,6 +85,34 @@ public class CodestreamManipulator
     ///     This class and should be removed
     /// </summary>
     private readonly bool tempSop;
+
+    /// <summary>The main header </summary>
+    private byte[] mainHeader;
+
+    /// <summary>The maximum number of a tile part index (TPsot) </summary>
+    //private static int MAX_TPSOT = 16;
+
+    /// <summary>The maximum number of tile parts in any tile </summary>
+    private int maxtp;
+
+    /// <summary>Buffers containing the packet data </summary>
+    private byte[][][] packetData;
+
+    /// <summary>Buffers contaning the packet headers </summary>
+    private byte[][][] packetHeaders;
+
+    /// <summary>The positions of the SOT, SOP and EPH markers </summary>
+    private int[] positions;
+
+    /// <summary>The number of packets per tile </summary>
+    //UPGRADE_NOTE: The initialization of  'ppt' was moved to method 'InitBlock'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1005'"
+    private int[] ppt;
+
+    /// <summary>The number of packets per tile-part </summary>
+    private int pptp;
+
+    /// <summary>Buffers containing the SOP marker segments </summary>
+    private byte[][][] sopMarkSeg;
 
     /// <summary>Buffers containing the original tile headers </summary>
     private byte[][] tileHeaders;

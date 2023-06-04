@@ -92,6 +92,9 @@ public abstract class Dequantizer : MultiResImgDataAdapter, CBlkWTDataSrcDec
     /// <summary>The inverse component transformation specifications </summary>
     private readonly CompTransfSpec cts;
 
+    /// <summary>Reference to the wavelet filter specifications </summary>
+    private readonly SynWTFilterSpec wfs;
+
     /// <summary>The "range bits" for each transformed component </summary>
     protected internal int[] rb;
 
@@ -103,9 +106,6 @@ public abstract class Dequantizer : MultiResImgDataAdapter, CBlkWTDataSrcDec
 
     /// <summary>The "range bits" for each un-transformed component </summary>
     protected internal int[] utrb;
-
-    /// <summary>Reference to the wavelet filter specifications </summary>
-    private readonly SynWTFilterSpec wfs;
 
     /// <summary>
     ///     Initializes the source of compressed data.

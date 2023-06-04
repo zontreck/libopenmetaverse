@@ -64,12 +64,12 @@ namespace CSJ2K.j2k.wavelet.synthesis;
 /// </summary>
 public class SubbandSyn : Subband
 {
-	/// <summary>
-	///     The horizontal analysis filter used to recompose this subband, from
-	///     its childs. This is applicable to "node" elements only. The default
-	///     value is null.
-	/// </summary>
-	public SynWTFilter hFilter;
+    /// <summary>
+    ///     The horizontal analysis filter used to recompose this subband, from
+    ///     its childs. This is applicable to "node" elements only. The default
+    ///     value is null.
+    /// </summary>
+    public SynWTFilter hFilter;
 
     /// <summary>The number of magnitude bits </summary>
     public int magbits = 0;

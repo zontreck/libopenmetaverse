@@ -63,11 +63,11 @@ namespace CSJ2K.j2k.image.output;
 /// </summary>
 public abstract class ImgWriter
 {
-	/// <summary>
-	///     The defaukt height used when writing strip by strip in the 'write()'
-	///     method. It is 64.
-	/// </summary>
-	public const int DEF_STRIP_HEIGHT = 64;
+    /// <summary>
+    ///     The defaukt height used when writing strip by strip in the 'write()'
+    ///     method. It is 64.
+    /// </summary>
+    public const int DEF_STRIP_HEIGHT = 64;
 
     /// <summary>The height of the image </summary>
     protected internal int h;

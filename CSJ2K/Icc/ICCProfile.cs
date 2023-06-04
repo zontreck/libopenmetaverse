@@ -181,12 +181,13 @@ public abstract class ICCProfile
     //UPGRADE_NOTE: Final was removed from the declaration of 'kdwProfileDescTag '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     public static readonly int kdwProfileDescTag;
 
+    private readonly byte[] profile;
+
 
     private ICCProfileHeader header;
 
     //private byte[] data = null;
     private ParameterList pl;
-    private readonly byte[] profile;
     private ICCTagTable tags;
 
 

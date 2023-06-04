@@ -43,18 +43,18 @@ namespace CSJ2K.j2k.util;
 
 public interface ProgressWatch
 {
-	/// <summary>
-	///     Initialize the progress watching process
-	/// </summary>
-	void initProgressWatch(int min, int max, string info);
+    /// <summary>
+    ///     Initialize the progress watching process
+    /// </summary>
+    void initProgressWatch(int min, int max, string info);
 
-	/// <summary>
-	///     Update the progress watching process to the specified value
-	/// </summary>
-	void updateProgressWatch(int val, string info);
+    /// <summary>
+    ///     Update the progress watching process to the specified value
+    /// </summary>
+    void updateProgressWatch(int val, string info);
 
-	/// <summary>
-	///     Terminate the progress watch process
-	/// </summary>
-	void terminateProgressWatch();
+    /// <summary>
+    ///     Terminate the progress watch process
+    /// </summary>
+    void terminateProgressWatch();
 }

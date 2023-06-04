@@ -98,119 +98,119 @@ public interface CBlkWTDataSrcDec : InvWTData
 	/// </seealso>
 	int getNomRangeBits(int c);
 
-	/// <summary>
-	///     Returns the position of the fixed point in the specified component, or
-	///     equivalently the number of fractional bits. This is the position of the
-	///     least significant integral (i.e. non-fractional) bit, which is
-	///     equivalent to the number of fractional bits. For instance, for
-	///     fixed-point values with 2 fractional bits, 2 is returned. For
-	///     floating-point data this value does not apply and 0 should be
-	///     returned. Position 0 is the position of the least significant bit in
-	///     the data.
-	/// </summary>
-	/// <param name="c">
-	///     The index of the component.
-	/// </param>
-	/// <returns>
-	///     The position of the fixed-point, which is the same as the
-	///     number of fractional bits. For floating-point data 0 is returned.
-	/// </returns>
-	int getFixedPoint(int c);
+    /// <summary>
+    ///     Returns the position of the fixed point in the specified component, or
+    ///     equivalently the number of fractional bits. This is the position of the
+    ///     least significant integral (i.e. non-fractional) bit, which is
+    ///     equivalent to the number of fractional bits. For instance, for
+    ///     fixed-point values with 2 fractional bits, 2 is returned. For
+    ///     floating-point data this value does not apply and 0 should be
+    ///     returned. Position 0 is the position of the least significant bit in
+    ///     the data.
+    /// </summary>
+    /// <param name="c">
+    ///     The index of the component.
+    /// </param>
+    /// <returns>
+    ///     The position of the fixed-point, which is the same as the
+    ///     number of fractional bits. For floating-point data 0 is returned.
+    /// </returns>
+    int getFixedPoint(int c);
 
-	/// <summary>
-	///     Returns the specified code-block in the current tile for the specified
-	///     component, as a copy (see below).
-	///     <p>
-	///         The returned code-block may be progressive, which is indicated by
-	///         the 'progressive' variable of the returned 'DataBlk' object. If a
-	///         code-block is progressive it means that in a later request to this
-	///         method for the same code-block it is possible to retrieve data which is
-	///         a better approximation, since meanwhile more data to decode for the
-	///         code-block could have been received. If the code-block is not
-	///         progressive then later calls to this method for the same code-block
-	///         will return the exact same data values.
-	///     </p>
-	///     <p>
-	///         The data returned by this method is always a copy of the internal
-	///         data of this object, if any, and it can be modified "in place" without
-	///         any problems after being returned. The 'offset' of the returned data is
-	///         0, and the 'scanw' is the same as the code-block width. See the
-	///         'DataBlk' class.
-	///     </p>
-	/// </summary>
-	/// <param name="c">
-	///     The component for which to return the next code-block.
-	/// </param>
-	/// <param name="m">
-	///     The vertical index of the code-block to return,
-	///     in the specified subband.
-	/// </param>
-	/// <param name="n">
-	///     The horizontal index of the code-block to return,
-	///     in the specified subband.
-	/// </param>
-	/// <param name="sb">
-	///     The subband in which the code-block to return is.
-	/// </param>
-	/// <param name="cblk">
-	///     If non-null this object will be used to return the new
-	///     code-block. If null a new one will be allocated and returned. If the
-	///     "data" array of the object is non-null it will be reused, if possible,
-	///     to return the data.
-	/// </param>
-	/// <returns>
-	///     The next code-block in the current tile for component 'n', or
-	///     null if all code-blocks for the current tile have been returned.
-	/// </returns>
-	/// <seealso cref="DataBlk">
-	/// </seealso>
-	DataBlk getCodeBlock(int c, int m, int n, SubbandSyn sb, DataBlk cblk);
+    /// <summary>
+    ///     Returns the specified code-block in the current tile for the specified
+    ///     component, as a copy (see below).
+    ///     <p>
+    ///         The returned code-block may be progressive, which is indicated by
+    ///         the 'progressive' variable of the returned 'DataBlk' object. If a
+    ///         code-block is progressive it means that in a later request to this
+    ///         method for the same code-block it is possible to retrieve data which is
+    ///         a better approximation, since meanwhile more data to decode for the
+    ///         code-block could have been received. If the code-block is not
+    ///         progressive then later calls to this method for the same code-block
+    ///         will return the exact same data values.
+    ///     </p>
+    ///     <p>
+    ///         The data returned by this method is always a copy of the internal
+    ///         data of this object, if any, and it can be modified "in place" without
+    ///         any problems after being returned. The 'offset' of the returned data is
+    ///         0, and the 'scanw' is the same as the code-block width. See the
+    ///         'DataBlk' class.
+    ///     </p>
+    /// </summary>
+    /// <param name="c">
+    ///     The component for which to return the next code-block.
+    /// </param>
+    /// <param name="m">
+    ///     The vertical index of the code-block to return,
+    ///     in the specified subband.
+    /// </param>
+    /// <param name="n">
+    ///     The horizontal index of the code-block to return,
+    ///     in the specified subband.
+    /// </param>
+    /// <param name="sb">
+    ///     The subband in which the code-block to return is.
+    /// </param>
+    /// <param name="cblk">
+    ///     If non-null this object will be used to return the new
+    ///     code-block. If null a new one will be allocated and returned. If the
+    ///     "data" array of the object is non-null it will be reused, if possible,
+    ///     to return the data.
+    /// </param>
+    /// <returns>
+    ///     The next code-block in the current tile for component 'n', or
+    ///     null if all code-blocks for the current tile have been returned.
+    /// </returns>
+    /// <seealso cref="DataBlk">
+    /// </seealso>
+    DataBlk getCodeBlock(int c, int m, int n, SubbandSyn sb, DataBlk cblk);
 
-	/// <summary>
-	///     Returns the specified code-block in the current tile for the specified
-	///     component (as a reference or copy).
-	///     <p>
-	///         The returned code-block may be progressive, which is indicated by
-	///         the 'progressive' variable of the returned 'DataBlk' object. If a
-	///         code-block is progressive it means that in a later request to this
-	///         method for the same code-block it is possible to retrieve data which is
-	///         a better approximation, since meanwhile more data to decode for the
-	///         code-block could have been received. If the code-block is not
-	///         progressive then later calls to this method for the same code-block
-	///         will return the exact same data values.
-	///     </p>
-	///     <p>
-	///         The data returned by this method can be the data in the internal
-	///         buffer of this object, if any, and thus can not be modified by the
-	///         caller. The 'offset' and 'scanw' of the returned data can be
-	///         arbitrary. See the 'DataBlk' class.
-	///     </p>
-	/// </summary>
-	/// <param name="c">
-	///     The component for which to return the next code-block.
-	/// </param>
-	/// <param name="m">
-	///     The vertical index of the code-block to return, in the
-	///     specified subband.
-	/// </param>
-	/// <param name="n">
-	///     The horizontal index of the code-block to return, in the
-	///     specified subband.
-	/// </param>
-	/// <param name="sb">
-	///     The subband in which the code-block to return is.
-	/// </param>
-	/// <param name="cblk">
-	///     If non-null this object will be used to return the new
-	///     code-block. If null a new one will be allocated and returned. If the
-	///     "data" array of the object is non-null it will be reused, if possible,
-	///     to return the data.
-	/// </param>
-	/// <returns>
-	///     The next code-block in the current tile for component 'n', or
-	///     null if all code-blocks for the current tile have been returned.
-	/// </returns>
-	/// <seealso cref="DataBlk">
-	/// </seealso>
-	DataBlk getInternCodeBlock(int c, int m, int n, SubbandSyn sb, DataBlk cblk);
+    /// <summary>
+    ///     Returns the specified code-block in the current tile for the specified
+    ///     component (as a reference or copy).
+    ///     <p>
+    ///         The returned code-block may be progressive, which is indicated by
+    ///         the 'progressive' variable of the returned 'DataBlk' object. If a
+    ///         code-block is progressive it means that in a later request to this
+    ///         method for the same code-block it is possible to retrieve data which is
+    ///         a better approximation, since meanwhile more data to decode for the
+    ///         code-block could have been received. If the code-block is not
+    ///         progressive then later calls to this method for the same code-block
+    ///         will return the exact same data values.
+    ///     </p>
+    ///     <p>
+    ///         The data returned by this method can be the data in the internal
+    ///         buffer of this object, if any, and thus can not be modified by the
+    ///         caller. The 'offset' and 'scanw' of the returned data can be
+    ///         arbitrary. See the 'DataBlk' class.
+    ///     </p>
+    /// </summary>
+    /// <param name="c">
+    ///     The component for which to return the next code-block.
+    /// </param>
+    /// <param name="m">
+    ///     The vertical index of the code-block to return, in the
+    ///     specified subband.
+    /// </param>
+    /// <param name="n">
+    ///     The horizontal index of the code-block to return, in the
+    ///     specified subband.
+    /// </param>
+    /// <param name="sb">
+    ///     The subband in which the code-block to return is.
+    /// </param>
+    /// <param name="cblk">
+    ///     If non-null this object will be used to return the new
+    ///     code-block. If null a new one will be allocated and returned. If the
+    ///     "data" array of the object is non-null it will be reused, if possible,
+    ///     to return the data.
+    /// </param>
+    /// <returns>
+    ///     The next code-block in the current tile for component 'n', or
+    ///     null if all code-blocks for the current tile have been returned.
+    /// </returns>
+    /// <seealso cref="DataBlk">
+    /// </seealso>
+    DataBlk getInternCodeBlock(int c, int m, int n, SubbandSyn sb, DataBlk cblk);
 }

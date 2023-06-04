@@ -25,445 +25,448 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security;
+using System.Text;
 using IronSoftware.Drawing;
 
-namespace OpenMetaverse.Imaging
+namespace OpenMetaverse.Imaging;
+
+/// <summary>
+///     A Wrapper around openjpeg to encode and decode images to and from byte arrays
+/// </summary>
+public class OpenJPEG
 {
+    /// <summary>TGA Header size</summary>
+    public const int TGA_HEADER_SIZE = 32;
+
     /// <summary>
-    /// A Wrapper around openjpeg to encode and decode images to and from byte arrays
+    ///     OpenJPEG is not threadsafe, so this object is used to lock
+    ///     during calls into unmanaged code
     /// </summary>
-    public class OpenJPEG
+    private static readonly object OpenJPEGLock = new();
+
+    static OpenJPEG()
     {
-        /// <summary>TGA Header size</summary>
-        public const int TGA_HEADER_SIZE = 32;
+        DllmapConfigHelper.RegisterAssembly(typeof(OpenJPEG).Assembly);
+    }
 
-        #region JPEG2000 Structs
+    /// <summary>
+    ///     Encode a <seealso cref="ManagedImage" /> object into a byte array
+    /// </summary>
+    /// <param name="image">The <seealso cref="ManagedImage" /> object to encode</param>
+    /// <param name="lossless">true to enable lossless conversion, only useful for small images ie: sculptmaps</param>
+    /// <returns>A byte array containing the encoded Image object</returns>
+    public static byte[] Encode(ManagedImage image, bool lossless)
+    {
+        if ((image.Channels & ManagedImage.ImageChannels.Color) == 0 ||
+            ((image.Channels & ManagedImage.ImageChannels.Bump) != 0 &&
+             (image.Channels & ManagedImage.ImageChannels.Alpha) == 0))
+            throw new ArgumentException("JPEG2000 encoding is not supported for this channel combination");
 
-        /// <summary>
-        /// Defines the beginning and ending file positions of a layer in an
-        /// LRCP-progression JPEG2000 file
-        /// </summary>
-        [System.Diagnostics.DebuggerDisplay("Start = {Start} End = {End} Size = {End - Start}")]
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct J2KLayerInfo
+        byte[] encoded = null;
+        var marshalled = new MarshalledImage();
+
+        // allocate and copy to input buffer
+        marshalled.width = image.Width;
+        marshalled.height = image.Height;
+        marshalled.components = 3;
+        if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) marshalled.components++;
+        if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) marshalled.components++;
+
+        lock (OpenJPEGLock)
         {
-            public int Start;
-            public int End;
-        }
+            var allocSuccess = DotNetAllocDecoded(ref marshalled);
+            if (!allocSuccess)
+                throw new Exception("DotNetAllocDecoded failed");
 
-        /// <summary>
-        /// This structure is used to marshal both encoded and decoded images.
-        /// MUST MATCH THE STRUCT IN dotnet.h!
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        private struct MarshalledImage
-        {
-            public IntPtr encoded;             // encoded image data
-            public int length;                 // encoded image length
-            public int dummy;                  // padding for 64-bit alignment
+            var n = image.Width * image.Height;
 
-            public IntPtr decoded;             // decoded image, contiguous components
-
-            public int width;                  // width of decoded image
-            public int height;                 // height of decoded image
-            public int layers;                 // layer count
-            public int resolutions;            // resolution count
-            public int components;             // component count
-            public int packet_count;           // packet count
-            public IntPtr packets;             // pointer to the packets array
-        }
-
-        /// <summary>
-        /// Information about a single packet in a JPEG2000 stream
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        private struct MarshalledPacket
-        {
-            /// <summary>Packet start position</summary>
-            public int start_pos;
-            /// <summary>Packet header end position</summary>
-            public int end_ph_pos;
-            /// <summary>Packet end position</summary>
-            public int end_pos;
-
-            public override string ToString()
+            if ((image.Channels & ManagedImage.ImageChannels.Color) != 0)
             {
-                return String.Format("start_pos: {0} end_ph_pos: {1} end_pos: {2}",
-                    start_pos, end_ph_pos, end_pos);
-            }
-        }
-        #endregion JPEG2000 Structs
-
-        static OpenJPEG()
-        {
-             DllmapConfigHelper.RegisterAssembly(typeof(OpenJPEG).Assembly);
-        }
-
-        #region Unmanaged Function Declarations
-        // allocate encoded buffer based on length field
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetAllocEncoded(ref MarshalledImage image);
-
-        // allocate decoded buffer based on width and height fields
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetAllocDecoded(ref MarshalledImage image);
-
-        // free buffers
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetFree(ref MarshalledImage image);
-
-        // encode raw to jpeg2000
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetEncode(ref MarshalledImage image, bool lossless);
-
-        // decode jpeg2000 to raw
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetDecode(ref MarshalledImage image);
-
-        // decode jpeg2000 to raw, get jpeg2000 file info
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetDecodeWithInfo(ref MarshalledImage image);
-
-        #endregion
-        /// <summary>OpenJPEG is not threadsafe, so this object is used to lock
-        /// during calls into unmanaged code</summary>
-        private static object OpenJPEGLock = new object();
-
-        /// <summary>
-        /// Encode a <seealso cref="ManagedImage"/> object into a byte array
-        /// </summary>
-        /// <param name="image">The <seealso cref="ManagedImage"/> object to encode</param>
-        /// <param name="lossless">true to enable lossless conversion, only useful for small images ie: sculptmaps</param>
-        /// <returns>A byte array containing the encoded Image object</returns>
-        public static byte[] Encode(ManagedImage image, bool lossless)
-        {
-            if ((image.Channels & ManagedImage.ImageChannels.Color) == 0 ||
-                ((image.Channels & ManagedImage.ImageChannels.Bump) != 0 && (image.Channels & ManagedImage.ImageChannels.Alpha) == 0))
-                throw new ArgumentException("JPEG2000 encoding is not supported for this channel combination");
-
-            byte[] encoded = null;
-            MarshalledImage marshalled = new MarshalledImage();
-
-            // allocate and copy to input buffer
-            marshalled.width = image.Width;
-            marshalled.height = image.Height;
-            marshalled.components = 3;
-            if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) marshalled.components++;
-            if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) marshalled.components++;
-
-            lock (OpenJPEGLock)
-            {
-                bool allocSuccess = DotNetAllocDecoded(ref marshalled);
-                if (!allocSuccess)
-                    throw new Exception("DotNetAllocDecoded failed");
-
-                int n = image.Width * image.Height;
-
-                if ((image.Channels & ManagedImage.ImageChannels.Color) != 0)
-                {
-                    Marshal.Copy(image.Red, 0, marshalled.decoded, n);
-                    Marshal.Copy(image.Green, 0, (IntPtr)(marshalled.decoded.ToInt64() + n), n);
-                    Marshal.Copy(image.Blue, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 2), n);
-                }
-
-                if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
-                if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
-
-                // codec will allocate output buffer                
-                bool encodeSuccess = DotNetEncode(ref marshalled, lossless);
-                if (!encodeSuccess)
-                    throw new Exception("DotNetEncode failed");
-
-                // copy output buffer
-                encoded = new byte[marshalled.length];
-                Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
-
-                // free buffers
-                DotNetFree(ref marshalled);
+                Marshal.Copy(image.Red, 0, marshalled.decoded, n);
+                Marshal.Copy(image.Green, 0, (IntPtr)(marshalled.decoded.ToInt64() + n), n);
+                Marshal.Copy(image.Blue, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 2), n);
             }
 
-            return encoded;
+            if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0)
+                Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
+            if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0)
+                Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
+
+            // codec will allocate output buffer                
+            var encodeSuccess = DotNetEncode(ref marshalled, lossless);
+            if (!encodeSuccess)
+                throw new Exception("DotNetEncode failed");
+
+            // copy output buffer
+            encoded = new byte[marshalled.length];
+            Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
+
+            // free buffers
+            DotNetFree(ref marshalled);
         }
 
-        /// <summary>
-        /// Encode a <seealso cref="ManagedImage"/> object into a byte array
-        /// </summary>
-        /// <param name="image">The <seealso cref="ManagedImage"/> object to encode</param>
-        /// <returns>a byte array of the encoded image</returns>
-        public static byte[] Encode(ManagedImage image)
-        {
-            return Encode(image, false);
-        }
+        return encoded;
+    }
 
-        /// <summary>
-        /// Decode JPEG2000 data to an <seealso cref="System.Drawing.Image"/> and
-        /// <seealso cref="ManagedImage"/>
-        /// </summary>
-        /// <param name="encoded">JPEG2000 encoded data</param>
-        /// <param name="managedImage">ManagedImage object to decode to</param>
-        /// <param name="image">Image object to decode to</param>
-        /// <returns>True if the decode succeeds, otherwise false</returns>
-        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage, out AnyBitmap image)
-        {
-            managedImage = null;
-            image = null;
+    /// <summary>
+    ///     Encode a <seealso cref="ManagedImage" /> object into a byte array
+    /// </summary>
+    /// <param name="image">The <seealso cref="ManagedImage" /> object to encode</param>
+    /// <returns>a byte array of the encoded image</returns>
+    public static byte[] Encode(ManagedImage image)
+    {
+        return Encode(image, false);
+    }
 
-            if (DecodeToImage(encoded, out managedImage))
+    /// <summary>
+    ///     Decode JPEG2000 data to an <seealso cref="System.Drawing.Image" /> and
+    ///     <seealso cref="ManagedImage" />
+    /// </summary>
+    /// <param name="encoded">JPEG2000 encoded data</param>
+    /// <param name="managedImage">ManagedImage object to decode to</param>
+    /// <param name="image">Image object to decode to</param>
+    /// <returns>True if the decode succeeds, otherwise false</returns>
+    public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage, out AnyBitmap image)
+    {
+        managedImage = null;
+        image = null;
+
+        if (DecodeToImage(encoded, out managedImage))
+            try
             {
-                try
-                {
-                    image = managedImage.ExportBitmap();
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log("Failed to export and load TGA data from decoded image", Helpers.LogLevel.Error, ex);
-                    return false;
-                }
+                image = managedImage.ExportBitmap();
+                return true;
             }
-            else
+            catch (Exception ex)
             {
+                Logger.Log("Failed to export and load TGA data from decoded image", Helpers.LogLevel.Error, ex);
                 return false;
             }
-        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="encoded"></param>
-        /// <param name="managedImage"></param>
-        /// <returns></returns>
-        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage)
+        return false;
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="encoded"></param>
+    /// <param name="managedImage"></param>
+    /// <returns></returns>
+    public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage)
+    {
+        var marshalled = new MarshalledImage();
+
+        // Allocate and copy to input buffer
+        marshalled.length = encoded.Length;
+
+        lock (OpenJPEGLock)
         {
-            MarshalledImage marshalled = new MarshalledImage();
+            DotNetAllocEncoded(ref marshalled);
 
-            // Allocate and copy to input buffer
-            marshalled.length = encoded.Length;
+            Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-            lock (OpenJPEGLock)
+            // Codec will allocate output buffer
+            DotNetDecode(ref marshalled);
+
+            var n = marshalled.width * marshalled.height;
+
+            switch (marshalled.components)
             {
-                DotNetAllocEncoded(ref marshalled);
+                case 1: // Grayscale
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
+                    break;
 
-                Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
+                case 2: // Grayscale + alpha
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Alpha, 0, n);
+                    break;
 
-                // Codec will allocate output buffer
-                DotNetDecode(ref marshalled);
+                case 3: // RGB
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    break;
 
-                int n = marshalled.width * marshalled.height;
+                case 4: // RGBA
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Alpha, 0, n);
+                    break;
 
-                switch (marshalled.components)
-                {
-                    case 1: // Grayscale
-                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                            ManagedImage.ImageChannels.Color);
-                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
-                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
-                        break;
+                case 5: // RGBAB
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha |
+                        ManagedImage.ImageChannels.Bump);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Alpha, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 4), managedImage.Bump, 0, n);
+                    break;
 
-                    case 2: // Grayscale + alpha
-                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
-                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Alpha, 0, n);
-                        break;
+                default:
+                    Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
+                        Helpers.LogLevel.Error);
 
-                    case 3: // RGB
-                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                            ManagedImage.ImageChannels.Color);
-                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                        break;
+                    DotNetFree(ref marshalled);
 
-                    case 4: // RGBA
-                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
-                        break;
-
-                    case 5: // RGBAB
-                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
-                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Bump, 0, n);
-                        break;
-
-                    default:
-                        Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
-                            Helpers.LogLevel.Error);
-
-                        DotNetFree(ref marshalled);
-
-                        managedImage = null;
-                        return false;
-                }
-
-                DotNetFree(ref marshalled);
+                    managedImage = null;
+                    return false;
             }
 
-            return true;
+            DotNetFree(ref marshalled);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="encoded"></param>
-        /// <param name="layerInfo"></param>
-        /// <param name="components"></param>
-        /// <returns></returns>
-        public static bool DecodeLayerBoundaries(byte[] encoded, out J2KLayerInfo[] layerInfo, out int components)
+        return true;
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="encoded"></param>
+    /// <param name="layerInfo"></param>
+    /// <param name="components"></param>
+    /// <returns></returns>
+    public static bool DecodeLayerBoundaries(byte[] encoded, out J2KLayerInfo[] layerInfo, out int components)
+    {
+        var success = false;
+        layerInfo = null;
+        components = 0;
+        var marshalled = new MarshalledImage();
+
+        // Allocate and copy to input buffer
+        marshalled.length = encoded.Length;
+
+        lock (OpenJPEGLock)
         {
-            bool success = false;
-            layerInfo = null;
-            components = 0;
-            MarshalledImage marshalled = new MarshalledImage();
+            DotNetAllocEncoded(ref marshalled);
 
-            // Allocate and copy to input buffer
-            marshalled.length = encoded.Length;
+            Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-            lock (OpenJPEGLock)
+            // Run the decode
+            var decodeSuccess = DotNetDecodeWithInfo(ref marshalled);
+            if (decodeSuccess)
             {
-                DotNetAllocEncoded(ref marshalled);
+                components = marshalled.components;
 
-                Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
-
-                // Run the decode
-                bool decodeSuccess = DotNetDecodeWithInfo(ref marshalled);
-                if (decodeSuccess)
+                // Sanity check
+                if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
                 {
-                    components = marshalled.components;
+                    // Manually marshal the array of opj_packet_info structs
+                    var packets = new MarshalledPacket[marshalled.packet_count];
+                    var offset = 0;
 
-                    // Sanity check
-                    if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
+                    for (var i = 0; i < marshalled.packet_count; i++)
                     {
-                        // Manually marshal the array of opj_packet_info structs
-                        MarshalledPacket[] packets = new MarshalledPacket[marshalled.packet_count];
-                        int offset = 0;
+                        MarshalledPacket packet;
+                        packet.start_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        packet.end_ph_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        //double distortion = (double)Marshal.ReadInt64(marshalled.packets, offset);
+                        offset += 8;
 
-                        for (int i = 0; i < marshalled.packet_count; i++)
+                        packets[i] = packet;
+                    }
+
+                    layerInfo = new J2KLayerInfo[marshalled.layers];
+
+                    for (var i = 0; i < marshalled.layers; i++)
+                    {
+                        var packetsPerLayer = marshalled.packet_count / marshalled.layers;
+                        var startPacket = packets[packetsPerLayer * i];
+                        var endPacket = packets[packetsPerLayer * (i + 1) - 1];
+                        layerInfo[i].Start = startPacket.start_pos;
+                        layerInfo[i].End = endPacket.end_pos;
+                    }
+
+                    // More sanity checking
+                    if (layerInfo.Length == 0 || layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
+                    {
+                        success = true;
+
+                        for (var i = 0; i < layerInfo.Length; i++)
+                            if (layerInfo[i].Start >= layerInfo[i].End ||
+                                (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
+                            {
+                                var output = new StringBuilder(
+                                    "Inconsistent packet data in JPEG2000 stream:\n");
+                                for (var j = 0; j < layerInfo.Length; j++)
+                                    output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start,
+                                        layerInfo[j].End);
+                                Logger.DebugLog(output.ToString());
+
+                                success = false;
+                                break;
+                            }
+
+                        if (!success)
                         {
-                            MarshalledPacket packet;
-                            packet.start_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                            offset += 4;
-                            packet.end_ph_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                            offset += 4;
-                            packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                            offset += 4;
-                            //double distortion = (double)Marshal.ReadInt64(marshalled.packets, offset);
-                            offset += 8;
+                            for (var i = 0; i < layerInfo.Length; i++)
+                                if (i < layerInfo.Length - 1)
+                                    layerInfo[i].End = layerInfo[i + 1].Start - 1;
+                                else
+                                    layerInfo[i].End = marshalled.length;
 
-                            packets[i] = packet;
-                        }
-
-                        layerInfo = new J2KLayerInfo[marshalled.layers];
-
-                        for (int i = 0; i < marshalled.layers; i++)
-                        {
-                            int packetsPerLayer = marshalled.packet_count / marshalled.layers;
-                            MarshalledPacket startPacket = packets[packetsPerLayer * i];
-                            MarshalledPacket endPacket = packets[(packetsPerLayer * (i + 1)) - 1];
-                            layerInfo[i].Start = startPacket.start_pos;
-                            layerInfo[i].End = endPacket.end_pos;
-                        }
-
-                        // More sanity checking
-                        if (layerInfo.Length == 0 || layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
-                        {
+                            Logger.DebugLog("Corrected JPEG2000 packet data");
                             success = true;
 
-                            for (int i = 0; i < layerInfo.Length; i++)
-                            {
+                            for (var i = 0; i < layerInfo.Length; i++)
                                 if (layerInfo[i].Start >= layerInfo[i].End ||
                                     (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
                                 {
-                                    System.Text.StringBuilder output = new System.Text.StringBuilder(
-                                        "Inconsistent packet data in JPEG2000 stream:\n");
-                                    for (int j = 0; j < layerInfo.Length; j++)
-                                        output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start, layerInfo[j].End);
+                                    var output = new StringBuilder(
+                                        "Still inconsistent packet data in JPEG2000 stream, giving up:\n");
+                                    for (var j = 0; j < layerInfo.Length; j++)
+                                        output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start,
+                                            layerInfo[j].End);
                                     Logger.DebugLog(output.ToString());
 
                                     success = false;
                                     break;
                                 }
-                            }
-
-                            if (!success)
-                            {
-                                for (int i = 0; i < layerInfo.Length; i++)
-                                {
-                                    if (i < layerInfo.Length - 1)
-                                        layerInfo[i].End = layerInfo[i + 1].Start - 1;
-                                    else
-                                        layerInfo[i].End = marshalled.length;
-                                }
-
-                                Logger.DebugLog("Corrected JPEG2000 packet data");
-                                success = true;
-
-                                for (int i = 0; i < layerInfo.Length; i++)
-                                {
-                                    if (layerInfo[i].Start >= layerInfo[i].End ||
-                                        (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
-                                    {
-                                        System.Text.StringBuilder output = new System.Text.StringBuilder(
-                                            "Still inconsistent packet data in JPEG2000 stream, giving up:\n");
-                                        for (int j = 0; j < layerInfo.Length; j++)
-                                            output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start, layerInfo[j].End);
-                                        Logger.DebugLog(output.ToString());
-
-                                        success = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Logger.Log(String.Format(
-                                "Last packet end in JPEG2000 stream extends beyond the end of the file. filesize={0} layerend={1}",
-                                encoded.Length, layerInfo[layerInfo.Length - 1].End), Helpers.LogLevel.Warning);
                         }
                     }
                     else
                     {
-                        Logger.Log(String.Format(
-                            "Packet count mismatch in JPEG2000 stream. layers={0} resolutions={1} components={2} packets={3}",
-                            marshalled.layers, marshalled.resolutions, marshalled.components, marshalled.packet_count),
-                            Helpers.LogLevel.Warning);
+                        Logger.Log(string.Format(
+                            "Last packet end in JPEG2000 stream extends beyond the end of the file. filesize={0} layerend={1}",
+                            encoded.Length, layerInfo[layerInfo.Length - 1].End), Helpers.LogLevel.Warning);
                     }
                 }
-
-                DotNetFree(ref marshalled);
+                else
+                {
+                    Logger.Log(string.Format(
+                            "Packet count mismatch in JPEG2000 stream. layers={0} resolutions={1} components={2} packets={3}",
+                            marshalled.layers, marshalled.resolutions, marshalled.components, marshalled.packet_count),
+                        Helpers.LogLevel.Warning);
+                }
             }
 
-            return success;
+            DotNetFree(ref marshalled);
         }
 
-        /// <summary>
-        /// Encode a <seealso cref="System.Drawing.Bitmap"/> object into a byte array
-        /// </summary>
-        /// <param name="bitmap">The source <seealso cref="System.Drawing.Bitmap"/> object to encode</param>
-        /// <param name="lossless">true to enable lossless decoding</param>
-        /// <returns>A byte array containing the source Bitmap object</returns>
-        public static byte[] EncodeFromImage(AnyBitmap bitmap, bool lossless)
+        return success;
+    }
+
+    /// <summary>
+    ///     Encode a <seealso cref="System.Drawing.Bitmap" /> object into a byte array
+    /// </summary>
+    /// <param name="bitmap">The source <seealso cref="System.Drawing.Bitmap" /> object to encode</param>
+    /// <param name="lossless">true to enable lossless decoding</param>
+    /// <returns>A byte array containing the source Bitmap object</returns>
+    public static byte[] EncodeFromImage(AnyBitmap bitmap, bool lossless)
+    {
+        return Encode(new ManagedImage(bitmap), lossless);
+    }
+
+    #region JPEG2000 Structs
+
+    /// <summary>
+    ///     Defines the beginning and ending file positions of a layer in an
+    ///     LRCP-progression JPEG2000 file
+    /// </summary>
+    [DebuggerDisplay("Start = {Start} End = {End} Size = {End - Start}")]
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct J2KLayerInfo
+    {
+        public int Start;
+        public int End;
+    }
+
+    /// <summary>
+    ///     This structure is used to marshal both encoded and decoded images.
+    ///     MUST MATCH THE STRUCT IN dotnet.h!
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct MarshalledImage
+    {
+        public readonly IntPtr encoded; // encoded image data
+        public int length; // encoded image length
+        public readonly int dummy; // padding for 64-bit alignment
+
+        public readonly IntPtr decoded; // decoded image, contiguous components
+
+        public int width; // width of decoded image
+        public int height; // height of decoded image
+        public readonly int layers; // layer count
+        public readonly int resolutions; // resolution count
+        public int components; // component count
+        public readonly int packet_count; // packet count
+        public readonly IntPtr packets; // pointer to the packets array
+    }
+
+    /// <summary>
+    ///     Information about a single packet in a JPEG2000 stream
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct MarshalledPacket
+    {
+        /// <summary>Packet start position</summary>
+        public int start_pos;
+
+        /// <summary>Packet header end position</summary>
+        public int end_ph_pos;
+
+        /// <summary>Packet end position</summary>
+        public int end_pos;
+
+        public override string ToString()
         {
-            return Encode(new ManagedImage(bitmap), lossless);
+            return string.Format("start_pos: {0} end_ph_pos: {1} end_pos: {2}",
+                start_pos, end_ph_pos, end_pos);
         }
     }
+
+    #endregion JPEG2000 Structs
+
+    #region Unmanaged Function Declarations
+
+    // allocate encoded buffer based on length field
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetAllocEncoded(ref MarshalledImage image);
+
+    // allocate decoded buffer based on width and height fields
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetAllocDecoded(ref MarshalledImage image);
+
+    // free buffers
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetFree(ref MarshalledImage image);
+
+    // encode raw to jpeg2000
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetEncode(ref MarshalledImage image, bool lossless);
+
+    // decode jpeg2000 to raw
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetDecode(ref MarshalledImage image);
+
+    // decode jpeg2000 to raw, get jpeg2000 file info
+    [SuppressUnmanagedCodeSecurity]
+    [DllImport("openjpeg-dotnet", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool DotNetDecodeWithInfo(ref MarshalledImage image);
+
+    #endregion
 }

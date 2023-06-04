@@ -68,17 +68,17 @@ namespace CSJ2K.j2k.roi.encoder;
 /// </seealso>
 public class RectROIMaskGenerator : ROIMaskGenerator
 {
-    /// <summary>The lower right xs of the ROIs</summary>
-    private int[] lrxs;
-
-    /// <summary>The lower right ys of the ROIs</summary>
-    private int[] lrys;
-
     /// <summary>Number of ROIs </summary>
     private readonly int[] nrROIs;
 
     /// <summary>The tree of subbandmask. One for each component </summary>
     private readonly SubbandRectROIMask[] sMasks;
+
+    /// <summary>The lower right xs of the ROIs</summary>
+    private int[] lrxs;
+
+    /// <summary>The lower right ys of the ROIs</summary>
+    private int[] lrys;
 
     /// <summary>The upper left xs of the ROIs</summary>
     private int[] ulxs;

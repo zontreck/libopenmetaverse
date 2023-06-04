@@ -64,206 +64,206 @@ namespace CSJ2K.j2k.wavelet.analysis;
 /// </summary>
 public class SubbandAn : Subband
 {
-	/// <summary>
-	///     The horizontal analysis filter used to decompose this subband. This is
-	///     applicable to "node" elements only. The default value is null.
-	/// </summary>
-	public AnWTFilter hFilter;
+    /// <summary>
+    ///     The horizontal analysis filter used to decompose this subband. This is
+    ///     applicable to "node" elements only. The default value is null.
+    /// </summary>
+    public AnWTFilter hFilter;
 
-	/// <summary>
-	///     The L2-norm of the synthesis basis waveform of this subband,
-	///     applicable to "leafs" only. By default it is -1 (i.e. not calculated
-	///     yet).
-	/// </summary>
-	public float l2Norm = -1.0f;
+    /// <summary>
+    ///     The L2-norm of the synthesis basis waveform of this subband,
+    ///     applicable to "leafs" only. By default it is -1 (i.e. not calculated
+    ///     yet).
+    /// </summary>
+    public float l2Norm = -1.0f;
 
-	/// <summary>
-	///     The reference to the parent of this subband. It is null for the root
-	///     element. It is null by default.
-	/// </summary>
-	public SubbandAn parentband;
+    /// <summary>
+    ///     The reference to the parent of this subband. It is null for the root
+    ///     element. It is null by default.
+    /// </summary>
+    public SubbandAn parentband;
 
-	/// <summary>
-	///     The contribution to the MSE or WMSE error that would result in the
-	///     image if there was an error of exactly one quantization step size in
-	///     the sample of the subband. This value is expressed relative to a
-	///     nominal dynamic range in the image domain of exactly 1.0. This field
-	///     contains valid data only after quantization 9See Quantizer).
-	/// </summary>
-	/// <seealso cref="jj2000.j2k.quantization.quantizer.Quantizer">
-	/// </seealso>
-	public float stepWMSE;
+    /// <summary>
+    ///     The contribution to the MSE or WMSE error that would result in the
+    ///     image if there was an error of exactly one quantization step size in
+    ///     the sample of the subband. This value is expressed relative to a
+    ///     nominal dynamic range in the image domain of exactly 1.0. This field
+    ///     contains valid data only after quantization 9See Quantizer).
+    /// </summary>
+    /// <seealso cref="jj2000.j2k.quantization.quantizer.Quantizer">
+    /// </seealso>
+    public float stepWMSE;
 
-	/// <summary>
-	///     The reference to the HH subband resulting from the decomposition of
-	///     this subband. It is null by default.
-	/// </summary>
-	public SubbandAn subb_HH;
+    /// <summary>
+    ///     The reference to the HH subband resulting from the decomposition of
+    ///     this subband. It is null by default.
+    /// </summary>
+    public SubbandAn subb_HH;
 
-	/// <summary>
-	///     The reference to the HL subband (horizontal high-pass) resulting from
-	///     the decomposition of this subband. It is null by default.
-	/// </summary>
-	public SubbandAn subb_HL;
+    /// <summary>
+    ///     The reference to the HL subband (horizontal high-pass) resulting from
+    ///     the decomposition of this subband. It is null by default.
+    /// </summary>
+    public SubbandAn subb_HL;
 
-	/// <summary>
-	///     The reference to the LH subband (vertical high-pass) resulting from
-	///     the decomposition of this subband. It is null by default.
-	/// </summary>
-	public SubbandAn subb_LH;
+    /// <summary>
+    ///     The reference to the LH subband (vertical high-pass) resulting from
+    ///     the decomposition of this subband. It is null by default.
+    /// </summary>
+    public SubbandAn subb_LH;
 
-	/// <summary>
-	///     The reference to the LL subband resulting from the decomposition of
-	///     this subband. It is null by default.
-	/// </summary>
-	public SubbandAn subb_LL;
+    /// <summary>
+    ///     The reference to the LL subband resulting from the decomposition of
+    ///     this subband. It is null by default.
+    /// </summary>
+    public SubbandAn subb_LL;
 
-	/// <summary>
-	///     The vertical analysis filter used to decompose this subband. This is
-	///     applicable to "node" elements only. The default value is null.
-	/// </summary>
-	public AnWTFilter vFilter;
+    /// <summary>
+    ///     The vertical analysis filter used to decompose this subband. This is
+    ///     applicable to "node" elements only. The default value is null.
+    /// </summary>
+    public AnWTFilter vFilter;
 
-	/// <summary>
-	///     Creates a SubbandAn element with all the default values. The dimensions
-	///     are (0,0) and the upper left corner is (0,0).
-	/// </summary>
-	public SubbandAn()
+    /// <summary>
+    ///     Creates a SubbandAn element with all the default values. The dimensions
+    ///     are (0,0) and the upper left corner is (0,0).
+    /// </summary>
+    public SubbandAn()
     {
     }
 
-	/// <summary>
-	///     Creates the top-level node and the entire subband tree, with the
-	///     top-level dimensions, the number of decompositions, and the
-	///     decomposition tree as specified.
-	///     <p>
-	///         This constructor just calls the same constructor of the super class,
-	///         and then calculates the L2-norm (or energy weight) of each leaf.
-	///     </p>
-	///     <p>
-	///         This constructor does not initialize the value of the magBits or
-	///         stepWMSE member variables. This variables are normally initialized by
-	///         the quantizer (see Quantizer).
-	///     </p>
-	/// </summary>
-	/// <param name="w">
-	///     The top-level width
-	/// </param>
-	/// <param name="h">
-	///     The top-level height
-	/// </param>
-	/// <param name="ulcx">
-	///     The horizontal coordinate of the upper-left corner with
-	///     respect to the canvas origin, in the component grid.
-	/// </param>
-	/// <param name="ulcy">
-	///     The vertical coordinate of the upper-left corner with
-	///     respect to the canvas origin, in the component grid.
-	/// </param>
-	/// <param name="lvls">
-	///     The number of levels (or LL decompositions) in the tree.
-	/// </param>
-	/// <param name="hfilters">
-	///     The horizontal wavelet analysis filters for each
-	///     resolution level, starting at resolution level 0.
-	/// </param>
-	/// <param name="vfilters">
-	///     The vertical wavelet analysis filters for each
-	///     resolution level, starting at resolution level 0.
-	/// </param>
-	/// <seealso cref="Subband.Subband(int,int,int,int,int,">
-	///     WaveletFilter[],WaveletFilter[])
-	/// </seealso>
-	/// <seealso cref="jj2000.j2k.quantization.quantizer.Quantizer">
-	/// </seealso>
-	public SubbandAn(int w, int h, int ulcx, int ulcy, int lvls, WaveletFilter[] hfilters, WaveletFilter[] vfilters) :
+    /// <summary>
+    ///     Creates the top-level node and the entire subband tree, with the
+    ///     top-level dimensions, the number of decompositions, and the
+    ///     decomposition tree as specified.
+    ///     <p>
+    ///         This constructor just calls the same constructor of the super class,
+    ///         and then calculates the L2-norm (or energy weight) of each leaf.
+    ///     </p>
+    ///     <p>
+    ///         This constructor does not initialize the value of the magBits or
+    ///         stepWMSE member variables. This variables are normally initialized by
+    ///         the quantizer (see Quantizer).
+    ///     </p>
+    /// </summary>
+    /// <param name="w">
+    ///     The top-level width
+    /// </param>
+    /// <param name="h">
+    ///     The top-level height
+    /// </param>
+    /// <param name="ulcx">
+    ///     The horizontal coordinate of the upper-left corner with
+    ///     respect to the canvas origin, in the component grid.
+    /// </param>
+    /// <param name="ulcy">
+    ///     The vertical coordinate of the upper-left corner with
+    ///     respect to the canvas origin, in the component grid.
+    /// </param>
+    /// <param name="lvls">
+    ///     The number of levels (or LL decompositions) in the tree.
+    /// </param>
+    /// <param name="hfilters">
+    ///     The horizontal wavelet analysis filters for each
+    ///     resolution level, starting at resolution level 0.
+    /// </param>
+    /// <param name="vfilters">
+    ///     The vertical wavelet analysis filters for each
+    ///     resolution level, starting at resolution level 0.
+    /// </param>
+    /// <seealso cref="Subband.Subband(int,int,int,int,int,">
+    ///     WaveletFilter[],WaveletFilter[])
+    /// </seealso>
+    /// <seealso cref="jj2000.j2k.quantization.quantizer.Quantizer">
+    /// </seealso>
+    public SubbandAn(int w, int h, int ulcx, int ulcy, int lvls, WaveletFilter[] hfilters, WaveletFilter[] vfilters) :
         base(w, h, ulcx, ulcy, lvls, hfilters, vfilters)
     {
         // Caculate the L2-norms
         calcL2Norms();
     }
 
-	/// <summary>
-	///     Returns the parent of this subband. The parent of a subband is the
-	///     subband from which this one was obtained by decomposition. The root
-	///     element has no parent subband (null).
-	/// </summary>
-	/// <returns>
-	///     The parent subband, or null for the root one.
-	/// </returns>
-	public override Subband Parent => parentband;
+    /// <summary>
+    ///     Returns the parent of this subband. The parent of a subband is the
+    ///     subband from which this one was obtained by decomposition. The root
+    ///     element has no parent subband (null).
+    /// </summary>
+    /// <returns>
+    ///     The parent subband, or null for the root one.
+    /// </returns>
+    public override Subband Parent => parentband;
 
-	/// <summary>
-	///     Returns the LL child subband of this subband.
-	/// </summary>
-	/// <returns>
-	///     The LL child subband, or null if there are no childs.
-	/// </returns>
-	public override Subband LL => subb_LL;
+    /// <summary>
+    ///     Returns the LL child subband of this subband.
+    /// </summary>
+    /// <returns>
+    ///     The LL child subband, or null if there are no childs.
+    /// </returns>
+    public override Subband LL => subb_LL;
 
-	/// <summary>
-	///     Returns the HL (horizontal high-pass) child subband of this subband.
-	/// </summary>
-	/// <returns>
-	///     The HL child subband, or null if there are no childs.
-	/// </returns>
-	public override Subband HL => subb_HL;
+    /// <summary>
+    ///     Returns the HL (horizontal high-pass) child subband of this subband.
+    /// </summary>
+    /// <returns>
+    ///     The HL child subband, or null if there are no childs.
+    /// </returns>
+    public override Subband HL => subb_HL;
 
-	/// <summary>
-	///     Returns the LH (vertical high-pass) child subband of this subband.
-	/// </summary>
-	/// <returns>
-	///     The LH child subband, or null if there are no childs.
-	/// </returns>
-	public override Subband LH => subb_LH;
+    /// <summary>
+    ///     Returns the LH (vertical high-pass) child subband of this subband.
+    /// </summary>
+    /// <returns>
+    ///     The LH child subband, or null if there are no childs.
+    /// </returns>
+    public override Subband LH => subb_LH;
 
-	/// <summary>
-	///     Returns the HH child subband of this subband.
-	/// </summary>
-	/// <returns>
-	///     The HH child subband, or null if there are no childs.
-	/// </returns>
-	public override Subband HH => subb_HH;
+    /// <summary>
+    ///     Returns the HH child subband of this subband.
+    /// </summary>
+    /// <returns>
+    ///     The HH child subband, or null if there are no childs.
+    /// </returns>
+    public override Subband HH => subb_HH;
 
-	/// <summary>
-	///     This function returns the horizontal wavelet filter relevant to this
-	///     subband
-	/// </summary>
-	/// <returns>
-	///     The horizontal wavelet filter
-	/// </returns>
-	public override WaveletFilter HorWFilter => hFilter;
+    /// <summary>
+    ///     This function returns the horizontal wavelet filter relevant to this
+    ///     subband
+    /// </summary>
+    /// <returns>
+    ///     The horizontal wavelet filter
+    /// </returns>
+    public override WaveletFilter HorWFilter => hFilter;
 
-	/// <summary>
-	///     This function returns the vertical wavelet filter relevant to this
-	///     subband
-	/// </summary>
-	/// <returns>
-	///     The vertical wavelet filter
-	/// </returns>
-	public override WaveletFilter VerWFilter => hFilter;
+    /// <summary>
+    ///     This function returns the vertical wavelet filter relevant to this
+    ///     subband
+    /// </summary>
+    /// <returns>
+    ///     The vertical wavelet filter
+    /// </returns>
+    public override WaveletFilter VerWFilter => hFilter;
 
-	/// <summary>
-	///     Splits the current subband in its four subbands. It changes the status
-	///     of this element (from a leaf to a node, and sets the filters), creates
-	///     the childs and initializes them. An IllegalArgumentException is thrown
-	///     if this subband is not a leaf.
-	///     <p>It uses the initChilds() method to initialize the childs.</p>
-	/// </summary>
-	/// <param name="hfilter">
-	///     The horizontal wavelet filter used to decompose this
-	///     subband. It has to be a AnWTFilter object.
-	/// </param>
-	/// <param name="vfilter">
-	///     The vertical wavelet filter used to decompose this
-	///     subband. It has to be a AnWTFilter object.
-	/// </param>
-	/// <returns>
-	///     A reference to the LL leaf (subb_LL).
-	/// </returns>
-	/// <seealso cref="Subband.initChilds">
-	/// </seealso>
-	protected internal override Subband split(WaveletFilter hfilter, WaveletFilter vfilter)
+    /// <summary>
+    ///     Splits the current subband in its four subbands. It changes the status
+    ///     of this element (from a leaf to a node, and sets the filters), creates
+    ///     the childs and initializes them. An IllegalArgumentException is thrown
+    ///     if this subband is not a leaf.
+    ///     <p>It uses the initChilds() method to initialize the childs.</p>
+    /// </summary>
+    /// <param name="hfilter">
+    ///     The horizontal wavelet filter used to decompose this
+    ///     subband. It has to be a AnWTFilter object.
+    /// </param>
+    /// <param name="vfilter">
+    ///     The vertical wavelet filter used to decompose this
+    ///     subband. It has to be a AnWTFilter object.
+    /// </param>
+    /// <returns>
+    ///     A reference to the LL leaf (subb_LL).
+    /// </returns>
+    /// <seealso cref="Subband.initChilds">
+    /// </seealso>
+    protected internal override Subband split(WaveletFilter hfilter, WaveletFilter vfilter)
     {
         // Test that this is a node
         if (isNode) throw new ArgumentException();
@@ -292,27 +292,27 @@ public class SubbandAn : Subband
         return subb_LL;
     }
 
-	/// <summary>
-	///     Calculates the basis waveform of the first leaf for which the L2-norm
-	///     has not been calculated yet. This method searches recursively for the
-	///     first leaf for which the value has not been calculated yet, and then
-	///     calculates the L2-norm on the return path.
-	///     <p>
-	///         The wfs argument should be a size 2 array of float arrays (i.e. 2D
-	///         array) and it must be of length 2 (or more). When returning, wfs[0]
-	///         will contain the line waveform, and wfs[1] will contain the column
-	///         waveform.
-	///     </p>
-	///     <p>
-	///         This method can not be called on an element that ahs a non-negative
-	///         value in l2Norm, since that means that we are done.
-	///     </p>
-	/// </summary>
-	/// <param name="wfs">
-	///     An size 2 array where the line and column waveforms will be
-	///     returned.
-	/// </param>
-	private void calcBasisWaveForms(float[][] wfs)
+    /// <summary>
+    ///     Calculates the basis waveform of the first leaf for which the L2-norm
+    ///     has not been calculated yet. This method searches recursively for the
+    ///     first leaf for which the value has not been calculated yet, and then
+    ///     calculates the L2-norm on the return path.
+    ///     <p>
+    ///         The wfs argument should be a size 2 array of float arrays (i.e. 2D
+    ///         array) and it must be of length 2 (or more). When returning, wfs[0]
+    ///         will contain the line waveform, and wfs[1] will contain the column
+    ///         waveform.
+    ///     </p>
+    ///     <p>
+    ///         This method can not be called on an element that ahs a non-negative
+    ///         value in l2Norm, since that means that we are done.
+    ///     </p>
+    /// </summary>
+    /// <param name="wfs">
+    ///     An size 2 array where the line and column waveforms will be
+    ///     returned.
+    /// </param>
+    private void calcBasisWaveForms(float[][] wfs)
     {
         if (l2Norm < 0)
         {
@@ -369,21 +369,21 @@ public class SubbandAn : Subband
         }
     }
 
-	/// <summary>
-	///     Assigns the given L2-norm to the first leaf that does not have an
-	///     L2-norm value yet (i.e. l2norm is negative). The search is done
-	///     recursively and in the same order as that of the calcBasisWaveForms()
-	///     method, so that this method is used to assigne the l2norm of the
-	///     previously computed waveforms.
-	///     <p>
-	///         This method can not be called on an element that ahs a non-negative
-	///         value in l2Norm, since that means that we are done.
-	///     </p>
-	/// </summary>
-	/// <param name="l2n">
-	///     The L2-norm to assign.
-	/// </param>
-	private void assignL2Norm(float l2n)
+    /// <summary>
+    ///     Assigns the given L2-norm to the first leaf that does not have an
+    ///     L2-norm value yet (i.e. l2norm is negative). The search is done
+    ///     recursively and in the same order as that of the calcBasisWaveForms()
+    ///     method, so that this method is used to assigne the l2norm of the
+    ///     previously computed waveforms.
+    ///     <p>
+    ///         This method can not be called on an element that ahs a non-negative
+    ///         value in l2Norm, since that means that we are done.
+    ///     </p>
+    /// </summary>
+    /// <param name="l2n">
+    ///     The L2-norm to assign.
+    /// </param>
+    private void assignL2Norm(float l2n)
     {
         if (l2Norm < 0)
         {
@@ -431,11 +431,11 @@ public class SubbandAn : Subband
     }
 
 
-	/// <summary>
-	///     Calculates the L2-norm of the sythesis waveforms of every leaf in the
-	///     tree. This method should only be called on the root element.
-	/// </summary>
-	private void calcL2Norms()
+    /// <summary>
+    ///     Calculates the L2-norm of the sythesis waveforms of every leaf in the
+    ///     tree. This method should only be called on the root element.
+    /// </summary>
+    private void calcL2Norms()
     {
         int i;
         var wfs = new float[2][];

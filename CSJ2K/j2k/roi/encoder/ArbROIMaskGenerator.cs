@@ -65,6 +65,12 @@ namespace CSJ2K.j2k.roi.encoder;
 /// </seealso>
 public class ArbROIMaskGenerator : ROIMaskGenerator
 {
+    /// <summary>The ROI mask for the current tile for all components</summary>
+    private readonly int[][] roiMask;
+
+    /// <summary>The source of quantized wavelet transform coefficients </summary>
+    private readonly Quantizer src;
+
     /// <summary>The High frequency part of a mask line </summary>
     private int[] maskLineHigh;
 
@@ -76,12 +82,6 @@ public class ArbROIMaskGenerator : ROIMaskGenerator
 
     /// <summary>Flag indicating if any ROI was found to be in this tile </summary>
     private new bool roiInTile;
-
-    /// <summary>The ROI mask for the current tile for all components</summary>
-    private readonly int[][] roiMask;
-
-    /// <summary>The source of quantized wavelet transform coefficients </summary>
-    private readonly Quantizer src;
 
     /// <summary>
     ///     The constructor of the arbitrary mask generator

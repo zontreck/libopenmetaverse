@@ -115,23 +115,8 @@ public class ImgReaderPGX : ImgReader, EndianType
     /// <summary>The bit-depth of the input file (must be between 1 and 31)</summary>
     private readonly int bitDepth;
 
-    /// <summary>The line buffer. </summary>
-    // This makes the class not thrad safe
-    // (but it is not the only one making it so)
-    private byte[] buf;
-
     /// <summary>The byte ordering to use, as defined in EndianType </summary>
     private readonly int byteOrder;
-
-    /// <summary>The RandomAccessIO where to get datas from </summary>
-    //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
-    private FileStream in_Renamed;
-
-    /// <summary>
-    ///     Temporary DataBlkInt object (needed when encoder uses floating-point
-    ///     filters). This avoid allocating new DataBlk at each time
-    /// </summary>
-    private DataBlkInt intBlk;
 
     /// <summary>Whether the input datas are signed or not </summary>
     private readonly bool isSigned;
@@ -145,6 +130,21 @@ public class ImgReaderPGX : ImgReader, EndianType
     ///     bit-depth
     /// </summary>
     private readonly int packBytes;
+
+    /// <summary>The line buffer. </summary>
+    // This makes the class not thrad safe
+    // (but it is not the only one making it so)
+    private byte[] buf;
+
+    /// <summary>The RandomAccessIO where to get datas from </summary>
+    //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
+    private FileStream in_Renamed;
+
+    /// <summary>
+    ///     Temporary DataBlkInt object (needed when encoder uses floating-point
+    ///     filters). This avoid allocating new DataBlk at each time
+    /// </summary>
+    private DataBlkInt intBlk;
 
     /// <summary>
     ///     Creates a new PGX file reader from the specified File object.

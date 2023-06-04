@@ -25,268 +25,255 @@
  */
 
 using System;
-using System.Collections;
 using System.IO;
 using System.Reflection;
+using System.Xml;
 using OpenMetaverse.StructuredData;
 
-namespace OpenMetaverse.Packets
+namespace OpenMetaverse.Packets;
+
+public abstract partial class Packet
 {
-    public abstract partial class Packet
+    /// <summary>
+    ///     Attempts to convert an LLSD structure to a known Packet type
+    /// </summary>
+    /// <param name="capsEventName">
+    ///     Event name, this must match an actual
+    ///     packet name for a Packet to be successfully built
+    /// </param>
+    /// <param name="body">LLSD to convert to a Packet</param>
+    /// <returns>A Packet on success, otherwise null</returns>
+    public static Packet BuildPacket(string capsEventName, OSDMap body)
     {
-        #region Serialization/Deserialization
+        var assembly = Assembly.GetExecutingAssembly();
 
-        public static string ToXmlString(Packet packet)
+        // Check if we have a subclass of packet with the same name as this event
+        var type = assembly.GetType("OpenMetaverse.Packets." + capsEventName + "Packet", false);
+        if (type == null)
+            return null;
+
+        Packet packet = null;
+
+        try
         {
-            return OSDParser.SerializeLLSDXmlString(GetLLSD(packet));
-        }
+            // Create an instance of the object
+            packet = (Packet)Activator.CreateInstance(type);
 
-        public static OSD GetLLSD(Packet packet)
-        {
-            OSDMap body = new OSDMap();
-            Type type = packet.GetType();
-
-            foreach (FieldInfo field in type.GetFields())
-            {
-                if (field.IsPublic)
+            // Iterate over all of the fields in the packet class, looking for matches in the LLSD
+            foreach (var field in type.GetFields())
+                if (body.ContainsKey(field.Name))
                 {
-                    Type blockType = field.FieldType;
+                    var blockType = field.FieldType;
 
                     if (blockType.IsArray)
                     {
-                        object blockArray = field.GetValue(packet);
-                        Array array = (Array)blockArray;
-                        OSDArray blockList = new OSDArray(array.Length);
-                        IEnumerator ie = array.GetEnumerator();
+                        var array = (OSDArray)body[field.Name];
+                        var elementType = blockType.GetElementType();
+                        var blockArray = (object[])Array.CreateInstance(elementType, array.Count);
 
-                        while (ie.MoveNext())
+                        for (var i = 0; i < array.Count; i++)
                         {
-                            object block = ie.Current;
-                            blockList.Add(BuildLLSDBlock(block));
+                            var map = (OSDMap)array[i];
+                            blockArray[i] = ParseLLSDBlock(map, elementType);
                         }
 
-                        body[field.Name] = blockList;
+                        field.SetValue(packet, blockArray);
                     }
                     else
                     {
-                        object block = field.GetValue(packet);
-                        body[field.Name] = BuildLLSDBlock(block);
+                        var map = (OSDMap)((OSDArray)body[field.Name])[0];
+                        field.SetValue(packet, ParseLLSDBlock(map, blockType));
                     }
                 }
-            }
-
-            return body;
+        }
+        catch (Exception)
+        {
+            //FIXME Logger.Log(e.Message, Helpers.LogLevel.Error, e);
         }
 
-        public static byte[] ToBinary(Packet packet)
-        {
-            return OSDParser.SerializeLLSDBinary(GetLLSD(packet));
-        }
+        return packet;
+    }
 
-        public static Packet FromXmlString(string xml)
-        {
-            using(MemoryStream ms = new MemoryStream(Utils.StringToBytes(xml)))
-            using (System.Xml.XmlTextReader reader = new System.Xml.XmlTextReader(ms))
-                return FromLLSD(OSDParser.DeserializeLLSDXml(reader));
-        }
+    private static object ParseLLSDBlock(OSDMap blockData, Type blockType)
+    {
+        var block = Activator.CreateInstance(blockType);
 
-        public static Packet FromLLSD(OSD osd)
-        {
-            // FIXME: Need the inverse of the reflection magic above done here
-            throw new NotImplementedException();
-        }
-
-        #endregion Serialization/Deserialization
-
-        /// <summary>
-        /// Attempts to convert an LLSD structure to a known Packet type
-        /// </summary>
-        /// <param name="capsEventName">Event name, this must match an actual
-        /// packet name for a Packet to be successfully built</param>
-        /// <param name="body">LLSD to convert to a Packet</param>
-        /// <returns>A Packet on success, otherwise null</returns>
-        public static Packet BuildPacket(string capsEventName, OSDMap body)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            // Check if we have a subclass of packet with the same name as this event
-            Type type = assembly.GetType("OpenMetaverse.Packets." + capsEventName + "Packet", false);
-            if (type == null)
-                return null;
-
-            Packet packet = null;
-
-            try
+        // Iterate over each field and set the value if a match was found in the LLSD
+        foreach (var field in blockType.GetFields())
+            if (blockData.ContainsKey(field.Name))
             {
-                // Create an instance of the object
-                packet = (Packet)Activator.CreateInstance(type);
+                var fieldType = field.FieldType;
 
-                // Iterate over all of the fields in the packet class, looking for matches in the LLSD
-                foreach (FieldInfo field in type.GetFields())
+                if (fieldType == typeof(ulong))
                 {
-                    if (body.ContainsKey(field.Name))
-                    {
-                        Type blockType = field.FieldType;
-
-                        if (blockType.IsArray)
-                        {
-                            OSDArray array = (OSDArray)body[field.Name];
-                            Type elementType = blockType.GetElementType();
-                            object[] blockArray = (object[])Array.CreateInstance(elementType, array.Count);
-
-                            for (int i = 0; i < array.Count; i++)
-                            {
-                                OSDMap map = (OSDMap)array[i];
-                                blockArray[i] = ParseLLSDBlock(map, elementType);
-                            }
-
-                            field.SetValue(packet, blockArray);
-                        }
-                        else
-                        {
-                            OSDMap map = (OSDMap)((OSDArray)body[field.Name])[0];
-                            field.SetValue(packet, ParseLLSDBlock(map, blockType));
-                        }
-                    }
+                    // ulongs come in as a byte array, convert it manually here
+                    var bytes = blockData[field.Name].AsBinary();
+                    var value = Utils.BytesToUInt64(bytes);
+                    field.SetValue(block, value);
+                }
+                else if (fieldType == typeof(uint))
+                {
+                    // uints come in as a byte array, convert it manually here
+                    var bytes = blockData[field.Name].AsBinary();
+                    var value = Utils.BytesToUInt(bytes);
+                    field.SetValue(block, value);
+                }
+                else if (fieldType == typeof(ushort))
+                {
+                    // Just need a bit of manual typecasting love here
+                    field.SetValue(block, (ushort)blockData[field.Name].AsInteger());
+                }
+                else if (fieldType == typeof(byte))
+                {
+                    // Just need a bit of manual typecasting love here
+                    field.SetValue(block, (byte)blockData[field.Name].AsInteger());
+                }
+                else if (fieldType == typeof(sbyte))
+                {
+                    field.SetValue(block, (sbyte)blockData[field.Name].AsInteger());
+                }
+                else if (fieldType == typeof(short))
+                {
+                    field.SetValue(block, (short)blockData[field.Name].AsInteger());
+                }
+                else if (fieldType == typeof(string))
+                {
+                    field.SetValue(block, blockData[field.Name].AsString());
+                }
+                else if (fieldType == typeof(bool))
+                {
+                    field.SetValue(block, blockData[field.Name].AsBoolean());
+                }
+                else if (fieldType == typeof(float))
+                {
+                    field.SetValue(block, (float)blockData[field.Name].AsReal());
+                }
+                else if (fieldType == typeof(double))
+                {
+                    field.SetValue(block, blockData[field.Name].AsReal());
+                }
+                else if (fieldType == typeof(int))
+                {
+                    field.SetValue(block, blockData[field.Name].AsInteger());
+                }
+                else if (fieldType == typeof(UUID))
+                {
+                    field.SetValue(block, blockData[field.Name].AsUUID());
+                }
+                else if (fieldType == typeof(Vector3))
+                {
+                    var vec = ((OSDArray)blockData[field.Name]).AsVector3();
+                    field.SetValue(block, vec);
+                }
+                else if (fieldType == typeof(Vector4))
+                {
+                    var vec = ((OSDArray)blockData[field.Name]).AsVector4();
+                    field.SetValue(block, vec);
+                }
+                else if (fieldType == typeof(Quaternion))
+                {
+                    var quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
+                    field.SetValue(block, quat);
+                }
+                else if (fieldType == typeof(byte[]) && blockData[field.Name].Type == OSDType.String)
+                {
+                    field.SetValue(block, Utils.StringToBytes(blockData[field.Name]));
                 }
             }
-            catch (Exception)
+
+        // Additional fields come as properties, Handle those as well.
+        foreach (var property in blockType.GetProperties())
+            if (blockData.ContainsKey(property.Name))
             {
-                //FIXME Logger.Log(e.Message, Helpers.LogLevel.Error, e);
+                var proptype = blockData[property.Name].Type;
+                var set = property.GetSetMethod();
+
+                if (proptype.Equals(OSDType.Binary))
+                    set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
+                else
+                    set.Invoke(block, new object[] { Utils.StringToBytes(blockData[property.Name].AsString()) });
             }
 
-            return packet;
-        }
+        return block;
+    }
 
-        private static object ParseLLSDBlock(OSDMap blockData, Type blockType)
+    private static OSD BuildLLSDBlock(object block)
+    {
+        var map = new OSDMap();
+        var blockType = block.GetType();
+
+        foreach (var field in blockType.GetFields())
+            if (field.IsPublic)
+                map[field.Name] = OSD.FromObject(field.GetValue(block));
+
+        foreach (var property in blockType.GetProperties())
+            if (property.Name != "Length")
+                map[property.Name] = OSD.FromObject(property.GetValue(block, null));
+
+        return map;
+    }
+
+    #region Serialization/Deserialization
+
+    public static string ToXmlString(Packet packet)
+    {
+        return OSDParser.SerializeLLSDXmlString(GetLLSD(packet));
+    }
+
+    public static OSD GetLLSD(Packet packet)
+    {
+        var body = new OSDMap();
+        var type = packet.GetType();
+
+        foreach (var field in type.GetFields())
+            if (field.IsPublic)
+            {
+                var blockType = field.FieldType;
+
+                if (blockType.IsArray)
+                {
+                    var blockArray = field.GetValue(packet);
+                    var array = (Array)blockArray;
+                    var blockList = new OSDArray(array.Length);
+                    var ie = array.GetEnumerator();
+
+                    while (ie.MoveNext())
+                    {
+                        var block = ie.Current;
+                        blockList.Add(BuildLLSDBlock(block));
+                    }
+
+                    body[field.Name] = blockList;
+                }
+                else
+                {
+                    var block = field.GetValue(packet);
+                    body[field.Name] = BuildLLSDBlock(block);
+                }
+            }
+
+        return body;
+    }
+
+    public static byte[] ToBinary(Packet packet)
+    {
+        return OSDParser.SerializeLLSDBinary(GetLLSD(packet));
+    }
+
+    public static Packet FromXmlString(string xml)
+    {
+        using (var ms = new MemoryStream(Utils.StringToBytes(xml)))
+        using (var reader = new XmlTextReader(ms))
         {
-            object block = Activator.CreateInstance(blockType);
-
-            // Iterate over each field and set the value if a match was found in the LLSD
-            foreach (FieldInfo field in blockType.GetFields())
-            {
-                if (blockData.ContainsKey(field.Name))
-                {
-                    Type fieldType = field.FieldType;
-
-                    if (fieldType == typeof(ulong))
-                    {
-                        // ulongs come in as a byte array, convert it manually here
-                        byte[] bytes = blockData[field.Name].AsBinary();
-                        ulong value = Utils.BytesToUInt64(bytes);
-                        field.SetValue(block, value);
-                    }
-                    else if (fieldType == typeof(uint))
-                    {
-                        // uints come in as a byte array, convert it manually here
-                        byte[] bytes = blockData[field.Name].AsBinary();
-                        uint value = Utils.BytesToUInt(bytes);
-                        field.SetValue(block, value);
-                    }
-                    else if (fieldType == typeof(ushort))
-                    {
-                        // Just need a bit of manual typecasting love here
-                        field.SetValue(block, (ushort)blockData[field.Name].AsInteger());
-                    }
-                    else if (fieldType == typeof(byte))
-                    {
-                        // Just need a bit of manual typecasting love here
-                        field.SetValue(block, (byte)blockData[field.Name].AsInteger());
-                    }
-                    else if (fieldType == typeof(sbyte))
-                    {
-                        field.SetValue(block, (sbyte)blockData[field.Name].AsInteger());
-                    }
-                    else if (fieldType == typeof(short))
-                    {
-                        field.SetValue(block, (short)blockData[field.Name].AsInteger());
-                    }
-                    else if (fieldType == typeof(string))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsString());
-                    }
-                    else if (fieldType == typeof(bool))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsBoolean());
-                    }
-                    else if (fieldType == typeof(float))
-                    {
-                        field.SetValue(block, (float)blockData[field.Name].AsReal());
-                    }
-                    else if (fieldType == typeof(double))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsReal());
-                    }
-                    else if (fieldType == typeof(int))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsInteger());
-                    }
-                    else if (fieldType == typeof(UUID))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsUUID());
-                    }
-                    else if (fieldType == typeof(Vector3))
-                    {
-                        Vector3 vec = ((OSDArray)blockData[field.Name]).AsVector3();
-                        field.SetValue(block, vec);
-                    }
-                    else if (fieldType == typeof(Vector4))
-                    {
-                        Vector4 vec = ((OSDArray)blockData[field.Name]).AsVector4();
-                        field.SetValue(block, vec);
-                    }
-                    else if (fieldType == typeof(Quaternion))
-                    {
-                        Quaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
-                        field.SetValue(block, quat);
-                    }
-                    else if (fieldType == typeof(byte[]) && blockData[field.Name].Type == OSDType.String)
-                    {
-                        field.SetValue(block, Utils.StringToBytes(blockData[field.Name]));
-                    }
-                }
-            }
-
-            // Additional fields come as properties, Handle those as well.
-            foreach (PropertyInfo property in blockType.GetProperties())
-            {
-                if (blockData.ContainsKey(property.Name))
-                {
-                    OSDType proptype = blockData[property.Name].Type;
-                    MethodInfo set = property.GetSetMethod();
-
-                    if (proptype.Equals(OSDType.Binary))
-                    {
-                        set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
-                    }
-                    else
-                        set.Invoke(block, new object[] { Utils.StringToBytes(blockData[property.Name].AsString()) });
-                }
-            }
-
-            return block;
-        }
-
-        private static OSD BuildLLSDBlock(object block)
-        {
-            OSDMap map = new OSDMap();
-            Type blockType = block.GetType();
-
-            foreach (FieldInfo field in blockType.GetFields())
-            {
-                if (field.IsPublic)
-                    map[field.Name] = OSD.FromObject(field.GetValue(block));
-            }
-
-            foreach (PropertyInfo property in blockType.GetProperties())
-            {
-                if (property.Name != "Length")
-                {
-                    map[property.Name] = OSD.FromObject(property.GetValue(block, null));
-                }
-            }
-
-            return map;
+            return FromLLSD(OSDParser.DeserializeLLSDXml(reader));
         }
     }
+
+    public static Packet FromLLSD(OSD osd)
+    {
+        // FIXME: Need the inverse of the reflection magic above done here
+        throw new NotImplementedException();
+    }
+
+    #endregion Serialization/Deserialization
 }

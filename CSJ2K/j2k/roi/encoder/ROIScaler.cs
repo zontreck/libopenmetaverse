@@ -135,12 +135,6 @@ public class ROIScaler : ImgDataAdapter, CBlkQuantDataSrcEnc
     /// <summary>Flag indicating if block aligned ROIs are used </summary>
     private readonly bool blockAligned;
 
-    /// <summary>
-    ///     The maximum number of magnitude bit-planes in any subband. One value
-    ///     for each tile-component
-    /// </summary>
-    private int[][] maxMagBits;
-
     /// <summary>The class generating the ROI mask </summary>
     private readonly ROIMaskGenerator mg;
 
@@ -155,6 +149,12 @@ public class ROIScaler : ImgDataAdapter, CBlkQuantDataSrcEnc
 
     /// <summary>Number of resolution levels to include in ROI mask </summary>
     private readonly int useStartLevel;
+
+    /// <summary>
+    ///     The maximum number of magnitude bit-planes in any subband. One value
+    ///     for each tile-component
+    /// </summary>
+    private int[][] maxMagBits;
 
     /// <summary>
     ///     Constructor of the ROI scaler, takes a Quantizer as source of data to

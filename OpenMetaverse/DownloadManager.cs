@@ -23,238 +23,237 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.Http;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     Represends individual HTTP Download request
+/// </summary>
+public class DownloadRequest
 {
-    /// <summary>
-    /// Represends individual HTTP Download request
-    /// </summary>
-    public class DownloadRequest
+    /// <summary>URI of the item to fetch</summary>
+    public Uri Address;
+
+    /// <summary>Current fetch attempt</summary>
+    public int Attempt;
+
+    /// <summary>Download completed callback</summary>
+    public CapsBase.RequestCompletedEventHandler CompletedCallback;
+
+    /// <summary>Accept the following content type</summary>
+    public string ContentType;
+
+    /// <summary>Download progress callback</summary>
+    public CapsBase.DownloadProgressEventHandler DownloadProgressCallback;
+
+    /// <summary>Timout specified in milliseconds</summary>
+    public int MillisecondsTimeout;
+
+    /// <summary>How many times will this request be retried</summary>
+    public int Retries = 5;
+
+    /// <summary>Default constructor</summary>
+    public DownloadRequest()
     {
-        /// <summary>URI of the item to fetch</summary>
-        public Uri Address;
-        /// <summary>Timout specified in milliseconds</summary>
-        public int MillisecondsTimeout;
-        /// <summary>Download progress callback</summary>
-        public CapsBase.DownloadProgressEventHandler DownloadProgressCallback;
-        /// <summary>Download completed callback</summary>
-        public CapsBase.RequestCompletedEventHandler CompletedCallback;
-        /// <summary>Accept the following content type</summary>
-        public string ContentType;
-        /// <summary>How many times will this request be retried</summary>
-        public int Retries = 5;
-        /// <summary>Current fetch attempt</summary>
-        public int Attempt = 0;
-
-        /// <summary>Default constructor</summary>
-        public DownloadRequest()
-        {
-        }
-
-        /// <summary>Constructor</summary>
-        public DownloadRequest(Uri address, int millisecondsTimeout,
-            string contentType,
-            CapsBase.DownloadProgressEventHandler downloadProgressCallback,
-            CapsBase.RequestCompletedEventHandler completedCallback)
-        {
-            this.Address = address;
-            this.MillisecondsTimeout = millisecondsTimeout;
-            this.DownloadProgressCallback = downloadProgressCallback;
-            this.CompletedCallback = completedCallback;
-            this.ContentType = contentType;
-        }
     }
 
-    internal class ActiveDownload
+    /// <summary>Constructor</summary>
+    public DownloadRequest(Uri address, int millisecondsTimeout,
+        string contentType,
+        CapsBase.DownloadProgressEventHandler downloadProgressCallback,
+        CapsBase.RequestCompletedEventHandler completedCallback)
     {
-        public List<CapsBase.DownloadProgressEventHandler> ProgresHadlers = new List<CapsBase.DownloadProgressEventHandler>();
-        public List<CapsBase.RequestCompletedEventHandler> CompletedHandlers = new List<CapsBase.RequestCompletedEventHandler>();
-        public HttpWebRequest Request;
+        Address = address;
+        MillisecondsTimeout = millisecondsTimeout;
+        DownloadProgressCallback = downloadProgressCallback;
+        CompletedCallback = completedCallback;
+        ContentType = contentType;
+    }
+}
+
+internal class ActiveDownload
+{
+    public List<CapsBase.RequestCompletedEventHandler> CompletedHandlers = new();
+    public List<CapsBase.DownloadProgressEventHandler> ProgresHadlers = new();
+    public HttpWebRequest Request;
+}
+
+/// <summary>
+///     Manages async HTTP downloads with a limit on maximum
+///     concurrent downloads
+/// </summary>
+public class DownloadManager
+{
+    private readonly Dictionary<string, ActiveDownload> activeDownloads = new();
+
+    private readonly Queue<DownloadRequest> queue = new();
+
+    /// <summary>Default constructor</summary>
+    public DownloadManager()
+    {
+        ParallelDownloads = 8;
     }
 
-    /// <summary>
-    /// Manages async HTTP downloads with a limit on maximum
-    /// concurrent downloads
-    /// </summary>
-    public class DownloadManager
+    /// <summary>Maximum number of parallel downloads from a single endpoint</summary>
+    public int ParallelDownloads { get; set; }
+
+    /// <summary>Client certificate</summary>
+    public X509Certificate2 ClientCert { get; set; }
+
+    /// <summary>Cleanup method</summary>
+    public virtual void Dispose()
     {
-        Queue<DownloadRequest> queue = new Queue<DownloadRequest>();
-        Dictionary<string, ActiveDownload> activeDownloads = new Dictionary<string, ActiveDownload>();
-
-        X509Certificate2 m_ClientCert;
-
-        /// <summary>Maximum number of parallel downloads from a single endpoint</summary>
-        public int ParallelDownloads { get; set; }
-
-        /// <summary>Client certificate</summary>
-        public X509Certificate2 ClientCert
+        lock (activeDownloads)
         {
-            get { return m_ClientCert; }
-            set { m_ClientCert = value; }
-        }
-
-        /// <summary>Default constructor</summary>
-        public DownloadManager()
-        {
-            ParallelDownloads = 8;
-        }
-
-        /// <summary>Cleanup method</summary>
-        public virtual void Dispose()
-        {
-            lock (activeDownloads)
-            {
-                foreach (ActiveDownload download in activeDownloads.Values)
+            foreach (var download in activeDownloads.Values)
+                try
                 {
-                    try
-                    {
-                        if (download.Request != null)
-                        {
-                            download.Request.Abort();
-                        }
-                    }
-                    catch { }
+                    if (download.Request != null) download.Request.Abort();
                 }
-                activeDownloads.Clear();
-            }
-        }
-
-        /// <summary>Setup http download request</summary>
-        protected virtual HttpWebRequest SetupRequest(Uri address, string acceptHeader)
-        {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(address);
-            request.Method = "GET";
-
-            if (!string.IsNullOrEmpty(acceptHeader))
-                request.Accept = acceptHeader;
-
-            // Add the client certificate to the request if one was given
-            if (m_ClientCert != null)
-                request.ClientCertificates.Add(m_ClientCert);
-
-            // Leave idle connections to this endpoint open for up to 60 seconds
-            request.ServicePoint.MaxIdleTime = 0;
-            // Disable stupid Expect-100: Continue header
-            request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections per endpoint
-            if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
-            {
-                Logger.Log(string.Format("In DownloadManager.SetupRequest() setting conn limit for {0}:{1} to {2}", address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
-                request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
-            }
-
-            return request;
-        }
-
-        /// <summary>Check the queue for pending work</summary>
-        private void EnqueuePending()
-        {
-            lock (queue)
-            {
-                if (queue.Count > 0)
+                catch
                 {
-                    int nr = 0;
+                }
+
+            activeDownloads.Clear();
+        }
+    }
+
+    /// <summary>Setup http download request</summary>
+    protected virtual HttpWebRequest SetupRequest(Uri address, string acceptHeader)
+    {
+        var request = (HttpWebRequest)WebRequest.Create(address);
+        request.Method = "GET";
+
+        if (!string.IsNullOrEmpty(acceptHeader))
+            request.Accept = acceptHeader;
+
+        // Add the client certificate to the request if one was given
+        if (ClientCert != null)
+            request.ClientCertificates.Add(ClientCert);
+
+        // Leave idle connections to this endpoint open for up to 60 seconds
+        request.ServicePoint.MaxIdleTime = 0;
+        // Disable stupid Expect-100: Continue header
+        request.ServicePoint.Expect100Continue = false;
+        // Crank up the max number of connections per endpoint
+        if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
+        {
+            Logger.Log(
+                string.Format("In DownloadManager.SetupRequest() setting conn limit for {0}:{1} to {2}", address.Host,
+                    address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
+            request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
+        }
+
+        return request;
+    }
+
+    /// <summary>Check the queue for pending work</summary>
+    private void EnqueuePending()
+    {
+        lock (queue)
+        {
+            if (queue.Count > 0)
+            {
+                var nr = 0;
+                lock (activeDownloads)
+                {
+                    nr = activeDownloads.Count;
+                }
+
+                // Logger.DebugLog(nr.ToString() + " active downloads. Queued textures: " + queue.Count.ToString());
+
+                for (var i = nr; i < ParallelDownloads && queue.Count > 0; i++)
+                {
+                    var item = queue.Dequeue();
                     lock (activeDownloads)
                     {
-                        nr = activeDownloads.Count;
-                    }
-
-                    // Logger.DebugLog(nr.ToString() + " active downloads. Queued textures: " + queue.Count.ToString());
-
-                    for (int i = nr; i < ParallelDownloads && queue.Count > 0; i++)
-                    {
-                        DownloadRequest item = queue.Dequeue();
-                        lock (activeDownloads)
+                        var addr = item.Address.ToString();
+                        if (activeDownloads.ContainsKey(addr))
                         {
-                            string addr = item.Address.ToString();
-                            if (activeDownloads.ContainsKey(addr))
-                            {
-                                activeDownloads[addr].CompletedHandlers.Add(item.CompletedCallback);
-                                if (item.DownloadProgressCallback != null)
-                                {
-                                    activeDownloads[addr].ProgresHadlers.Add(item.DownloadProgressCallback);
-                                }
-                            }
-                            else
-                            {
-                                ActiveDownload activeDownload = new ActiveDownload();
-                                activeDownload.CompletedHandlers.Add(item.CompletedCallback);
-                                if (item.DownloadProgressCallback != null)
-                                {
-                                    activeDownload.ProgresHadlers.Add(item.DownloadProgressCallback);
-                                }
+                            activeDownloads[addr].CompletedHandlers.Add(item.CompletedCallback);
+                            if (item.DownloadProgressCallback != null)
+                                activeDownloads[addr].ProgresHadlers.Add(item.DownloadProgressCallback);
+                        }
+                        else
+                        {
+                            var activeDownload = new ActiveDownload();
+                            activeDownload.CompletedHandlers.Add(item.CompletedCallback);
+                            if (item.DownloadProgressCallback != null)
+                                activeDownload.ProgresHadlers.Add(item.DownloadProgressCallback);
 
-                                Logger.DebugLog("Requesting " + item.Address.ToString());
-                                activeDownload.Request = SetupRequest(item.Address, item.ContentType);
-                                CapsBase.DownloadDataAsync(
-                                    activeDownload.Request,
-                                    item.MillisecondsTimeout,
-                                    (HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive) =>
+                            Logger.DebugLog("Requesting " + item.Address);
+                            activeDownload.Request = SetupRequest(item.Address, item.ContentType);
+                            CapsBase.DownloadDataAsync(
+                                activeDownload.Request,
+                                item.MillisecondsTimeout,
+                                (request, response, bytesReceived, totalBytesToReceive) =>
+                                {
+                                    foreach (var handler in activeDownload.ProgresHadlers)
+                                        handler(request, response, bytesReceived, totalBytesToReceive);
+                                },
+                                (request, response, responseData, error) =>
+                                {
+                                    lock (activeDownloads)
                                     {
-                                        foreach (CapsBase.DownloadProgressEventHandler handler in activeDownload.ProgresHadlers)
-                                        {
-                                            handler(request, response, bytesReceived, totalBytesToReceive);
-                                        }
-                                    },
-                                    (HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error) =>
-                                    {
-                                        lock (activeDownloads) activeDownloads.Remove(addr);
-                                        if (error == null || item.Attempt >= item.Retries || (error != null && error.Message.Contains("404")))
-                                        {
-                                            foreach (CapsBase.RequestCompletedEventHandler handler in activeDownload.CompletedHandlers)
-                                            {
-                                                handler(request, response, responseData, error);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            item.Attempt++;
-                                            Logger.Log(string.Format("Texture {0} HTTP download failed, trying again retry {1}/{2}",
-                                                item.Address, item.Attempt, item.Retries), Helpers.LogLevel.Warning);
-                                            lock (queue) queue.Enqueue(item);
-                                        }
-
-                                        EnqueuePending();
+                                        activeDownloads.Remove(addr);
                                     }
-                                );
 
-                                activeDownloads[addr] = activeDownload;
-                            }
+                                    if (error == null || item.Attempt >= item.Retries ||
+                                        (error != null && error.Message.Contains("404")))
+                                    {
+                                        foreach (var handler in activeDownload.CompletedHandlers)
+                                            handler(request, response, responseData, error);
+                                    }
+                                    else
+                                    {
+                                        item.Attempt++;
+                                        Logger.Log(string.Format(
+                                            "Texture {0} HTTP download failed, trying again retry {1}/{2}",
+                                            item.Address, item.Attempt, item.Retries), Helpers.LogLevel.Warning);
+                                        lock (queue)
+                                        {
+                                            queue.Enqueue(item);
+                                        }
+                                    }
+
+                                    EnqueuePending();
+                                }
+                            );
+
+                            activeDownloads[addr] = activeDownload;
                         }
                     }
                 }
             }
         }
+    }
 
-        /// <summary>Enqueue a new HTTP download</summary>
-        public void QueueDownload(DownloadRequest req)
+    /// <summary>Enqueue a new HTTP download</summary>
+    public void QueueDownload(DownloadRequest req)
+    {
+        lock (activeDownloads)
         {
-            lock (activeDownloads)
+            var addr = req.Address.ToString();
+            if (activeDownloads.ContainsKey(addr))
             {
-                string addr = req.Address.ToString();
-                if (activeDownloads.ContainsKey(addr))
-                {
-                    activeDownloads[addr].CompletedHandlers.Add(req.CompletedCallback);
-                    if (req.DownloadProgressCallback != null)
-                    {
-                        activeDownloads[addr].ProgresHadlers.Add(req.DownloadProgressCallback);
-                    }
-                    return;
-                }
+                activeDownloads[addr].CompletedHandlers.Add(req.CompletedCallback);
+                if (req.DownloadProgressCallback != null)
+                    activeDownloads[addr].ProgresHadlers.Add(req.DownloadProgressCallback);
+                return;
             }
-
-            lock (queue)
-            {
-                queue.Enqueue(req);
-            }
-            EnqueuePending();
         }
+
+        lock (queue)
+        {
+            queue.Enqueue(req);
+        }
+
+        EnqueuePending();
     }
 }

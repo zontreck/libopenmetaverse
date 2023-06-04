@@ -78,11 +78,6 @@ public class MatrixBasedTransformTosRGB
     //UPGRADE_NOTE: Final was removed from the declaration of 'dwShiftValue '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     private readonly int[] dwShiftValue;
 
-    //private int dwMaxCols = 0; // Maximum number of columns that can be processed
-    //private int dwMaxRows = 0; // Maximum number of rows that can be processed
-
-    private float[][] fBuf; // Intermediate output of the first LUT operation.
-
     private readonly LookUpTableFP[] fLut = new LookUpTableFP[3];
     private readonly LookUpTable32LinearSRGBtoSRGB lut; // Linear sRGB to sRGB LUT
 
@@ -90,6 +85,11 @@ public class MatrixBasedTransformTosRGB
 
     //UPGRADE_NOTE: Final was removed from the declaration of 'matrix '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     private readonly double[] matrix; // Matrix coefficients 
+
+    //private int dwMaxCols = 0; // Maximum number of columns that can be processed
+    //private int dwMaxRows = 0; // Maximum number of rows that can be processed
+
+    private float[][] fBuf; // Intermediate output of the first LUT operation.
 
     /* end class MatrixBasedTransformTosRGB */
     static MatrixBasedTransformTosRGB()

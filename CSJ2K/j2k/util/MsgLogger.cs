@@ -68,30 +68,30 @@ namespace CSJ2K.j2k.util;
 /// </summary>
 public struct MsgLogger_Fields
 {
-	/// <summary>
-	///     Severity of message. LOG messages are just for bookkeeping and do not
-	///     need to be displayed in the majority of cases
-	/// </summary>
-	public const int LOG = 0;
+    /// <summary>
+    ///     Severity of message. LOG messages are just for bookkeeping and do not
+    ///     need to be displayed in the majority of cases
+    /// </summary>
+    public const int LOG = 0;
 
-	/// <summary>
-	///     Severity of message. INFO messages should be displayed just for user
-	///     feedback.
-	/// </summary>
-	public const int INFO = 1;
+    /// <summary>
+    ///     Severity of message. INFO messages should be displayed just for user
+    ///     feedback.
+    /// </summary>
+    public const int INFO = 1;
 
-	/// <summary>
-	///     Severity of message. WARNING messages denote that an unexpected state
-	///     has been reached and should be given as feedback to the user.
-	/// </summary>
-	public const int WARNING = 2;
+    /// <summary>
+    ///     Severity of message. WARNING messages denote that an unexpected state
+    ///     has been reached and should be given as feedback to the user.
+    /// </summary>
+    public const int WARNING = 2;
 
-	/// <summary>
-	///     Severity of message. ERROR messages denote that something has gone
-	///     wrong and probably that execution has ended. They should be definetely
-	///     displayed to the user.
-	/// </summary>
-	public const int ERROR = 3;
+    /// <summary>
+    ///     Severity of message. ERROR messages denote that something has gone
+    ///     wrong and probably that execution has ended. They should be definetely
+    ///     displayed to the user.
+    /// </summary>
+    public const int ERROR = 3;
 }
 
 public interface MsgLogger

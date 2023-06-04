@@ -115,64 +115,64 @@ public interface BinaryDataOutput
 	/// </exception>
 	void writeShort(int v);
 
-	/// <summary>
-	///     Should write the int value of <tt>v</tt> (i.e., the 32 bits) to
-	///     the output. Prior to writing, the output should be realigned at
-	///     the byte level.
-	/// </summary>
-	/// <param name="v">
-	///     The value to write to the output
-	/// </param>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	void writeInt(int v);
+    /// <summary>
+    ///     Should write the int value of <tt>v</tt> (i.e., the 32 bits) to
+    ///     the output. Prior to writing, the output should be realigned at
+    ///     the byte level.
+    /// </summary>
+    /// <param name="v">
+    ///     The value to write to the output
+    /// </param>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    void writeInt(int v);
 
-	/// <summary>
-	///     Should write the long value of <tt>v</tt> (i.e., the 64 bits)
-	///     to the output. Prior to writing, the output should be realigned
-	///     at the byte level.
-	/// </summary>
-	/// <param name="v">
-	///     The value to write to the output
-	/// </param>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	void writeLong(long v);
+    /// <summary>
+    ///     Should write the long value of <tt>v</tt> (i.e., the 64 bits)
+    ///     to the output. Prior to writing, the output should be realigned
+    ///     at the byte level.
+    /// </summary>
+    /// <param name="v">
+    ///     The value to write to the output
+    /// </param>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    void writeLong(long v);
 
-	/// <summary>
-	///     Should write the IEEE float value <tt>v</tt> (i.e., 32 bits) to
-	///     the output. Prior to writing, the output should be realigned at
-	///     the byte level.
-	/// </summary>
-	/// <param name="v">
-	///     The value to write to the output
-	/// </param>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	void writeFloat(float v);
+    /// <summary>
+    ///     Should write the IEEE float value <tt>v</tt> (i.e., 32 bits) to
+    ///     the output. Prior to writing, the output should be realigned at
+    ///     the byte level.
+    /// </summary>
+    /// <param name="v">
+    ///     The value to write to the output
+    /// </param>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    void writeFloat(float v);
 
-	/// <summary>
-	///     Should write the IEEE double value <tt>v</tt> (i.e., 64 bits)
-	///     to the output. Prior to writing, the output should be realigned
-	///     at the byte level.
-	/// </summary>
-	/// <param name="v">
-	///     The value to write to the output
-	/// </param>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	void writeDouble(double v);
+    /// <summary>
+    ///     Should write the IEEE double value <tt>v</tt> (i.e., 64 bits)
+    ///     to the output. Prior to writing, the output should be realigned
+    ///     at the byte level.
+    /// </summary>
+    /// <param name="v">
+    ///     The value to write to the output
+    /// </param>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    void writeDouble(double v);
 
-	/// <summary>
-	///     Any data that has been buffered must be written, and the stream should
-	///     be realigned at the byte level.
-	/// </summary>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	void flush();
+    /// <summary>
+    ///     Any data that has been buffered must be written, and the stream should
+    ///     be realigned at the byte level.
+    /// </summary>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    void flush();
 }

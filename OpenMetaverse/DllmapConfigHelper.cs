@@ -31,357 +31,368 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
-using System.Xml.Serialization;
 using System.Xml;
+using System.Xml.Serialization;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+public static class DllmapConfigHelper
 {
-    public static class DllmapConfigHelper
+    private static readonly Dictionary<string, IntPtr> LoadedLibs = new();
+    private static readonly HashSet<Assembly> RegisteredAssemblies = new();
+    private static readonly object m_mainlock = new();
+
+    public static void RegisterAssembly(Assembly assembly)
     {
-        [XmlRoot("dllmap")]
-        public class dllmap
+        lock (m_mainlock)
         {
-            [XmlAttribute("os")]
-            public string os;
-            [XmlAttribute("cpu")]
-            public string cpu;
-            [XmlAttribute("target")]
-            public string target;
-            [XmlAttribute("dll")]
-            public string dll;
-        }
-
-        [XmlRoot("configuration")]
-        public class configuration
-        {
-            [XmlElement("dllmap")]
-            public List<dllmap> maps = new();
-        }
-
-        private static readonly Dictionary<string, IntPtr> LoadedLibs = new();
-        private static readonly HashSet<Assembly> RegisteredAssemblies = new();
-        private static readonly object m_mainlock = new object();
-
-        public static void RegisterAssembly(Assembly assembly)
-        {
-            lock (m_mainlock)
-            {
-                if (RegisteredAssemblies.Contains(assembly))
-                    return;
-                RegisteredAssemblies.Add(assembly);
-            }
-
-            string assemblyPath = Path.GetDirectoryName(assembly.Location);
-            string path = Path.Combine(assemblyPath,
-                        Path.GetFileNameWithoutExtension(assembly.Location) + ".dll.config");
-            configuration c = ParseConfig(path);
-            if (c is null)
+            if (RegisteredAssemblies.Contains(assembly))
                 return;
-
-            int matchs = ProcessAssemblyConfiguration(c, out List<(string libname, string libpath)> libstoload);
-            if (matchs == 0)
-                return;
-            if (libstoload.Count == 0)
-                return;
-
-            foreach (var (libname, libpath) in libstoload)
-            {
-                path= Path.Combine(assemblyPath, libpath);
-                if (NativeLibrary.TryLoad(path, out IntPtr ptr))
-                    LoadedLibs.Add(libname, ptr);
-                else
-                    LoadedLibs.Add(libname, IntPtr.Zero);
-            }
-            NativeLibrary.SetDllImportResolver(assembly, AssemblyDllImport);
-        }
-        private static IntPtr AssemblyDllImport(string libraryName, Assembly assembly, DllImportSearchPath? dllImportSearchPath)
-        {
-            if (LoadedLibs.TryGetValue(libraryName, out IntPtr ptr))
-                return ptr;
-            return IntPtr.Zero;
+            RegisteredAssemblies.Add(assembly);
         }
 
-        public static configuration ParseConfig(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                return null;
+        var assemblyPath = Path.GetDirectoryName(assembly.Location);
+        var path = Path.Combine(assemblyPath,
+            Path.GetFileNameWithoutExtension(assembly.Location) + ".dll.config");
+        var c = ParseConfig(path);
+        if (c is null)
+            return;
 
-            configuration c;
-            try
-            {
-                if (!File.Exists(path))
-                    return null;
-                using FileStream fs = new(path, FileMode.Open);
-                using XmlReader reader = XmlReader.Create(fs);
-                XmlSerializer serializer = new(typeof(configuration));
-                c = (configuration)serializer.Deserialize(reader);
-            }
-            catch
-            {
-                return null;
-            }
-            if (c is null || c.maps is null || c.maps.Count == 0)
-                return null;
-            return c;
+        var matchs = ProcessAssemblyConfiguration(c, out var libstoload);
+        if (matchs == 0)
+            return;
+        if (libstoload.Count == 0)
+            return;
+
+        foreach (var (libname, libpath) in libstoload)
+        {
+            path = Path.Combine(assemblyPath, libpath);
+            if (NativeLibrary.TryLoad(path, out var ptr))
+                LoadedLibs.Add(libname, ptr);
+            else
+                LoadedLibs.Add(libname, IntPtr.Zero);
         }
 
-        public static int ProcessAssemblyConfiguration(configuration c, out List<(string libname, string libpath)> libsToLoad)
+        NativeLibrary.SetDllImportResolver(assembly, AssemblyDllImport);
+    }
+
+    private static IntPtr AssemblyDllImport(string libraryName, Assembly assembly,
+        DllImportSearchPath? dllImportSearchPath)
+    {
+        if (LoadedLibs.TryGetValue(libraryName, out var ptr))
+            return ptr;
+        return IntPtr.Zero;
+    }
+
+    public static configuration ParseConfig(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        configuration c;
+        try
         {
-            libsToLoad = new List<(string libname, string libpath)>(c.maps.Count);
-            int MatchCount = 0;
-            HashSet<string> libsdone = new();
-            foreach (dllmap m in c.maps)
+            if (!File.Exists(path))
+                return null;
+            using FileStream fs = new(path, FileMode.Open);
+            using var reader = XmlReader.Create(fs);
+            XmlSerializer serializer = new(typeof(configuration));
+            c = (configuration)serializer.Deserialize(reader);
+        }
+        catch
+        {
+            return null;
+        }
+
+        if (c is null || c.maps is null || c.maps.Count == 0)
+            return null;
+        return c;
+    }
+
+    public static int ProcessAssemblyConfiguration(configuration c,
+        out List<(string libname, string libpath)> libsToLoad)
+    {
+        libsToLoad = new List<(string libname, string libpath)>(c.maps.Count);
+        var MatchCount = 0;
+        HashSet<string> libsdone = new();
+        foreach (var m in c.maps)
+        {
+            if (string.IsNullOrEmpty(m.target))
+                continue;
+            if (string.IsNullOrEmpty(m.os))
+                continue;
+            if (string.IsNullOrEmpty(m.dll))
+                continue;
+            if (libsdone.Contains(m.dll))
+                continue;
+
+            var match = false;
+            var negate = m.os[0] == '!';
+            if (negate)
+                m.os = m.os[1..];
+            var tos = m.os.Split(',');
+            foreach (var s in tos)
             {
-                if (string.IsNullOrEmpty(m.target))
-                    continue;
-                if (string.IsNullOrEmpty(m.os))
-                    continue;
-                if (string.IsNullOrEmpty(m.dll))
-                    continue;
-                if (libsdone.Contains(m.dll))
-                    continue;
-
-                bool match = false;
-                bool negate = m.os[0] == '!';
-                if (negate)
-                    m.os = m.os[1..];
-                string[] tos = m.os.Split(',');
-                foreach (string s in tos)
-                {
-                    match = OperatingSystem.IsOSPlatform(s);
-                    if (match)
-                        break;
-                }
-                if (negate)
-                    match = !match;
-                if (!match)
-                    continue;
-
-                if (string.IsNullOrEmpty(m.cpu))
-                {
-                    libsdone.Add(m.dll);
-                    MatchCount++;
-                    if (!LoadedLibs.ContainsKey(m.dll))
-                        libsToLoad.Add((m.dll, m.target));
+                match = OperatingSystem.IsOSPlatform(s);
+                if (match)
                     break;
-                }
+            }
 
-                negate = m.cpu[0] == '!';
-                if (negate)
-                    m.cpu = m.cpu[1..];
-                m.cpu = m.cpu.ToLower();
-                string[] tcpu = m.cpu.Split(',');
-                match = false;
-                foreach (string s in tcpu)
+            if (negate)
+                match = !match;
+            if (!match)
+                continue;
+
+            if (string.IsNullOrEmpty(m.cpu))
+            {
+                libsdone.Add(m.dll);
+                MatchCount++;
+                if (!LoadedLibs.ContainsKey(m.dll))
+                    libsToLoad.Add((m.dll, m.target));
+                break;
+            }
+
+            negate = m.cpu[0] == '!';
+            if (negate)
+                m.cpu = m.cpu[1..];
+            m.cpu = m.cpu.ToLower();
+            var tcpu = m.cpu.Split(',');
+            match = false;
+            foreach (var s in tcpu)
+            {
+                switch (s)
                 {
-                    switch (s)
-                    {
-                        case "x86":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                                match = true;
-                            break;
-                        case "x86avx":
-                            if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                                match = true;
-                            break;
-                        case "x86-64":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                                match = true;
-                            break;
-                        case "x86-64avx":
-                            if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                                match = true;
-                            break;
-                        case "arm":
-                        case "aarch32":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
-                                match = true;
-                            break;
-                        case "arm64":
-                        case "armv8":
-                        case "aarch64":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                                match = true;
-                            break;
-                        case "s390":
-                        case "s390x":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.S390x)
-                                match = true;
-                            break;
-                    }
-                    if (match)
+                    case "x86":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+                            match = true;
+                        break;
+                    case "x86avx":
+                        if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X86)
+                            match = true;
+                        break;
+                    case "x86-64":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                            match = true;
+                        break;
+                    case "x86-64avx":
+                        if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                            match = true;
+                        break;
+                    case "arm":
+                    case "aarch32":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
+                            match = true;
+                        break;
+                    case "arm64":
+                    case "armv8":
+                    case "aarch64":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                            match = true;
+                        break;
+                    case "s390":
+                    case "s390x":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.S390x)
+                            match = true;
                         break;
                 }
-                if(negate)
-                    match = !match;
 
                 if (match)
-                {
-                    MatchCount++;
-                    libsdone.Add(m.dll);
-                    if (!LoadedLibs.ContainsKey(m.dll))
-                        libsToLoad.Add((m.dll, m.target));
-                }
+                    break;
             }
-            return MatchCount;
+
+            if (negate)
+                match = !match;
+
+            if (match)
+            {
+                MatchCount++;
+                libsdone.Add(m.dll);
+                if (!LoadedLibs.ContainsKey(m.dll))
+                    libsToLoad.Add((m.dll, m.target));
+            }
         }
 
-        public static void RegisterDll(Assembly assembly, string libname)
+        return MatchCount;
+    }
+
+    public static void RegisterDll(Assembly assembly, string libname)
+    {
+        lock (m_mainlock)
         {
-            lock (m_mainlock)
-            {
-                if (RegisteredAssemblies.Contains(assembly))
-                    return;
-                RegisteredAssemblies.Add(assembly);
-            }
-
-            if (!LoadedLibs.TryGetValue(libname, out IntPtr ptr))
-            {
-                string assemblyPath = Path.GetDirectoryName(assembly.Location);
-                string path = Path.Combine(assemblyPath, libname + ".dllconfig");
-                configuration c = ParseConfig(path);
-                if (c is null)
-                    return;
-
-                string libpath = ProcessDllConfiguration(c);
-                if (string.IsNullOrEmpty(libpath))
-                {
-                    LoadedLibs.Add(libname, IntPtr.Zero);
-                    return;
-                }
-
-                libpath = Path.Combine(assemblyPath, libpath);
-                if (!NativeLibrary.TryLoad(libpath, out ptr))
-                {
-                    LoadedLibs.Add(libname, IntPtr.Zero);
-                    return;
-                }
-
-                LoadedLibs.Add(libname, ptr);
-            }
-            if (ptr != IntPtr.Zero)
-                NativeLibrary.SetDllImportResolver(assembly, AssemblyDllImport);
+            if (RegisteredAssemblies.Contains(assembly))
+                return;
+            RegisteredAssemblies.Add(assembly);
         }
 
-        public static IntPtr LoadDll(string libname)
+        if (!LoadedLibs.TryGetValue(libname, out var ptr))
         {
-            if (LoadedLibs.TryGetValue(libname, out IntPtr ptr))
-                return ptr;
-
-            string execpath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-
-            string path = Path.Combine(execpath, libname + ".dllconfig");
-            configuration c = ParseConfig(path);
+            var assemblyPath = Path.GetDirectoryName(assembly.Location);
+            var path = Path.Combine(assemblyPath, libname + ".dllconfig");
+            var c = ParseConfig(path);
             if (c is null)
-                return IntPtr.Zero;
+                return;
 
-            string libpath = ProcessDllConfiguration(c);
+            var libpath = ProcessDllConfiguration(c);
             if (string.IsNullOrEmpty(libpath))
             {
                 LoadedLibs.Add(libname, IntPtr.Zero);
-                return IntPtr.Zero;
+                return;
             }
 
-            libpath = Path.Combine(execpath, libpath);
-            if (NativeLibrary.TryLoad(libpath, out ptr))
+            libpath = Path.Combine(assemblyPath, libpath);
+            if (!NativeLibrary.TryLoad(libpath, out ptr))
             {
-                LoadedLibs.Add(libname, ptr);
-                return ptr;
+                LoadedLibs.Add(libname, IntPtr.Zero);
+                return;
             }
 
+            LoadedLibs.Add(libname, ptr);
+        }
+
+        if (ptr != IntPtr.Zero)
+            NativeLibrary.SetDllImportResolver(assembly, AssemblyDllImport);
+    }
+
+    public static IntPtr LoadDll(string libname)
+    {
+        if (LoadedLibs.TryGetValue(libname, out var ptr))
+            return ptr;
+
+        var execpath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+        var path = Path.Combine(execpath, libname + ".dllconfig");
+        var c = ParseConfig(path);
+        if (c is null)
+            return IntPtr.Zero;
+
+        var libpath = ProcessDllConfiguration(c);
+        if (string.IsNullOrEmpty(libpath))
+        {
             LoadedLibs.Add(libname, IntPtr.Zero);
             return IntPtr.Zero;
         }
 
-        public static string ProcessDllConfiguration(configuration c)
+        libpath = Path.Combine(execpath, libpath);
+        if (NativeLibrary.TryLoad(libpath, out ptr))
         {
-            string newlibname = null;
-            foreach (dllmap m in c.maps)
+            LoadedLibs.Add(libname, ptr);
+            return ptr;
+        }
+
+        LoadedLibs.Add(libname, IntPtr.Zero);
+        return IntPtr.Zero;
+    }
+
+    public static string ProcessDllConfiguration(configuration c)
+    {
+        string newlibname = null;
+        foreach (var m in c.maps)
+        {
+            if (string.IsNullOrEmpty(m.target))
+                continue;
+            if (string.IsNullOrEmpty(m.os))
+                continue;
+
+            var match = false;
+            var negate = m.os[0] == '!';
+            if (negate)
+                m.os = m.os[1..];
+            var tos = m.os.Split(',');
+            foreach (var s in tos)
             {
-                if (string.IsNullOrEmpty(m.target))
-                    continue;
-                if (string.IsNullOrEmpty(m.os))
-                    continue;
-
-                bool match = false;
-                bool negate = m.os[0] == '!';
-                if (negate)
-                    m.os = m.os[1..];
-                string[] tos = m.os.Split(',');
-                foreach (string s in tos)
-                {
-                    match = System.OperatingSystem.IsOSPlatform(s);
-                    if (match)
-                    {
-                        match = !negate;
-                        break;
-                    }
-                }
-                if (!match)
-                    continue;
-
-                if (string.IsNullOrEmpty(m.cpu))
-                {
-                    newlibname = m.target;
-                    break;
-                }
-
-                negate = m.cpu[0] == '!';
-                if (negate)
-                    m.cpu = m.cpu[1..];
-                m.cpu = m.cpu.ToLower();
-                string[] tcpu = m.cpu.Split(',');
-                match = false;
-                foreach (string s in tcpu)
-                {
-                    switch (s)
-                    {
-                        case "x86":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                                match = true;
-                            break;
-                        case "x86avx":
-                            if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                                match = true;
-                            break;
-                        case "x86-64":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                                match = true;
-                            break;
-                        case "x86-64avx":
-                            if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                                match = true;
-                            break;
-                        case "arm":
-                        case "aarch32":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
-                                match = true;
-                            break;
-                        case "arm64":
-                        case "armv8":
-                        case "aarch64":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                                match = true;
-                            break;
-                        case "s390":
-                        case "s390x":
-                            if (RuntimeInformation.ProcessArchitecture == Architecture.S390x)
-                                match = true;
-                            break;
-                    }
-                    if (match)
-                    {
-                        match = !negate;
-                        break;
-                    }
-                }
+                match = OperatingSystem.IsOSPlatform(s);
                 if (match)
                 {
-                    newlibname = m.target;
+                    match = !negate;
                     break;
                 }
             }
-            return newlibname;
+
+            if (!match)
+                continue;
+
+            if (string.IsNullOrEmpty(m.cpu))
+            {
+                newlibname = m.target;
+                break;
+            }
+
+            negate = m.cpu[0] == '!';
+            if (negate)
+                m.cpu = m.cpu[1..];
+            m.cpu = m.cpu.ToLower();
+            var tcpu = m.cpu.Split(',');
+            match = false;
+            foreach (var s in tcpu)
+            {
+                switch (s)
+                {
+                    case "x86":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+                            match = true;
+                        break;
+                    case "x86avx":
+                        if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X86)
+                            match = true;
+                        break;
+                    case "x86-64":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                            match = true;
+                        break;
+                    case "x86-64avx":
+                        if (Avx.IsSupported && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                            match = true;
+                        break;
+                    case "arm":
+                    case "aarch32":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
+                            match = true;
+                        break;
+                    case "arm64":
+                    case "armv8":
+                    case "aarch64":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                            match = true;
+                        break;
+                    case "s390":
+                    case "s390x":
+                        if (RuntimeInformation.ProcessArchitecture == Architecture.S390x)
+                            match = true;
+                        break;
+                }
+
+                if (match)
+                {
+                    match = !negate;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                newlibname = m.target;
+                break;
+            }
         }
+
+        return newlibname;
+    }
+
+    [XmlRoot("dllmap")]
+    public class dllmap
+    {
+        [XmlAttribute("cpu")] public string cpu;
+
+        [XmlAttribute("dll")] public string dll;
+
+        [XmlAttribute("os")] public string os;
+
+        [XmlAttribute("target")] public string target;
+    }
+
+    [XmlRoot("configuration")]
+    public class configuration
+    {
+        [XmlElement("dllmap")] public List<dllmap> maps = new();
     }
 }

@@ -107,15 +107,15 @@ public class StdDequantizerParams : DequantizerParams
 	/// </seealso>
 	public float[][] nStep;
 
-	/// <summary>
-	///     Returns the type of the dequantizer for which the parameters are. The
-	///     types are defined in the Dequantizer class.
-	/// </summary>
-	/// <returns>
-	///     The type of the dequantizer for which the parameters
-	///     are. Always Q_TYPE_SCALAR_DZ.
-	/// </returns>
-	/// <seealso cref="Dequantizer">
-	/// </seealso>
-	public override int DequantizerType => QuantizationType_Fields.Q_TYPE_SCALAR_DZ;
+    /// <summary>
+    ///     Returns the type of the dequantizer for which the parameters are. The
+    ///     types are defined in the Dequantizer class.
+    /// </summary>
+    /// <returns>
+    ///     The type of the dequantizer for which the parameters
+    ///     are. Always Q_TYPE_SCALAR_DZ.
+    /// </returns>
+    /// <seealso cref="Dequantizer">
+    /// </seealso>
+    public override int DequantizerType => QuantizationType_Fields.Q_TYPE_SCALAR_DZ;
 }

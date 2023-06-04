@@ -85,15 +85,6 @@ public class InvCompTransf : ImgDataAdapter, BlkImgDataSrc
     //UPGRADE_NOTE: Final was removed from the declaration of 'pinfo'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     private static readonly string[][] pinfo = null;
 
-    /// <summary>Block used to request component 0 </summary>
-    private DataBlk block0;
-
-    /// <summary>Block used to request component 1 </summary>
-    private DataBlk block1;
-
-    /// <summary>Block used to request component 2 </summary>
-    private DataBlk block2;
-
     /// <summary>The component transformations specifications </summary>
     private readonly CompTransfSpec cts;
 
@@ -115,17 +106,26 @@ public class InvCompTransf : ImgDataAdapter, BlkImgDataSrc
     /// <summary>The source of image data </summary>
     private readonly BlkImgDataSrc src;
 
-    /// <summary>
-    ///     The type of the current component transformation JPEG 2000
-    ///     part I only support NONE, FORW_RCT and FORW_ICT types
-    /// </summary>
-    private int transfType = NONE;
-
     /// <summary>The bit-depths of un-transformed components </summary>
     private readonly int[] utdepth;
 
     /// <summary>The wavelet filter specifications </summary>
     private readonly SynWTFilterSpec wfs;
+
+    /// <summary>Block used to request component 0 </summary>
+    private DataBlk block0;
+
+    /// <summary>Block used to request component 1 </summary>
+    private DataBlk block1;
+
+    /// <summary>Block used to request component 2 </summary>
+    private DataBlk block2;
+
+    /// <summary>
+    ///     The type of the current component transformation JPEG 2000
+    ///     part I only support NONE, FORW_RCT and FORW_ICT types
+    /// </summary>
+    private int transfType = NONE;
 
     /// <summary>
     ///     Constructs a new ForwCompTransf object that operates on the

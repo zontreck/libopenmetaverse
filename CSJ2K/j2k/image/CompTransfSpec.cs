@@ -53,35 +53,35 @@ namespace CSJ2K.j2k.image;
 /// </seealso>
 public class CompTransfSpec : ModuleSpec
 {
-	/// <summary>
-	///     Constructs an empty 'CompTransfSpec' with the specified number of tiles
-	///     and components. This constructor is called by the decoder. Note: The
-	///     number of component is here for symmetry purpose. It is useless since
-	///     only tile specifications are meaningful.
-	/// </summary>
-	/// <param name="nt">
-	///     Number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     Number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	public CompTransfSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs an empty 'CompTransfSpec' with the specified number of tiles
+    ///     and components. This constructor is called by the decoder. Note: The
+    ///     number of component is here for symmetry purpose. It is useless since
+    ///     only tile specifications are meaningful.
+    /// </summary>
+    /// <param name="nt">
+    ///     Number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     Number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    public CompTransfSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
     }
 
-	/// <summary>
-	///     Check if component transformation is used in any of the tiles. This
-	///     method must not be used by the encoder.
-	/// </summary>
-	/// <returns>
-	///     True if a component transformation is used in at least on
-	///     tile.
-	/// </returns>
-	public virtual bool CompTransfUsed
+    /// <summary>
+    ///     Check if component transformation is used in any of the tiles. This
+    ///     method must not be used by the encoder.
+    /// </summary>
+    /// <returns>
+    ///     True if a component transformation is used in at least on
+    ///     tile.
+    /// </returns>
+    public virtual bool CompTransfUsed
     {
         get
         {

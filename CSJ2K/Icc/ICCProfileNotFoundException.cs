@@ -26,11 +26,11 @@ namespace CSJ2K.Icc;
 [Serializable]
 public class ICCProfileNotFoundException : ICCProfileException
 {
-	/// <summary> Contruct with message</summary>
-	/// <param name="msg">
-	///     returned by getMessage()
-	/// </param>
-	internal ICCProfileNotFoundException(string msg) : base(msg)
+    /// <summary> Contruct with message</summary>
+    /// <param name="msg">
+    ///     returned by getMessage()
+    /// </param>
+    internal ICCProfileNotFoundException(string msg) : base(msg)
     {
     }
 

@@ -117,11 +117,11 @@ namespace CSJ2K.j2k.entropy.encoder;
 /// </seealso>
 public class StdEntropyCoder : EntropyCoder
 {
-	/// <summary>
-	///     Whether to collect timing information or not: false. Used as a compile
-	///     time directive.
-	/// </summary>
-	private const bool DO_TIMING = false;
+    /// <summary>
+    ///     Whether to collect timing information or not: false. Used as a compile
+    ///     time directive.
+    /// </summary>
+    private const bool DO_TIMING = false;
 
     /// <summary>The cumulative wall time for the entropy coding engine, for each
     /// component. In the single-threaded implementation it is the total time,
@@ -704,6 +704,13 @@ public class StdEntropyCoder : EntropyCoder
     /// </summary>
     private class Compressor : IThreadRunnable
     {
+        /// <summary>
+        ///     The index of this compressor. Used to access thread local
+        ///     variables
+        /// </summary>
+        //UPGRADE_NOTE: Final was removed from the declaration of 'idx '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
+        private readonly int idx;
+
         /// <summary>The component on which to compress </summary>
         // Should be private, but some buggy JDK 1.1 compilers complain
         internal int c;
@@ -711,13 +718,6 @@ public class StdEntropyCoder : EntropyCoder
         /// <summary>The object where to store the compressed code-block </summary>
         // Should be private, but some buggy JDK 1.1 compilers complain
         internal CBlkRateDistStats ccb;
-
-        /// <summary>
-        ///     The index of this compressor. Used to access thread local
-        ///     variables
-        /// </summary>
-        //UPGRADE_NOTE: Final was removed from the declaration of 'idx '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
-        private readonly int idx;
 
         /// <summary>The length calculation type to use in compression </summary>
         // Should be private, but some buggy JDK 1.1 compilers complain
@@ -1020,76 +1020,76 @@ public class StdEntropyCoder : EntropyCoder
         }
 #endif
 
-	/// <summary>
-	///     Returns the code-block width for the specified tile and component.
-	/// </summary>
-	/// <param name="t">
-	///     The tile index
-	/// </param>
-	/// <param name="c">
-	///     the component index
-	/// </param>
-	/// <returns>
-	///     The code-block width for the specified tile and component
-	/// </returns>
-	public override int getCBlkWidth(int t, int c)
+    /// <summary>
+    ///     Returns the code-block width for the specified tile and component.
+    /// </summary>
+    /// <param name="t">
+    ///     The tile index
+    /// </param>
+    /// <param name="c">
+    ///     the component index
+    /// </param>
+    /// <returns>
+    ///     The code-block width for the specified tile and component
+    /// </returns>
+    public override int getCBlkWidth(int t, int c)
     {
         return cblks.getCBlkWidth(ModuleSpec.SPEC_TILE_COMP, t, c);
     }
 
-	/// <summary>
-	///     Returns the code-block height for the specified tile and component.
-	/// </summary>
-	/// <param name="t">
-	///     The tile index
-	/// </param>
-	/// <param name="c">
-	///     The component index
-	/// </param>
-	/// <returns>
-	///     The code-block height for the specified tile and component.
-	/// </returns>
-	public override int getCBlkHeight(int t, int c)
+    /// <summary>
+    ///     Returns the code-block height for the specified tile and component.
+    /// </summary>
+    /// <param name="t">
+    ///     The tile index
+    /// </param>
+    /// <param name="c">
+    ///     The component index
+    /// </param>
+    /// <returns>
+    ///     The code-block height for the specified tile and component.
+    /// </returns>
+    public override int getCBlkHeight(int t, int c)
     {
         return cblks.getCBlkHeight(ModuleSpec.SPEC_TILE_COMP, t, c);
     }
 
-	/// <summary>
-	///     Returns the next coded code-block in the current tile for the specified
-	///     component, as a copy (see below). The order in which code-blocks are
-	///     returned is not specified. However each code-block is returned only
-	///     once and all code-blocks will be returned if the method is called 'N'
-	///     times, where 'N' is the number of code-blocks in the tile. After all
-	///     the code-blocks have been returned for the current tile calls to this
-	///     method will return 'null'.
-	///     <p>
-	///         When changing the current tile (through 'setTile()' or 'nextTile()')
-	///         this method will always return the first code-block, as if this method
-	///         was never called before for the new current tile.
-	///     </p>
-	///     <p>
-	///         The data returned by this method is always a copy of the internal
-	///         data of this object, if any, and it can be modified "in place" without
-	///         any problems after being returned.
-	///     </p>
-	/// </summary>
-	/// <param name="c">
-	///     The component for which to return the next code-block.
-	/// </param>
-	/// <param name="ccb">
-	///     If non-null this object might be used in returning the coded
-	///     code-block in this or any subsequent call to this method. If null a new
-	///     one is created and returned. If the 'data' array of 'cbb' is not null
-	///     it may be reused to return the compressed data.
-	/// </param>
-	/// <returns>
-	///     The next coded code-block in the current tile for component
-	///     'n', or null if all code-blocks for the current tile have been
-	///     returned.
-	/// </returns>
-	/// <seealso cref="CBlkRateDistStats">
-	/// </seealso>
-	public override CBlkRateDistStats getNextCodeBlock(int c, CBlkRateDistStats ccb)
+    /// <summary>
+    ///     Returns the next coded code-block in the current tile for the specified
+    ///     component, as a copy (see below). The order in which code-blocks are
+    ///     returned is not specified. However each code-block is returned only
+    ///     once and all code-blocks will be returned if the method is called 'N'
+    ///     times, where 'N' is the number of code-blocks in the tile. After all
+    ///     the code-blocks have been returned for the current tile calls to this
+    ///     method will return 'null'.
+    ///     <p>
+    ///         When changing the current tile (through 'setTile()' or 'nextTile()')
+    ///         this method will always return the first code-block, as if this method
+    ///         was never called before for the new current tile.
+    ///     </p>
+    ///     <p>
+    ///         The data returned by this method is always a copy of the internal
+    ///         data of this object, if any, and it can be modified "in place" without
+    ///         any problems after being returned.
+    ///     </p>
+    /// </summary>
+    /// <param name="c">
+    ///     The component for which to return the next code-block.
+    /// </param>
+    /// <param name="ccb">
+    ///     If non-null this object might be used in returning the coded
+    ///     code-block in this or any subsequent call to this method. If null a new
+    ///     one is created and returned. If the 'data' array of 'cbb' is not null
+    ///     it may be reused to return the compressed data.
+    /// </param>
+    /// <returns>
+    ///     The next coded code-block in the current tile for component
+    ///     'n', or null if all code-blocks for the current tile have been
+    ///     returned.
+    /// </returns>
+    /// <seealso cref="CBlkRateDistStats">
+    /// </seealso>
+    public override CBlkRateDistStats getNextCodeBlock(int c, CBlkRateDistStats ccb)
     {
 #if DO_TIMING
 			long stime = 0L; // Start time for timed sections
@@ -1177,7 +1177,6 @@ public class StdEntropyCoder : EntropyCoder
         // If there are threads for this component which result has not
         // been returned yet, get it
         if (nBusyComps[c] > 0)
-        {
             lock (completedComps[c])
             {
                 // If no compressor is done, wait until one is
@@ -1210,7 +1209,6 @@ public class StdEntropyCoder : EntropyCoder
 #endif
                 return compr.ccb;
             }
-        }
 
         // Check targets error condition
         tPool.checkTargetErrors();
@@ -1222,19 +1220,19 @@ public class StdEntropyCoder : EntropyCoder
         return null;
     }
 
-	/// <summary>
-	///     Changes the current tile, given the new indexes. An
-	///     IllegalArgumentException is thrown if the indexes do not correspond to
-	///     a valid tile.
-	///     <p>This default implementation just changes the tile in the source.</p>
-	/// </summary>
-	/// <param name="x">
-	///     The horizontal index of the tile.
-	/// </param>
-	/// <param name="y">
-	///     The vertical index of the new tile.
-	/// </param>
-	public override void setTile(int x, int y)
+    /// <summary>
+    ///     Changes the current tile, given the new indexes. An
+    ///     IllegalArgumentException is thrown if the indexes do not correspond to
+    ///     a valid tile.
+    ///     <p>This default implementation just changes the tile in the source.</p>
+    /// </summary>
+    /// <param name="x">
+    ///     The horizontal index of the tile.
+    /// </param>
+    /// <param name="y">
+    ///     The vertical index of the new tile.
+    /// </param>
+    public override void setTile(int x, int y)
     {
         base.setTile(x, y);
         // Reset the tile specific variables
@@ -1243,16 +1241,16 @@ public class StdEntropyCoder : EntropyCoder
                 finishedTileComponent[c] = false;
     }
 
-	/// <summary>
-	///     Advances to the next tile, in standard scan-line order (by rows then
-	///     columns). An NoNextElementException is thrown if the current tile is
-	///     the last one (i.e. there is no next tile).
-	///     <p>
-	///         This default implementation just advances to the next tile in the
-	///         source.
-	///     </p>
-	/// </summary>
-	public override void nextTile()
+    /// <summary>
+    ///     Advances to the next tile, in standard scan-line order (by rows then
+    ///     columns). An NoNextElementException is thrown if the current tile is
+    ///     the last one (i.e. there is no next tile).
+    ///     <p>
+    ///         This default implementation just advances to the next tile in the
+    ///         source.
+    ///     </p>
+    /// </summary>
+    public override void nextTile()
     {
         // Reset the tilespecific variables
         if (finishedTileComponent != null)
@@ -1262,69 +1260,69 @@ public class StdEntropyCoder : EntropyCoder
     }
 
 
-	/// <summary>
-	///     Compresses the code-block in 'srcblk' and puts the results in 'ccb',
-	///     using the specified options and temporary storage.
-	/// </summary>
-	/// <param name="c">
-	///     The component for which to return the next code-block.
-	/// </param>
-	/// <param name="ccb">
-	///     The object where the compressed data will be stored. If the
-	///     'data' array of 'cbb' is not null it may be reused to return the
-	///     compressed data.
-	/// </param>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="mq">
-	///     The MQ-coder to use
-	/// </param>
-	/// <param name="bout">
-	///     The bit level output to use. Used only if 'OPT_BYPASS' is
-	///     turned on in the 'options' argument.
-	/// </param>
-	/// <param name="out">
-	///     The byte buffer trough which the compressed data is stored.
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="distbuf">
-	///     The buffer where to store the distortion  at
-	///     the end of each coding pass.
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of each coding pass.
-	/// </param>
-	/// <param name="istermbuf">
-	///     The buffer where to store the terminated flag for each
-	///     coding pass.
-	/// </param>
-	/// <param name="symbuf">
-	///     The buffer to hold symbols to send to the MQ coder
-	/// </param>
-	/// <param name="ctxtbuf">
-	///     A buffer to hold the contexts to use in sending the
-	///     buffered symbols to the MQ coder.
-	/// </param>
-	/// <param name="options">
-	///     The options to use when coding this code-block
-	/// </param>
-	/// <param name="rev">
-	///     The reversible flag. Should be true if the source of this
-	///     code-block's data is reversible.
-	/// </param>
-	/// <param name="lcType">
-	///     The type of length calculation to use with the MQ coder.
-	/// </param>
-	/// <param name="tType">
-	///     The type of termination to use with the MQ coder.
-	/// </param>
-	/// <seealso cref="getNextCodeBlock">
-	/// </seealso>
-	private static void compressCodeBlock(int c, CBlkRateDistStats ccb, CBlkWTData srcblk, MQCoder mq,
+    /// <summary>
+    ///     Compresses the code-block in 'srcblk' and puts the results in 'ccb',
+    ///     using the specified options and temporary storage.
+    /// </summary>
+    /// <param name="c">
+    ///     The component for which to return the next code-block.
+    /// </param>
+    /// <param name="ccb">
+    ///     The object where the compressed data will be stored. If the
+    ///     'data' array of 'cbb' is not null it may be reused to return the
+    ///     compressed data.
+    /// </param>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="mq">
+    ///     The MQ-coder to use
+    /// </param>
+    /// <param name="bout">
+    ///     The bit level output to use. Used only if 'OPT_BYPASS' is
+    ///     turned on in the 'options' argument.
+    /// </param>
+    /// <param name="out">
+    ///     The byte buffer trough which the compressed data is stored.
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="distbuf">
+    ///     The buffer where to store the distortion  at
+    ///     the end of each coding pass.
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of each coding pass.
+    /// </param>
+    /// <param name="istermbuf">
+    ///     The buffer where to store the terminated flag for each
+    ///     coding pass.
+    /// </param>
+    /// <param name="symbuf">
+    ///     The buffer to hold symbols to send to the MQ coder
+    /// </param>
+    /// <param name="ctxtbuf">
+    ///     A buffer to hold the contexts to use in sending the
+    ///     buffered symbols to the MQ coder.
+    /// </param>
+    /// <param name="options">
+    ///     The options to use when coding this code-block
+    /// </param>
+    /// <param name="rev">
+    ///     The reversible flag. Should be true if the source of this
+    ///     code-block's data is reversible.
+    /// </param>
+    /// <param name="lcType">
+    ///     The type of length calculation to use with the MQ coder.
+    /// </param>
+    /// <param name="tType">
+    ///     The type of termination to use with the MQ coder.
+    /// </param>
+    /// <seealso cref="getNextCodeBlock">
+    /// </seealso>
+    private static void compressCodeBlock(int c, CBlkRateDistStats ccb, CBlkWTData srcblk, MQCoder mq,
         BitToByteOutput bout, ByteOutputBuffer out_Renamed, int[] state, double[] distbuf, int[] ratebuf,
         bool[] istermbuf, int[] symbuf, int[] ctxtbuf, int options, bool rev, int lcType, int tType)
     {
@@ -1514,22 +1512,22 @@ public class StdEntropyCoder : EntropyCoder
             bout.reset();
     }
 
-	/// <summary>
-	///     Calculates the number of magnitude bit-planes that are to be skipped,
-	///     because they are non-significant. The algorithm looks for the largest
-	///     magnitude and calculates the most significant bit-plane of it.
-	/// </summary>
-	/// <param name="cblk">
-	///     The code-block of data to scan
-	/// </param>
-	/// <param name="lmb">
-	///     The least significant magnitude bit in the data
-	/// </param>
-	/// <returns>
-	///     The number of magnitude bit-planes to skip (i.e. all zero most
-	///     significant bit-planes).
-	/// </returns>
-	private static int calcSkipMSBP(CBlkWTData cblk, int lmb)
+    /// <summary>
+    ///     Calculates the number of magnitude bit-planes that are to be skipped,
+    ///     because they are non-significant. The algorithm looks for the largest
+    ///     magnitude and calculates the most significant bit-plane of it.
+    /// </summary>
+    /// <param name="cblk">
+    ///     The code-block of data to scan
+    /// </param>
+    /// <param name="lmb">
+    ///     The least significant magnitude bit in the data
+    /// </param>
+    /// <returns>
+    ///     The number of magnitude bit-planes to skip (i.e. all zero most
+    ///     significant bit-planes).
+    /// </returns>
+    private static int calcSkipMSBP(CBlkWTData cblk, int lmb)
     {
         int k, kmax, mask;
         int[] data;
@@ -1573,63 +1571,63 @@ public class StdEntropyCoder : EntropyCoder
         return 30 - msbp;
     }
 
-	/// <summary>
-	///     Performs the significance propagation pass on the specified data and
-	///     bit-plane. It codes all insignificant samples which have, at least, one
-	///     of its immediate eight neighbors already significant, using the ZC and
-	///     SC primitives as needed. It toggles the "visited" state bit to 1 for
-	///     all those samples.
-	/// </summary>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="mq">
-	///     The MQ-coder to use
-	/// </param>
-	/// <param name="doterm">
-	///     If true it performs an MQ-coder termination after the end
-	///     of the pass
-	/// </param>
-	/// <param name="bp">
-	///     The bit-plane to code
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="fs">
-	///     The distortion estimation lookup table for SC
-	/// </param>
-	/// <param name="zc_lut">
-	///     The ZC lookup table to use in ZC.
-	/// </param>
-	/// <param name="symbuf">
-	///     The buffer to hold symbols to send to the MQ coder
-	/// </param>
-	/// <param name="ctxtbuf">
-	///     A buffer to hold the contexts to use in sending the
-	///     buffered symbols to the MQ coder.
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of this coding pass.
-	/// </param>
-	/// <param name="pidx">
-	///     The coding pass index. Is the index in the 'ratebuf' array
-	///     where to store the coded length after this coding pass.
-	/// </param>
-	/// <param name="ltpidx">
-	///     The index of the last pass that was terminated, or
-	///     negative if none.
-	/// </param>
-	/// <param name="options">
-	///     The bitmask of entropy coding options to apply to the
-	///     code-block
-	/// </param>
-	/// <returns>
-	///     The decrease in distortion for this pass, in the fixed-point
-	///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
-	/// </returns>
-	private static int sigProgPass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fs,
+    /// <summary>
+    ///     Performs the significance propagation pass on the specified data and
+    ///     bit-plane. It codes all insignificant samples which have, at least, one
+    ///     of its immediate eight neighbors already significant, using the ZC and
+    ///     SC primitives as needed. It toggles the "visited" state bit to 1 for
+    ///     all those samples.
+    /// </summary>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="mq">
+    ///     The MQ-coder to use
+    /// </param>
+    /// <param name="doterm">
+    ///     If true it performs an MQ-coder termination after the end
+    ///     of the pass
+    /// </param>
+    /// <param name="bp">
+    ///     The bit-plane to code
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="fs">
+    ///     The distortion estimation lookup table for SC
+    /// </param>
+    /// <param name="zc_lut">
+    ///     The ZC lookup table to use in ZC.
+    /// </param>
+    /// <param name="symbuf">
+    ///     The buffer to hold symbols to send to the MQ coder
+    /// </param>
+    /// <param name="ctxtbuf">
+    ///     A buffer to hold the contexts to use in sending the
+    ///     buffered symbols to the MQ coder.
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of this coding pass.
+    /// </param>
+    /// <param name="pidx">
+    ///     The coding pass index. Is the index in the 'ratebuf' array
+    ///     where to store the coded length after this coding pass.
+    /// </param>
+    /// <param name="ltpidx">
+    ///     The index of the last pass that was terminated, or
+    ///     negative if none.
+    /// </param>
+    /// <param name="options">
+    ///     The bitmask of entropy coding options to apply to the
+    ///     code-block
+    /// </param>
+    /// <returns>
+    ///     The decrease in distortion for this pass, in the fixed-point
+    ///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
+    /// </returns>
+    private static int sigProgPass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fs,
         int[] zc_lut, int[] symbuf, int[] ctxtbuf, int[] ratebuf, int pidx, int ltpidx, int options)
     {
         int j, sj; // The state index for line and stripe
@@ -1958,59 +1956,59 @@ public class StdEntropyCoder : EntropyCoder
         return dist;
     }
 
-	/// <summary>
-	///     Performs the significance propagation pass on the specified data and
-	///     bit-plane, without using the arithmetic coder. It codes all
-	///     insignificant samples which have, at least, one of its immediate eight
-	///     neighbors already significant, using the ZC and SC primitives as
-	///     needed. It toggles the "visited" state bit to 1 for all those samples.
-	///     <p>
-	///         In this method, the arithmetic coder is bypassed, and raw bits are
-	///         directly written in the bit stream (useful when distribution are close
-	///         to uniform, for intance, at high bit-rates and at lossless
-	///         compression).
-	///     </p>
-	/// </summary>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="bout">
-	///     The bit based output
-	/// </param>
-	/// <param name="doterm">
-	///     If true the bit based output is byte aligned after the
-	///     end of the pass.
-	/// </param>
-	/// <param name="bp">
-	///     The bit-plane to code
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="fs">
-	///     The distortion estimation lookup table for SC
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of this coding pass.
-	/// </param>
-	/// <param name="pidx">
-	///     The coding pass index. Is the index in the 'ratebuf' array
-	///     where to store the coded length after this coding pass.
-	/// </param>
-	/// <param name="ltpidx">
-	///     The index of the last pass that was terminated, or
-	///     negative if none.
-	/// </param>
-	/// <param name="options">
-	///     The bitmask of entropy coding options to apply to the
-	///     code-block
-	/// </param>
-	/// <returns>
-	///     The decrease in distortion for this pass, in the fixed-point
-	///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
-	/// </returns>
-	private static int rawSigProgPass(CBlkWTData srcblk, BitToByteOutput bout, bool doterm, int bp, int[] state,
+    /// <summary>
+    ///     Performs the significance propagation pass on the specified data and
+    ///     bit-plane, without using the arithmetic coder. It codes all
+    ///     insignificant samples which have, at least, one of its immediate eight
+    ///     neighbors already significant, using the ZC and SC primitives as
+    ///     needed. It toggles the "visited" state bit to 1 for all those samples.
+    ///     <p>
+    ///         In this method, the arithmetic coder is bypassed, and raw bits are
+    ///         directly written in the bit stream (useful when distribution are close
+    ///         to uniform, for intance, at high bit-rates and at lossless
+    ///         compression).
+    ///     </p>
+    /// </summary>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="bout">
+    ///     The bit based output
+    /// </param>
+    /// <param name="doterm">
+    ///     If true the bit based output is byte aligned after the
+    ///     end of the pass.
+    /// </param>
+    /// <param name="bp">
+    ///     The bit-plane to code
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="fs">
+    ///     The distortion estimation lookup table for SC
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of this coding pass.
+    /// </param>
+    /// <param name="pidx">
+    ///     The coding pass index. Is the index in the 'ratebuf' array
+    ///     where to store the coded length after this coding pass.
+    /// </param>
+    /// <param name="ltpidx">
+    ///     The index of the last pass that was terminated, or
+    ///     negative if none.
+    /// </param>
+    /// <param name="options">
+    ///     The bitmask of entropy coding options to apply to the
+    ///     code-block
+    /// </param>
+    /// <returns>
+    ///     The decrease in distortion for this pass, in the fixed-point
+    ///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
+    /// </returns>
+    private static int rawSigProgPass(CBlkWTData srcblk, BitToByteOutput bout, bool doterm, int bp, int[] state,
         int[] fs, int[] ratebuf, int pidx, int ltpidx, int options)
     {
         int j, sj; // The state index for line and stripe
@@ -2331,59 +2329,59 @@ public class StdEntropyCoder : EntropyCoder
         return dist;
     }
 
-	/// <summary>
-	///     Performs the magnitude refinement pass on the specified data and
-	///     bit-plane. It codes the samples which are significant and which do not
-	///     have the "visited" state bit turned on, using the MR primitive. The
-	///     "visited" state bit is not mofified for any samples.
-	/// </summary>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="mq">
-	///     The MQ-coder to use
-	/// </param>
-	/// <param name="doterm">
-	///     If true it performs an MQ-coder termination after the end
-	///     of the pass
-	/// </param>
-	/// <param name="bp">
-	///     The bit-plane to code
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="fm">
-	///     The distortion estimation lookup table for MR
-	/// </param>
-	/// <param name="symbuf">
-	///     The buffer to hold symbols to send to the MQ coder
-	/// </param>
-	/// <param name="ctxtbuf">
-	///     A buffer to hold the contexts to use in sending the
-	///     buffered symbols to the MQ coder.
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of this coding pass.
-	/// </param>
-	/// <param name="pidx">
-	///     The coding pass index. Is the index in the 'ratebuf' array
-	///     where to store the coded length after this coding pass.
-	/// </param>
-	/// <param name="ltpidx">
-	///     The index of the last pass that was terminated, or
-	///     negative if none.
-	/// </param>
-	/// <param name="options">
-	///     The bitmask of entropy coding options to apply to the
-	///     code-block
-	/// </param>
-	/// <returns>
-	///     The decrease in distortion for this pass, in the fixed-point
-	///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
-	/// </returns>
-	private static int magRefPass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fm,
+    /// <summary>
+    ///     Performs the magnitude refinement pass on the specified data and
+    ///     bit-plane. It codes the samples which are significant and which do not
+    ///     have the "visited" state bit turned on, using the MR primitive. The
+    ///     "visited" state bit is not mofified for any samples.
+    /// </summary>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="mq">
+    ///     The MQ-coder to use
+    /// </param>
+    /// <param name="doterm">
+    ///     If true it performs an MQ-coder termination after the end
+    ///     of the pass
+    /// </param>
+    /// <param name="bp">
+    ///     The bit-plane to code
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="fm">
+    ///     The distortion estimation lookup table for MR
+    /// </param>
+    /// <param name="symbuf">
+    ///     The buffer to hold symbols to send to the MQ coder
+    /// </param>
+    /// <param name="ctxtbuf">
+    ///     A buffer to hold the contexts to use in sending the
+    ///     buffered symbols to the MQ coder.
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of this coding pass.
+    /// </param>
+    /// <param name="pidx">
+    ///     The coding pass index. Is the index in the 'ratebuf' array
+    ///     where to store the coded length after this coding pass.
+    /// </param>
+    /// <param name="ltpidx">
+    ///     The index of the last pass that was terminated, or
+    ///     negative if none.
+    /// </param>
+    /// <param name="options">
+    ///     The bitmask of entropy coding options to apply to the
+    ///     code-block
+    /// </param>
+    /// <returns>
+    ///     The decrease in distortion for this pass, in the fixed-point
+    ///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
+    /// </returns>
+    private static int magRefPass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fm,
         int[] symbuf, int[] ctxtbuf, int[] ratebuf, int pidx, int ltpidx, int options)
     {
         int j, sj; // The state index for line and stripe
@@ -2547,61 +2545,61 @@ public class StdEntropyCoder : EntropyCoder
         return dist;
     }
 
-	/// <summary>
-	///     Performs the magnitude refinement pass on the specified data and
-	///     bit-plane, without using the arithmetic coder. It codes the samples
-	///     which are significant and which do not have the "visited" state bit
-	///     turned on, using the MR primitive. The "visited" state bit is not
-	///     mofified for any samples.
-	///     <p>
-	///         In this method, the arithmetic coder is bypassed, and raw bits are
-	///         directly written in the bit stream (useful when distribution are close
-	///         to uniform, for intance, at high bit-rates and at lossless
-	///         compression). The 'STATE_PREV_MR_R1' and 'STATE_PREV_MR_R2' bits are
-	///         not set because they are used only when the arithmetic coder is not
-	///         bypassed.
-	///     </p>
-	/// </summary>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="bout">
-	///     The bit based output
-	/// </param>
-	/// <param name="doterm">
-	///     If true the bit based output is byte aligned after the
-	///     end of the pass.
-	/// </param>
-	/// <param name="bp">
-	///     The bit-plane to code
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="fm">
-	///     The distortion estimation lookup table for MR
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of this coding pass.
-	/// </param>
-	/// <param name="pidx">
-	///     The coding pass index. Is the index in the 'ratebuf' array
-	///     where to store the coded length after this coding pass.
-	/// </param>
-	/// <param name="ltpidx">
-	///     The index of the last pass that was terminated, or
-	///     negative if none.
-	/// </param>
-	/// <param name="options">
-	///     The bitmask of entropy coding options to apply to the
-	///     code-block
-	/// </param>
-	/// <returns>
-	///     The decrease in distortion for this pass, in the fixed-point
-	///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
-	/// </returns>
-	private static int rawMagRefPass(CBlkWTData srcblk, BitToByteOutput bout, bool doterm, int bp, int[] state,
+    /// <summary>
+    ///     Performs the magnitude refinement pass on the specified data and
+    ///     bit-plane, without using the arithmetic coder. It codes the samples
+    ///     which are significant and which do not have the "visited" state bit
+    ///     turned on, using the MR primitive. The "visited" state bit is not
+    ///     mofified for any samples.
+    ///     <p>
+    ///         In this method, the arithmetic coder is bypassed, and raw bits are
+    ///         directly written in the bit stream (useful when distribution are close
+    ///         to uniform, for intance, at high bit-rates and at lossless
+    ///         compression). The 'STATE_PREV_MR_R1' and 'STATE_PREV_MR_R2' bits are
+    ///         not set because they are used only when the arithmetic coder is not
+    ///         bypassed.
+    ///     </p>
+    /// </summary>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="bout">
+    ///     The bit based output
+    /// </param>
+    /// <param name="doterm">
+    ///     If true the bit based output is byte aligned after the
+    ///     end of the pass.
+    /// </param>
+    /// <param name="bp">
+    ///     The bit-plane to code
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="fm">
+    ///     The distortion estimation lookup table for MR
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of this coding pass.
+    /// </param>
+    /// <param name="pidx">
+    ///     The coding pass index. Is the index in the 'ratebuf' array
+    ///     where to store the coded length after this coding pass.
+    /// </param>
+    /// <param name="ltpidx">
+    ///     The index of the last pass that was terminated, or
+    ///     negative if none.
+    /// </param>
+    /// <param name="options">
+    ///     The bitmask of entropy coding options to apply to the
+    ///     code-block
+    /// </param>
+    /// <returns>
+    ///     The decrease in distortion for this pass, in the fixed-point
+    ///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
+    /// </returns>
+    private static int rawMagRefPass(CBlkWTData srcblk, BitToByteOutput bout, bool doterm, int bp, int[] state,
         int[] fm, int[] ratebuf, int pidx, int ltpidx, int options)
     {
         int j, sj; // The state index for line and stripe
@@ -2744,62 +2742,62 @@ public class StdEntropyCoder : EntropyCoder
         return dist;
     }
 
-	/// <summary>
-	///     Performs the cleanup pass on the specified data and bit-plane. It codes
-	///     all insignificant samples which have its "visited" state bit off, using
-	///     the ZC, SC, and RLC primitives. It toggles the "visited" state bit to 0
-	///     (off) for all samples in the code-block.
-	/// </summary>
-	/// <param name="srcblk">
-	///     The code-block data to code
-	/// </param>
-	/// <param name="mq">
-	///     The MQ-coder to use
-	/// </param>
-	/// <param name="doterm">
-	///     If true it performs an MQ-coder termination after the end
-	///     of the pass
-	/// </param>
-	/// <param name="bp">
-	///     The bit-plane to code
-	/// </param>
-	/// <param name="state">
-	///     The state information for the code-block
-	/// </param>
-	/// <param name="fs">
-	///     The distortion estimation lookup table for SC
-	/// </param>
-	/// <param name="zc_lut">
-	///     The ZC lookup table to use in ZC.
-	/// </param>
-	/// <param name="symbuf">
-	///     The buffer to hold symbols to send to the MQ coder
-	/// </param>
-	/// <param name="ctxtbuf">
-	///     A buffer to hold the contexts to use in sending the
-	///     buffered symbols to the MQ coder.
-	/// </param>
-	/// <param name="ratebuf">
-	///     The buffer where to store the rate (i.e. coded lenth) at
-	///     the end of this coding pass.
-	/// </param>
-	/// <param name="pidx">
-	///     The coding pass index. Is the index in the 'ratebuf' array
-	///     where to store the coded length after this coding pass.
-	/// </param>
-	/// <param name="ltpidx">
-	///     The index of the last pass that was terminated, or
-	///     negative if none.
-	/// </param>
-	/// <param name="options">
-	///     The bitmask of entropy coding options to apply to the
-	///     code-block
-	/// </param>
-	/// <returns>
-	///     The decrease in distortion for this pass, in the fixed-point
-	///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
-	/// </returns>
-	private static int cleanuppass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fs,
+    /// <summary>
+    ///     Performs the cleanup pass on the specified data and bit-plane. It codes
+    ///     all insignificant samples which have its "visited" state bit off, using
+    ///     the ZC, SC, and RLC primitives. It toggles the "visited" state bit to 0
+    ///     (off) for all samples in the code-block.
+    /// </summary>
+    /// <param name="srcblk">
+    ///     The code-block data to code
+    /// </param>
+    /// <param name="mq">
+    ///     The MQ-coder to use
+    /// </param>
+    /// <param name="doterm">
+    ///     If true it performs an MQ-coder termination after the end
+    ///     of the pass
+    /// </param>
+    /// <param name="bp">
+    ///     The bit-plane to code
+    /// </param>
+    /// <param name="state">
+    ///     The state information for the code-block
+    /// </param>
+    /// <param name="fs">
+    ///     The distortion estimation lookup table for SC
+    /// </param>
+    /// <param name="zc_lut">
+    ///     The ZC lookup table to use in ZC.
+    /// </param>
+    /// <param name="symbuf">
+    ///     The buffer to hold symbols to send to the MQ coder
+    /// </param>
+    /// <param name="ctxtbuf">
+    ///     A buffer to hold the contexts to use in sending the
+    ///     buffered symbols to the MQ coder.
+    /// </param>
+    /// <param name="ratebuf">
+    ///     The buffer where to store the rate (i.e. coded lenth) at
+    ///     the end of this coding pass.
+    /// </param>
+    /// <param name="pidx">
+    ///     The coding pass index. Is the index in the 'ratebuf' array
+    ///     where to store the coded length after this coding pass.
+    /// </param>
+    /// <param name="ltpidx">
+    ///     The index of the last pass that was terminated, or
+    ///     negative if none.
+    /// </param>
+    /// <param name="options">
+    ///     The bitmask of entropy coding options to apply to the
+    ///     code-block
+    /// </param>
+    /// <returns>
+    ///     The decrease in distortion for this pass, in the fixed-point
+    ///     normalized representation of the 'FS_LOSSY' and 'FS_LOSSLESS' tables.
+    /// </returns>
+    private static int cleanuppass(CBlkWTData srcblk, MQCoder mq, bool doterm, int bp, int[] state, int[] fs,
         int[] zc_lut, int[] symbuf, int[] ctxtbuf, int[] ratebuf, int pidx, int ltpidx, int options)
     {
         // NOTE: The speedup mode of the MQ coder has been briefly tried to
@@ -3282,46 +3280,46 @@ public class StdEntropyCoder : EntropyCoder
         return dist;
     }
 
-	/// <summary>
-	///     Ensures that at the end of a non-terminated coding pass there is not a
-	///     0xFF byte, modifying the stored rates if necessary.
-	///     <p>
-	///         Due to error resiliance reasons, a coding pass should never have its
-	///         last byte be a 0xFF, since that can lead to the emulation of a resync
-	///         marker. This method checks if that is the case, and reduces the rate
-	///         for a given pass if necessary. The ommitted 0xFF will be synthetized by
-	///         the decoder if necessary, as required by JPEG 2000. This method should
-	///         only be called once that the entire code-block is coded.
-	///     </p>
-	///     <p>
-	///         Passes that are terminated are not checked for the 0xFF byte, since
-	///         it is assumed that the termination procedure does not output any
-	///         trailing 0xFF. Checking the terminated segments would involve much more
-	///         than just modifying the stored rates.
-	///     </p>
-	///     <p>
-	///         NOTE: It is assumed by this method that the coded data does not
-	///         contain consecutive 0xFF bytes, as is the case with the MQ and
-	///         'arithemetic coding bypass' bit stuffing policy. However, the
-	///         termination policies used should also respect this requirement.
-	///     </p>
-	/// </summary>
-	/// <param name="data">
-	///     The coded data for the code-block
-	/// </param>
-	/// <param name="rates">
-	///     The rate (i.e. accumulated number of bytes) for each
-	///     coding pass
-	/// </param>
-	/// <param name="isterm">
-	///     An array of flags indicating, for each pass, if it is
-	///     terminated or not. If null it is assumed that no pass is terminated,
-	///     except the last one.
-	/// </param>
-	/// <param name="n">
-	///     The number of coding passes
-	/// </param>
-	private static void checkEndOfPassFF(byte[] data, int[] rates, bool[] isterm, int n)
+    /// <summary>
+    ///     Ensures that at the end of a non-terminated coding pass there is not a
+    ///     0xFF byte, modifying the stored rates if necessary.
+    ///     <p>
+    ///         Due to error resiliance reasons, a coding pass should never have its
+    ///         last byte be a 0xFF, since that can lead to the emulation of a resync
+    ///         marker. This method checks if that is the case, and reduces the rate
+    ///         for a given pass if necessary. The ommitted 0xFF will be synthetized by
+    ///         the decoder if necessary, as required by JPEG 2000. This method should
+    ///         only be called once that the entire code-block is coded.
+    ///     </p>
+    ///     <p>
+    ///         Passes that are terminated are not checked for the 0xFF byte, since
+    ///         it is assumed that the termination procedure does not output any
+    ///         trailing 0xFF. Checking the terminated segments would involve much more
+    ///         than just modifying the stored rates.
+    ///     </p>
+    ///     <p>
+    ///         NOTE: It is assumed by this method that the coded data does not
+    ///         contain consecutive 0xFF bytes, as is the case with the MQ and
+    ///         'arithemetic coding bypass' bit stuffing policy. However, the
+    ///         termination policies used should also respect this requirement.
+    ///     </p>
+    /// </summary>
+    /// <param name="data">
+    ///     The coded data for the code-block
+    /// </param>
+    /// <param name="rates">
+    ///     The rate (i.e. accumulated number of bytes) for each
+    ///     coding pass
+    /// </param>
+    /// <param name="isterm">
+    ///     An array of flags indicating, for each pass, if it is
+    ///     terminated or not. If null it is assumed that no pass is terminated,
+    ///     except the last one.
+    /// </param>
+    /// <param name="n">
+    ///     The number of coding passes
+    /// </param>
+    private static void checkEndOfPassFF(byte[] data, int[] rates, bool[] isterm, int n)
     {
         int dp; // the position to test in 'data'
 
@@ -3345,17 +3343,17 @@ public class StdEntropyCoder : EntropyCoder
                 }
     }
 
-	/// <summary>
-	///     Load options, length calculation type and termination type for each
-	///     tile-component.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	public virtual void initTileComp(int nt, int nc)
+    /// <summary>
+    ///     Load options, length calculation type and termination type for each
+    ///     tile-component.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    public virtual void initTileComp(int nt, int nc)
     {
         opts = new int[nt][];
         for (var i2 = 0; i2 < nt; i2++) opts[i2] = new int[nc];
@@ -3429,65 +3427,65 @@ public class StdEntropyCoder : EntropyCoder
         // End loop on tiles
     }
 
-	/// <summary>
-	///     Returns the precinct partition width for the specified component, tile
-	///     and resolution level.
-	/// </summary>
-	/// <param name="t">
-	///     the tile index
-	/// </param>
-	/// <param name="c">
-	///     the component
-	/// </param>
-	/// <param name="rl">
-	///     the resolution level
-	/// </param>
-	/// <returns>
-	///     The precinct partition width for the specified component, tile
-	///     and resolution level
-	/// </returns>
-	public override int getPPX(int t, int c, int rl)
+    /// <summary>
+    ///     Returns the precinct partition width for the specified component, tile
+    ///     and resolution level.
+    /// </summary>
+    /// <param name="t">
+    ///     the tile index
+    /// </param>
+    /// <param name="c">
+    ///     the component
+    /// </param>
+    /// <param name="rl">
+    ///     the resolution level
+    /// </param>
+    /// <returns>
+    ///     The precinct partition width for the specified component, tile
+    ///     and resolution level
+    /// </returns>
+    public override int getPPX(int t, int c, int rl)
     {
         return pss.getPPX(t, c, rl);
     }
 
-	/// <summary>
-	///     Returns the precinct partition height for the specified component, tile
-	///     and resolution level.
-	/// </summary>
-	/// <param name="t">
-	///     the tile index
-	/// </param>
-	/// <param name="c">
-	///     the component
-	/// </param>
-	/// <param name="rl">
-	///     the resolution level
-	/// </param>
-	/// <returns>
-	///     The precinct partition height for the specified component, tile
-	///     and resolution level
-	/// </returns>
-	public override int getPPY(int t, int c, int rl)
+    /// <summary>
+    ///     Returns the precinct partition height for the specified component, tile
+    ///     and resolution level.
+    /// </summary>
+    /// <param name="t">
+    ///     the tile index
+    /// </param>
+    /// <param name="c">
+    ///     the component
+    /// </param>
+    /// <param name="rl">
+    ///     the resolution level
+    /// </param>
+    /// <returns>
+    ///     The precinct partition height for the specified component, tile
+    ///     and resolution level
+    /// </returns>
+    public override int getPPY(int t, int c, int rl)
     {
         return pss.getPPY(t, c, rl);
     }
 
-	/// <summary>
-	///     Returns true if precinct partition is used for the specified component
-	///     and tile, returns false otherwise.
-	/// </summary>
-	/// <param name="c">
-	///     The component
-	/// </param>
-	/// <param name="t">
-	///     The tile
-	/// </param>
-	/// <returns>
-	///     True if precinct partition is used for the specified component
-	///     and tile, returns false otherwise.
-	/// </returns>
-	public override bool precinctPartitionUsed(int c, int t)
+    /// <summary>
+    ///     Returns true if precinct partition is used for the specified component
+    ///     and tile, returns false otherwise.
+    /// </summary>
+    /// <param name="c">
+    ///     The component
+    /// </param>
+    /// <param name="t">
+    ///     The tile
+    /// </param>
+    /// <returns>
+    ///     True if precinct partition is used for the specified component
+    ///     and tile, returns false otherwise.
+    /// </returns>
+    public override bool precinctPartitionUsed(int c, int t)
     {
         return precinctPartition[c][t];
     }

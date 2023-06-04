@@ -56,34 +56,34 @@ namespace CSJ2K.j2k.image.forwcomptransf;
 /// </seealso>
 public class ForwCompTransfSpec : CompTransfSpec, FilterTypes
 {
-	/// <summary>
-	///     Constructs a new 'ForwCompTransfSpec' for the specified number of
-	///     components and tiles, the wavelet filters type and the parameter of the
-	///     option 'Mct'. This constructor is called by the encoder. It also checks
-	///     that the arguments belong to the recognized arguments list.
-	///     <p>
-	///         This constructor chose the component transformation type depending
-	///         on the wavelet filters : RCT with w5x3 filter and ICT with w9x7
-	///         filter. Note: All filters must use the same data type.
-	///     </p>
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	/// <param name="wfs">
-	///     The wavelet filter specifications
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList
-	/// </param>
-	public ForwCompTransfSpec(int nt, int nc, byte type, AnWTFilterSpec wfs, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs a new 'ForwCompTransfSpec' for the specified number of
+    ///     components and tiles, the wavelet filters type and the parameter of the
+    ///     option 'Mct'. This constructor is called by the encoder. It also checks
+    ///     that the arguments belong to the recognized arguments list.
+    ///     <p>
+    ///         This constructor chose the component transformation type depending
+    ///         on the wavelet filters : RCT with w5x3 filter and ICT with w9x7
+    ///         filter. Note: All filters must use the same data type.
+    ///     </p>
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    /// <param name="wfs">
+    ///     The wavelet filter specifications
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList
+    /// </param>
+    public ForwCompTransfSpec(int nt, int nc, byte type, AnWTFilterSpec wfs, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter("Mct");
 
@@ -333,21 +333,21 @@ public class ForwCompTransfSpec : CompTransfSpec, FilterTypes
             }
     }
 
-	/// <summary>
-	///     Get the filter type common to all component of a given tile. If the
-	///     tile index is -1, it searches common filter type of default
-	///     specifications.
-	/// </summary>
-	/// <param name="t">
-	///     The tile index
-	/// </param>
-	/// <param name="wfs">
-	///     The analysis filters specifications
-	/// </param>
-	/// <returns>
-	///     The filter type common to all the components
-	/// </returns>
-	private int getFilterType(int t, AnWTFilterSpec wfs)
+    /// <summary>
+    ///     Get the filter type common to all component of a given tile. If the
+    ///     tile index is -1, it searches common filter type of default
+    ///     specifications.
+    /// </summary>
+    /// <param name="t">
+    ///     The tile index
+    /// </param>
+    /// <param name="wfs">
+    ///     The analysis filters specifications
+    /// </param>
+    /// <returns>
+    ///     The filter type common to all the components
+    /// </returns>
+    private int getFilterType(int t, AnWTFilterSpec wfs)
     {
         AnWTFilter[][] anfilt;
         var filtType = new int[nComp];

@@ -95,42 +95,42 @@ public class EBCOTRateAllocator : PostCompRateAllocator
 		//private long writeTime;
 #endif
 
-	/// <summary>
-	///     5D Array containing all the coded code-blocks:
-	///     <ul>
-	///         <li>1st index: tile index</li>
-	///         <li>2nd index: component index</li>
-	///         <li>3rd index: resolution level index</li>
-	///         <li>4th index: subband index</li>
-	///         <li>5th index: code-block index</li>
-	///     </ul>
-	/// </summary>
-	private readonly CBlkRateDistStats[][][][][] cblks;
+    /// <summary>
+    ///     5D Array containing all the coded code-blocks:
+    ///     <ul>
+    ///         <li>1st index: tile index</li>
+    ///         <li>2nd index: component index</li>
+    ///         <li>3rd index: resolution level index</li>
+    ///         <li>4th index: subband index</li>
+    ///         <li>5th index: code-block index</li>
+    ///     </ul>
+    /// </summary>
+    private readonly CBlkRateDistStats[][][][][] cblks;
 
-	/// <summary>
-	///     6D Array containing the indices of the truncation points. It actually
-	///     contains the index of the element in CBlkRateDistStats.truncIdxs that
-	///     gives the real truncation point index.
-	///     <ul>
-	///         <li>1st index: tile index</li>
-	///         <li>2nd index: layer index</li>
-	///         <li>3rd index: component index</li>
-	///         <li>4th index: resolution level index</li>
-	///         <li>5th index: subband index</li>
-	///         <li>6th index: code-block index</li>
-	///     </ul>
-	/// </summary>
-	private readonly int[][][][][][] truncIdxs;
+    /// <summary>
+    ///     6D Array containing the indices of the truncation points. It actually
+    ///     contains the index of the element in CBlkRateDistStats.truncIdxs that
+    ///     gives the real truncation point index.
+    ///     <ul>
+    ///         <li>1st index: tile index</li>
+    ///         <li>2nd index: layer index</li>
+    ///         <li>3rd index: component index</li>
+    ///         <li>4th index: resolution level index</li>
+    ///         <li>5th index: subband index</li>
+    ///         <li>6th index: code-block index</li>
+    ///     </ul>
+    /// </summary>
+    private readonly int[][][][][][] truncIdxs;
 
-	/// <summary>
-	///     Number of precincts in each resolution level:
-	///     <ul>
-	///         <li>1st dim: tile index.</li>
-	///         <li>2nd dim: component index.</li>
-	///         <li>3nd dim: resolution level index.</li>
-	///     </ul>
-	/// </summary>
-	private readonly Coord[][][] numPrec;
+    /// <summary>
+    ///     Number of precincts in each resolution level:
+    ///     <ul>
+    ///         <li>1st dim: tile index.</li>
+    ///         <li>2nd dim: component index.</li>
+    ///         <li>3nd dim: resolution level index.</li>
+    ///     </ul>
+    /// </summary>
+    private readonly Coord[][][] numPrec;
 
     /// <summary>Array containing the layers information. </summary>
     private EBCOTLayer[] layers;
@@ -425,23 +425,23 @@ public class EBCOTRateAllocator : PostCompRateAllocator
             //UPGRADE_NOTE: Call to 'super.finalize()' was removed. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1124'"
         }
 #endif
-	/// <summary>
-	///     Runs the rate allocation algorithm and writes the data to the bit
-	///     stream writer object provided to the constructor.
-	/// </summary>
-	public override void runAndWrite()
+    /// <summary>
+    ///     Runs the rate allocation algorithm and writes the data to the bit
+    ///     stream writer object provided to the constructor.
+    /// </summary>
+    public override void runAndWrite()
     {
         //Now, run the rate allocation
         buildAndWriteLayers();
     }
 
-	/// <summary>
-	///     Initializes the layers array. This must be called after the main header
-	///     has been entirely written or simulated, so as to take its overhead into
-	///     account. This method will get all the code-blocks and then initialize
-	///     the target bitrates for each layer, according to the specifications.
-	/// </summary>
-	public override void initialize()
+    /// <summary>
+    ///     Initializes the layers array. This must be called after the main header
+    ///     has been entirely written or simulated, so as to take its overhead into
+    ///     account. This method will get all the code-blocks and then initialize
+    ///     the target bitrates for each layer, according to the specifications.
+    /// </summary>
+    public override void initialize()
     {
         int n, i, l;
         int ho; // The header overhead (in bytes)
@@ -645,16 +645,16 @@ public class EBCOTRateAllocator : PostCompRateAllocator
 #endif
     }
 
-	/// <summary>
-	///     This method gets all the coded code-blocks from the EBCOT entropy coder
-	///     for every component and every tile. Each coded code-block is stored in
-	///     a 5D array according to the component, the resolution level, the tile,
-	///     the subband it belongs and its position in the subband.
-	///     <P>
-	///         For each code-block, the valid slopes are computed and converted
-	///         into the mantissa-exponent representation.
-	/// </summary>
-	private void getAllCodeBlocks()
+    /// <summary>
+    ///     This method gets all the coded code-blocks from the EBCOT entropy coder
+    ///     for every component and every tile. Each coded code-block is stored in
+    ///     a 5D array according to the component, the resolution level, the tile,
+    ///     the subband it belongs and its position in the subband.
+    ///     <P>
+    ///         For each code-block, the valid slopes are computed and converted
+    ///         into the mantissa-exponent representation.
+    /// </summary>
+    private void getAllCodeBlocks()
     {
         int numComps, numTiles; // numBytes removed
         int c, r, t, s, sidx, k;
@@ -771,13 +771,13 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         }
     }
 
-	/// <summary>
-	///     This method builds all the bit stream layers and then writes them to
-	///     the output bit stream. Firstly it builds all the layers by computing
-	///     the threshold according to the layer target bit-rate, and then it
-	///     writes the layer bit streams according to the progressive type.
-	/// </summary>
-	private void buildAndWriteLayers()
+    /// <summary>
+    ///     This method builds all the bit stream layers and then writes them to
+    ///     the output bit stream. Firstly it builds all the layers by computing
+    ///     the threshold according to the layer target bit-rate, and then it
+    ///     writes the layer bit streams according to the progressive type.
+    /// </summary>
+    private void buildAndWriteLayers()
     {
         var nPrec = 0;
         int maxBytes, actualBytes;
@@ -965,32 +965,32 @@ public class EBCOTRateAllocator : PostCompRateAllocator
 #endif
     }
 
-	/// <summary>
-	///     Write a piece of bit stream according to the
-	///     RES_LY_COMP_POS_PROG progression mode and between given bounds
-	/// </summary>
-	/// <param name="t">
-	///     Tile index.
-	/// </param>
-	/// <param name="rs">
-	///     First resolution level index.
-	/// </param>
-	/// <param name="re">
-	///     Last resolution level index.
-	/// </param>
-	/// <param name="cs">
-	///     First component index.
-	/// </param>
-	/// <param name="ce">
-	///     Last component index.
-	/// </param>
-	/// <param name="lys">
-	///     First layer index for each component and resolution.
-	/// </param>
-	/// <param name="lye">
-	///     Index of the last layer.
-	/// </param>
-	public virtual void writeResLyCompPos(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
+    /// <summary>
+    ///     Write a piece of bit stream according to the
+    ///     RES_LY_COMP_POS_PROG progression mode and between given bounds
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index.
+    /// </param>
+    /// <param name="rs">
+    ///     First resolution level index.
+    /// </param>
+    /// <param name="re">
+    ///     Last resolution level index.
+    /// </param>
+    /// <param name="cs">
+    ///     First component index.
+    /// </param>
+    /// <param name="ce">
+    ///     Last component index.
+    /// </param>
+    /// <param name="lys">
+    ///     First layer index for each component and resolution.
+    /// </param>
+    /// <param name="lye">
+    ///     Index of the last layer.
+    /// </param>
+    public virtual void writeResLyCompPos(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
     {
         bool sopUsed; // Should SOP markers be used ?
         bool ephUsed; // Should EPH markers be used ?
@@ -1067,32 +1067,32 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         } // End loop on resolution levels
     }
 
-	/// <summary>
-	///     Write a piece of bit stream according to the
-	///     LY_RES_COMP_POS_PROG progression mode and between given bounds
-	/// </summary>
-	/// <param name="t">
-	///     Tile index.
-	/// </param>
-	/// <param name="rs">
-	///     First resolution level index.
-	/// </param>
-	/// <param name="re">
-	///     Last resolution level index.
-	/// </param>
-	/// <param name="cs">
-	///     First component index.
-	/// </param>
-	/// <param name="ce">
-	///     Last component index.
-	/// </param>
-	/// <param name="lys">
-	///     First layer index for each component and resolution.
-	/// </param>
-	/// <param name="lye">
-	///     Index of the last layer.
-	/// </param>
-	public virtual void writeLyResCompPos(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
+    /// <summary>
+    ///     Write a piece of bit stream according to the
+    ///     LY_RES_COMP_POS_PROG progression mode and between given bounds
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index.
+    /// </param>
+    /// <param name="rs">
+    ///     First resolution level index.
+    /// </param>
+    /// <param name="re">
+    ///     Last resolution level index.
+    /// </param>
+    /// <param name="cs">
+    ///     First component index.
+    /// </param>
+    /// <param name="ce">
+    ///     Last component index.
+    /// </param>
+    /// <param name="lys">
+    ///     First layer index for each component and resolution.
+    /// </param>
+    /// <param name="lye">
+    ///     Index of the last layer.
+    /// </param>
+    public virtual void writeLyResCompPos(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
     {
         bool sopUsed; // Should SOP markers be used ?
         bool ephUsed; // Should EPH markers be used ?
@@ -1154,32 +1154,32 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         // end loop on layers
     }
 
-	/// <summary>
-	///     Write a piece of bit stream according to the
-	///     COMP_POS_RES_LY_PROG progression mode and between given bounds
-	/// </summary>
-	/// <param name="t">
-	///     Tile index.
-	/// </param>
-	/// <param name="rs">
-	///     First resolution level index.
-	/// </param>
-	/// <param name="re">
-	///     Last resolution level index.
-	/// </param>
-	/// <param name="cs">
-	///     First component index.
-	/// </param>
-	/// <param name="ce">
-	///     Last component index.
-	/// </param>
-	/// <param name="lys">
-	///     First layer index for each component and resolution.
-	/// </param>
-	/// <param name="lye">
-	///     Index of the last layer.
-	/// </param>
-	public virtual void writePosCompResLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
+    /// <summary>
+    ///     Write a piece of bit stream according to the
+    ///     COMP_POS_RES_LY_PROG progression mode and between given bounds
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index.
+    /// </param>
+    /// <param name="rs">
+    ///     First resolution level index.
+    /// </param>
+    /// <param name="re">
+    ///     Last resolution level index.
+    /// </param>
+    /// <param name="cs">
+    ///     First component index.
+    /// </param>
+    /// <param name="ce">
+    ///     Last component index.
+    /// </param>
+    /// <param name="lys">
+    ///     First layer index for each component and resolution.
+    /// </param>
+    /// <param name="lye">
+    ///     Index of the last layer.
+    /// </param>
+    public virtual void writePosCompResLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
     {
         bool sopUsed; // Should SOP markers be used ?
         bool ephUsed; // Should EPH markers be used ?
@@ -1354,32 +1354,32 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         }
     }
 
-	/// <summary>
-	///     Write a piece of bit stream according to the
-	///     COMP_POS_RES_LY_PROG progression mode and between given bounds
-	/// </summary>
-	/// <param name="t">
-	///     Tile index.
-	/// </param>
-	/// <param name="rs">
-	///     First resolution level index.
-	/// </param>
-	/// <param name="re">
-	///     Last resolution level index.
-	/// </param>
-	/// <param name="cs">
-	///     First component index.
-	/// </param>
-	/// <param name="ce">
-	///     Last component index.
-	/// </param>
-	/// <param name="lys">
-	///     First layer index for each component and resolution.
-	/// </param>
-	/// <param name="lye">
-	///     Index of the last layer.
-	/// </param>
-	public virtual void writeCompPosResLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
+    /// <summary>
+    ///     Write a piece of bit stream according to the
+    ///     COMP_POS_RES_LY_PROG progression mode and between given bounds
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index.
+    /// </param>
+    /// <param name="rs">
+    ///     First resolution level index.
+    /// </param>
+    /// <param name="re">
+    ///     Last resolution level index.
+    /// </param>
+    /// <param name="cs">
+    ///     First component index.
+    /// </param>
+    /// <param name="ce">
+    ///     Last component index.
+    /// </param>
+    /// <param name="lys">
+    ///     First layer index for each component and resolution.
+    /// </param>
+    /// <param name="lye">
+    ///     Index of the last layer.
+    /// </param>
+    public virtual void writeCompPosResLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
     {
         bool sopUsed; // Should SOP markers be used ?
         bool ephUsed; // Should EPH markers be used ?
@@ -1557,32 +1557,32 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         }
     }
 
-	/// <summary>
-	///     Write a piece of bit stream according to the
-	///     RES_POS_COMP_LY_PROG progression mode and between given bounds
-	/// </summary>
-	/// <param name="t">
-	///     Tile index.
-	/// </param>
-	/// <param name="rs">
-	///     First resolution level index.
-	/// </param>
-	/// <param name="re">
-	///     Last resolution level index.
-	/// </param>
-	/// <param name="cs">
-	///     First component index.
-	/// </param>
-	/// <param name="ce">
-	///     Last component index.
-	/// </param>
-	/// <param name="lys">
-	///     First layer index for each component and resolution.
-	/// </param>
-	/// <param name="lye">
-	///     Last layer index.
-	/// </param>
-	public virtual void writeResPosCompLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
+    /// <summary>
+    ///     Write a piece of bit stream according to the
+    ///     RES_POS_COMP_LY_PROG progression mode and between given bounds
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index.
+    /// </param>
+    /// <param name="rs">
+    ///     First resolution level index.
+    /// </param>
+    /// <param name="re">
+    ///     Last resolution level index.
+    /// </param>
+    /// <param name="cs">
+    ///     First component index.
+    /// </param>
+    /// <param name="ce">
+    ///     Last component index.
+    /// </param>
+    /// <param name="lys">
+    ///     First layer index for each component and resolution.
+    /// </param>
+    /// <param name="lye">
+    ///     Last layer index.
+    /// </param>
+    public virtual void writeResPosCompLy(int t, int rs, int re, int cs, int ce, int[][] lys, int lye)
     {
         bool sopUsed; // Should SOP markers be used ?
         bool ephUsed; // Should EPH markers be used ?
@@ -1757,34 +1757,34 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         }
     }
 
-	/// <summary>
-	///     This function implements the rate-distortion optimization algorithm.
-	///     It saves the state of any previously generated bit-stream layers and
-	///     then simulate the formation of a new layer in the bit stream as often
-	///     as necessary to find the smallest rate-distortion threshold such that
-	///     the total number of bytes required to represent the layer does not
-	///     exceed `maxBytes' minus `prevBytes'.  It then restores the state of any
-	///     previously generated bit-stream layers and returns the threshold.
-	/// </summary>
-	/// <param name="layerIdx">
-	///     The index of the current layer
-	/// </param>
-	/// <param name="fmaxt">
-	///     The maximum admissible slope value. Normally the threshold
-	///     slope of the previous layer.
-	/// </param>
-	/// <param name="maxBytes">
-	///     The maximum number of bytes that can be written. It
-	///     includes the length of the current layer bistream length and all the
-	///     previous layers bit streams.
-	/// </param>
-	/// <param name="prevBytes">
-	///     The number of bytes of all the previous layers.
-	/// </param>
-	/// <returns>
-	///     The value of the slope threshold.
-	/// </returns>
-	private float optimizeBitstreamLayer(int layerIdx, float fmaxt, int maxBytes, int prevBytes)
+    /// <summary>
+    ///     This function implements the rate-distortion optimization algorithm.
+    ///     It saves the state of any previously generated bit-stream layers and
+    ///     then simulate the formation of a new layer in the bit stream as often
+    ///     as necessary to find the smallest rate-distortion threshold such that
+    ///     the total number of bytes required to represent the layer does not
+    ///     exceed `maxBytes' minus `prevBytes'.  It then restores the state of any
+    ///     previously generated bit-stream layers and returns the threshold.
+    /// </summary>
+    /// <param name="layerIdx">
+    ///     The index of the current layer
+    /// </param>
+    /// <param name="fmaxt">
+    ///     The maximum admissible slope value. Normally the threshold
+    ///     slope of the previous layer.
+    /// </param>
+    /// <param name="maxBytes">
+    ///     The maximum number of bytes that can be written. It
+    ///     includes the length of the current layer bistream length and all the
+    ///     previous layers bit streams.
+    /// </param>
+    /// <param name="prevBytes">
+    ///     The number of bytes of all the previous layers.
+    /// </param>
+    /// <returns>
+    ///     The value of the slope threshold.
+    /// </returns>
+    private float optimizeBitstreamLayer(int layerIdx, float fmaxt, int maxBytes, int prevBytes)
     {
         int nt; // The total number of tiles
         int nc; // The total number of components
@@ -1939,21 +1939,21 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         return ft;
     }
 
-	/// <summary>
-	///     This function attempts to estimate a rate-distortion slope threshold
-	///     which will achieve a target number of code bytes close the
-	///     `targetBytes' value.
-	/// </summary>
-	/// <param name="targetBytes">
-	///     The target number of bytes for the current layer
-	/// </param>
-	/// <param name="lastLayer">
-	///     The previous layer information.
-	/// </param>
-	/// <returns>
-	///     The value of the slope threshold for the estimated layer
-	/// </returns>
-	private float estimateLayerThreshold(int targetBytes, EBCOTLayer lastLayer)
+    /// <summary>
+    ///     This function attempts to estimate a rate-distortion slope threshold
+    ///     which will achieve a target number of code bytes close the
+    ///     `targetBytes' value.
+    /// </summary>
+    /// <param name="targetBytes">
+    ///     The target number of bytes for the current layer
+    /// </param>
+    /// <param name="lastLayer">
+    ///     The previous layer information.
+    /// </param>
+    /// <returns>
+    ///     The value of the slope threshold for the estimated layer
+    /// </returns>
+    private float estimateLayerThreshold(int targetBytes, EBCOTLayer lastLayer)
     {
         float log_sl1; // The log of the first slope used for interpolation
         float log_sl2; // The log of the second slope used for interpolation
@@ -2110,33 +2110,33 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         return eth;
     }
 
-	/// <summary>
-	///     This function finds the new truncation points indices for a packet. It
-	///     does so by including the data from the code-blocks in the component,
-	///     resolution level and tile, associated with a R-D slope which is larger
-	///     than or equal to 'fthresh'.
-	/// </summary>
-	/// <param name="layerIdx">
-	///     The index of the current layer
-	/// </param>
-	/// <param name="compIdx">
-	///     The index of the current component
-	/// </param>
-	/// <param name="lvlIdx">
-	///     The index of the current resolution level
-	/// </param>
-	/// <param name="tileIdx">
-	///     The index of the current tile
-	/// </param>
-	/// <param name="subb">
-	///     The LL subband in the resolution level lvlIdx, which is
-	///     parent of all the subbands in the packet. Except for resolution level 0
-	///     this subband is always a node.
-	/// </param>
-	/// <param name="fthresh">
-	///     The value of the rate-distortion threshold
-	/// </param>
-	private void findTruncIndices(int layerIdx, int compIdx, int lvlIdx, int tileIdx, SubbandAn subb, float fthresh,
+    /// <summary>
+    ///     This function finds the new truncation points indices for a packet. It
+    ///     does so by including the data from the code-blocks in the component,
+    ///     resolution level and tile, associated with a R-D slope which is larger
+    ///     than or equal to 'fthresh'.
+    /// </summary>
+    /// <param name="layerIdx">
+    ///     The index of the current layer
+    /// </param>
+    /// <param name="compIdx">
+    ///     The index of the current component
+    /// </param>
+    /// <param name="lvlIdx">
+    ///     The index of the current resolution level
+    /// </param>
+    /// <param name="tileIdx">
+    ///     The index of the current tile
+    /// </param>
+    /// <param name="subb">
+    ///     The LL subband in the resolution level lvlIdx, which is
+    ///     parent of all the subbands in the packet. Except for resolution level 0
+    ///     this subband is always a node.
+    /// </param>
+    /// <param name="fthresh">
+    ///     The value of the rate-distortion threshold
+    /// </param>
+    private void findTruncIndices(int layerIdx, int compIdx, int lvlIdx, int tileIdx, SubbandAn subb, float fthresh,
         int precinctIdx)
     {
         int minsbi, maxsbi, b, n; // bIdx removed
@@ -2183,23 +2183,23 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         } // End loop on subbands
     }
 
-	/// <summary>
-	///     Returns the index of a slope for the summary table, limiting to the
-	///     admissible values. The index is calculated as RD_SUMMARY_OFF plus the
-	///     maximum exponent, base 2, that yields a value not larger than the slope
-	///     itself.
-	///     <p>
-	///         If the value to return is lower than 0, 0 is returned. If it is
-	///         larger than the maximum table index, then the maximum is returned.
-	///     </p>
-	/// </summary>
-	/// <param name="slope">
-	///     The slope value
-	/// </param>
-	/// <returns>
-	///     The index for the summary table of the slope.
-	/// </returns>
-	private static int getLimitedSIndexFromSlope(float slope)
+    /// <summary>
+    ///     Returns the index of a slope for the summary table, limiting to the
+    ///     admissible values. The index is calculated as RD_SUMMARY_OFF plus the
+    ///     maximum exponent, base 2, that yields a value not larger than the slope
+    ///     itself.
+    ///     <p>
+    ///         If the value to return is lower than 0, 0 is returned. If it is
+    ///         larger than the maximum table index, then the maximum is returned.
+    ///     </p>
+    /// </summary>
+    /// <param name="slope">
+    ///     The slope value
+    /// </param>
+    /// <returns>
+    ///     The index for the summary table of the slope.
+    /// </returns>
+    private static int getLimitedSIndexFromSlope(float slope)
     {
         int idx;
 
@@ -2213,17 +2213,17 @@ public class EBCOTRateAllocator : PostCompRateAllocator
         return idx;
     }
 
-	/// <summary>
-	///     Returns the minimum slope value associated with a summary table
-	///     index. This minimum slope is just 2^(index-RD_SUMMARY_OFF).
-	/// </summary>
-	/// <param name="index">
-	///     The summary index value.
-	/// </param>
-	/// <returns>
-	///     The minimum slope value associated with a summary table index.
-	/// </returns>
-	private static float getSlopeFromSIndex(int index)
+    /// <summary>
+    ///     Returns the minimum slope value associated with a summary table
+    ///     index. This minimum slope is just 2^(index-RD_SUMMARY_OFF).
+    /// </summary>
+    /// <param name="index">
+    ///     The summary index value.
+    /// </param>
+    /// <returns>
+    ///     The minimum slope value associated with a summary table index.
+    /// </returns>
+    private static float getSlopeFromSIndex(int index)
     {
         //UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
         return (float)Math.Pow(2, index - RD_SUMMARY_OFF);

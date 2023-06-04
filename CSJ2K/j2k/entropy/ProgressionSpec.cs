@@ -58,50 +58,50 @@ namespace CSJ2K.j2k.entropy;
 /// </summary>
 public class ProgressionSpec : ModuleSpec
 {
-	/// <summary>
-	///     Creates a new ProgressionSpec object for the specified number of tiles
-	///     and components.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both. The ProgressionSpec class should only be
-	///     used only with the type ModuleSpec.SPEC_TYPE_TILE.
-	/// </param>
-	public ProgressionSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Creates a new ProgressionSpec object for the specified number of tiles
+    ///     and components.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both. The ProgressionSpec class should only be
+    ///     used only with the type ModuleSpec.SPEC_TYPE_TILE.
+    /// </param>
+    public ProgressionSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
         if (type != SPEC_TYPE_TILE) throw new ApplicationException("Illegal use of class ProgressionSpec !");
     }
 
-	/// <summary>
-	///     Creates a new ProgressionSpec object for the specified number of tiles,
-	///     components and the ParameterList instance.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="nl">
-	///     The number of layer
-	/// </param>
-	/// <param name="dls">
-	///     The number of decomposition levels specifications
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module. The ProgressionSpec
-	///     class should only be used only with the type ModuleSpec.SPEC_TYPE_TILE.
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList instance
-	/// </param>
-	public ProgressionSpec(int nt, int nc, int nl, IntegerSpec dls, byte type, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Creates a new ProgressionSpec object for the specified number of tiles,
+    ///     components and the ParameterList instance.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="nl">
+    ///     The number of layer
+    /// </param>
+    /// <param name="dls">
+    ///     The number of decomposition levels specifications
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module. The ProgressionSpec
+    ///     class should only be used only with the type ModuleSpec.SPEC_TYPE_TILE.
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList instance
+    /// </param>
+    public ProgressionSpec(int nt, int nc, int nl, IntegerSpec dls, byte type, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter("Aptype");
         Progression[] prog;
@@ -366,20 +366,20 @@ public class ProgressionSpec : ModuleSpec
         }
     }
 
-	/// <summary>
-	///     Check if the progression mode exists and if so, return its integer
-	///     value. It returns -1 otherwise.
-	/// </summary>
-	/// <param name="mode">
-	///     The progression mode stored in a string
-	/// </param>
-	/// <returns>
-	///     The integer value of the progression mode or -1 if the
-	///     progression mode does not exist.
-	/// </returns>
-	/// <seealso cref="ProgressionType">
-	/// </seealso>
-	private int checkProgMode(string mode)
+    /// <summary>
+    ///     Check if the progression mode exists and if so, return its integer
+    ///     value. It returns -1 otherwise.
+    /// </summary>
+    /// <param name="mode">
+    ///     The progression mode stored in a string
+    /// </param>
+    /// <returns>
+    ///     The integer value of the progression mode or -1 if the
+    ///     progression mode does not exist.
+    /// </returns>
+    /// <seealso cref="ProgressionType">
+    /// </seealso>
+    private int checkProgMode(string mode)
     {
         if (mode.Equals("res"))
             return ProgressionType.RES_LY_COMP_POS_PROG;

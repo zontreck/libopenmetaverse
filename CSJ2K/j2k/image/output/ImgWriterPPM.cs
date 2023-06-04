@@ -74,19 +74,8 @@ namespace CSJ2K.j2k.image.output;
 /// </summary>
 public class ImgWriterPPM : ImgWriter
 {
-    /// <summary>The line buffer. </summary>
-    // This makes the class not thrad safe
-    // (but it is not the only one making it so)
-    private byte[] buf;
-
     /// <summary>The array of indexes of the components from where to get the data </summary>
     private readonly int[] cps = new int[3];
-
-    /// <summary>
-    ///     A DataBlk, just used to avoid allocating a new one each time
-    ///     it is needed
-    /// </summary>
-    private DataBlkInt db = new();
 
     /// <summary>
     ///     The array of the number of fractional bits in the components of the
@@ -96,6 +85,17 @@ public class ImgWriterPPM : ImgWriter
 
     /// <summary>Value used to inverse level shift. One for each component </summary>
     private readonly int[] levShift = new int[3];
+
+    /// <summary>The line buffer. </summary>
+    // This makes the class not thrad safe
+    // (but it is not the only one making it so)
+    private byte[] buf;
+
+    /// <summary>
+    ///     A DataBlk, just used to avoid allocating a new one each time
+    ///     it is needed
+    /// </summary>
+    private DataBlkInt db = new();
 
     /// <summary>The offset of the raw pixel data in the PPM file </summary>
     private int offset;

@@ -24,112 +24,114 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
+namespace OpenMetaverse;
 
-namespace OpenMetaverse
+public partial class AgentManager
 {
-    public partial class AgentManager
+    public partial class AgentMovement
     {
-        public partial class AgentMovement
+        /// <summary>
+        ///     Camera controls for the agent, mostly a thin wrapper around
+        ///     CoordinateFrame. This class is only responsible for state
+        ///     tracking and math, it does not send any packets
+        /// </summary>
+        public class AgentCamera
         {
+            /// <summary></summary>
+            public float Far;
+
             /// <summary>
-            /// Camera controls for the agent, mostly a thin wrapper around
-            /// CoordinateFrame. This class is only responsible for state
-            /// tracking and math, it does not send any packets
+            ///     The camera is a local frame of reference inside of
+            ///     the larger grid space. This is where the math happens
             /// </summary>
-            public class AgentCamera
+            private readonly CoordinateFrame Frame;
+
+            /// <summary>
+            ///     Default constructor
+            /// </summary>
+            public AgentCamera()
             {
-                /// <summary></summary>
-                public float Far;
+                Frame = new CoordinateFrame(new Vector3(128f, 128f, 20f));
+                Far = 128f;
+            }
 
-                /// <summary>The camera is a local frame of reference inside of
-                /// the larger grid space. This is where the math happens</summary>
-                private CoordinateFrame Frame;
+            /// <summary></summary>
+            public Vector3 Position
+            {
+                get => Frame.Origin;
+                set => Frame.Origin = value;
+            }
 
-                /// <summary></summary>
-                public Vector3 Position
-                {
-                    get { return Frame.Origin; }
-                    set { Frame.Origin = value; }
-                }
-                /// <summary></summary>
-                public Vector3 AtAxis
-                {
-                    get { return Frame.YAxis; }
-                    set { Frame.YAxis = value; }
-                }
-                /// <summary></summary>
-                public Vector3 LeftAxis
-                {
-                    get { return Frame.XAxis; }
-                    set { Frame.XAxis = value; }
-                }
-                /// <summary></summary>
-                public Vector3 UpAxis
-                {
-                    get { return Frame.ZAxis; }
-                    set { Frame.ZAxis = value; }
-                }
+            /// <summary></summary>
+            public Vector3 AtAxis
+            {
+                get => Frame.YAxis;
+                set => Frame.YAxis = value;
+            }
 
-                /// <summary>
-                /// Default constructor
-                /// </summary>
-                public AgentCamera()
-                {
-                    Frame = new CoordinateFrame(new Vector3(128f, 128f, 20f));
-                    Far = 128f;
-                }
+            /// <summary></summary>
+            public Vector3 LeftAxis
+            {
+                get => Frame.XAxis;
+                set => Frame.XAxis = value;
+            }
 
-                public void Roll(float angle)
-                {
-                    Frame.Roll(angle);
-                }
+            /// <summary></summary>
+            public Vector3 UpAxis
+            {
+                get => Frame.ZAxis;
+                set => Frame.ZAxis = value;
+            }
 
-                public void Pitch(float angle)
-                {
-                    Frame.Pitch(angle);
-                }
+            public void Roll(float angle)
+            {
+                Frame.Roll(angle);
+            }
 
-                public void Yaw(float angle)
-                {
-                    Frame.Yaw(angle);
-                }
+            public void Pitch(float angle)
+            {
+                Frame.Pitch(angle);
+            }
 
-                public void LookDirection(Vector3 target)
-                {
-                    Frame.LookDirection(target);
-                }
+            public void Yaw(float angle)
+            {
+                Frame.Yaw(angle);
+            }
 
-                public void LookDirection(Vector3 target, Vector3 upDirection)
-                {
-                    Frame.LookDirection(target, upDirection);
-                }
+            public void LookDirection(Vector3 target)
+            {
+                Frame.LookDirection(target);
+            }
 
-                public void LookDirection(double heading)
-                {
-                    Frame.LookDirection(heading);
-                }
+            public void LookDirection(Vector3 target, Vector3 upDirection)
+            {
+                Frame.LookDirection(target, upDirection);
+            }
 
-                public void LookAt(Vector3 position, Vector3 target)
-                {
-                    Frame.LookAt(position, target);
-                }
+            public void LookDirection(double heading)
+            {
+                Frame.LookDirection(heading);
+            }
 
-                public void LookAt(Vector3 position, Vector3 target, Vector3 upDirection)
-                {
-                    Frame.LookAt(position, target, upDirection);
-                }
+            public void LookAt(Vector3 position, Vector3 target)
+            {
+                Frame.LookAt(position, target);
+            }
 
-                public void SetPositionOrientation(Vector3 position, float roll, float pitch, float yaw)
-                {
-                    Frame.Origin = position;
+            public void LookAt(Vector3 position, Vector3 target, Vector3 upDirection)
+            {
+                Frame.LookAt(position, target, upDirection);
+            }
 
-                    Frame.ResetAxes();
+            public void SetPositionOrientation(Vector3 position, float roll, float pitch, float yaw)
+            {
+                Frame.Origin = position;
 
-                    Frame.Roll(roll);
-                    Frame.Pitch(pitch);
-                    Frame.Yaw(yaw);
-                }
+                Frame.ResetAxes();
+
+                Frame.Roll(roll);
+                Frame.Pitch(pitch);
+                Frame.Yaw(yaw);
             }
         }
     }

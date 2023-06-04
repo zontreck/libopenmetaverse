@@ -28,32 +28,32 @@ namespace CSJ2K.Color;
 /// </author>
 public class EsRgbColorSpaceMapper : ColorSpaceMapper
 {
-	/// <summary>
-	///     Ctor which creates an ICCProfile for the image and initializes
-	///     all data objects (input, working, and output).
-	/// </summary>
-	/// <param name="src">
-	///     -- Source of image data
-	/// </param>
-	/// <param name="csm">
-	///     -- provides colorspace info
-	/// </param>
-	protected internal EsRgbColorSpaceMapper(BlkImgDataSrc src, ColorSpace csMap) : base(src, csMap)
+    /// <summary>
+    ///     Ctor which creates an ICCProfile for the image and initializes
+    ///     all data objects (input, working, and output).
+    /// </summary>
+    /// <param name="src">
+    ///     -- Source of image data
+    /// </param>
+    /// <param name="csm">
+    ///     -- provides colorspace info
+    /// </param>
+    protected internal EsRgbColorSpaceMapper(BlkImgDataSrc src, ColorSpace csMap) : base(src, csMap)
     {
         initialize();
     }
 
-	/// <summary> Factory method for creating instances of this class.</summary>
-	/// <param name="src">
-	///     -- source of image data
-	/// </param>
-	/// <param name="csMap">
-	///     -- provides colorspace info
-	/// </param>
-	/// <returns>
-	///     SYccColorSpaceMapper instance
-	/// </returns>
-	public new static BlkImgDataSrc createInstance(BlkImgDataSrc src, ColorSpace csMap)
+    /// <summary> Factory method for creating instances of this class.</summary>
+    /// <param name="src">
+    ///     -- source of image data
+    /// </param>
+    /// <param name="csMap">
+    ///     -- provides colorspace info
+    /// </param>
+    /// <returns>
+    ///     SYccColorSpaceMapper instance
+    /// </returns>
+    public new static BlkImgDataSrc createInstance(BlkImgDataSrc src, ColorSpace csMap)
     {
         return new EsRgbColorSpaceMapper(src, csMap);
     }

@@ -25,318 +25,330 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     A Name Value pair with additional settings, used in the protocol
+///     primarily to transmit avatar names and active group in object packets
+/// </summary>
+public struct NameValue
 {
-    /// <summary>
-    /// A Name Value pair with additional settings, used in the protocol
-    /// primarily to transmit avatar names and active group in object packets
-    /// </summary>
-    public struct NameValue
+    #region Enums
+
+    /// <summary>Type of the value</summary>
+    public enum ValueType
     {
-        #region Enums
+        /// <summary>Unknown</summary>
+        Unknown = -1,
 
-        /// <summary>Type of the value</summary>
-        public enum ValueType
+        /// <summary>String value</summary>
+        String,
+
+        /// <summary></summary>
+        F32,
+
+        /// <summary></summary>
+        S32,
+
+        /// <summary></summary>
+        VEC3,
+
+        /// <summary></summary>
+        U32,
+
+        /// <summary>Deprecated</summary>
+        [Obsolete] CAMERA,
+
+        /// <summary>String value, but designated as an asset</summary>
+        Asset,
+
+        /// <summary></summary>
+        U64
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ClassType
+    {
+        /// <summary></summary>
+        Unknown = -1,
+
+        /// <summary></summary>
+        ReadOnly,
+
+        /// <summary></summary>
+        ReadWrite,
+
+        /// <summary></summary>
+        Callback
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SendtoType
+    {
+        /// <summary></summary>
+        Unknown = -1,
+
+        /// <summary></summary>
+        Sim,
+
+        /// <summary></summary>
+        DataSim,
+
+        /// <summary></summary>
+        SimViewer,
+
+        /// <summary></summary>
+        DataSimViewer
+    }
+
+    #endregion Enums
+
+
+    /// <summary></summary>
+    public string Name;
+
+    /// <summary></summary>
+    public ValueType Type;
+
+    /// <summary></summary>
+    public ClassType Class;
+
+    /// <summary></summary>
+    public SendtoType Sendto;
+
+    /// <summary></summary>
+    public object Value;
+
+
+    private static readonly string[] TypeStrings =
+    {
+        "STRING",
+        "F32",
+        "S32",
+        "VEC3",
+        "U32",
+        "ASSET",
+        "U64"
+    };
+
+    private static readonly string[] ClassStrings =
+    {
+        "R", // Read-only
+        "RW", // Read-write
+        "CB" // Callback
+    };
+
+    private static readonly string[] SendtoStrings =
+    {
+        "S", // Sim
+        "DS", // Data Sim
+        "SV", // Sim Viewer
+        "DSV" // Data Sim Viewer
+    };
+
+    private static readonly char[] Separators =
+    {
+        ' ',
+        '\n',
+        '\t',
+        '\r'
+    };
+
+    /// <summary>
+    ///     Constructor that takes all the fields as parameters
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="valueType"></param>
+    /// <param name="classType"></param>
+    /// <param name="sendtoType"></param>
+    /// <param name="value"></param>
+    public NameValue(string name, ValueType valueType, ClassType classType, SendtoType sendtoType, object value)
+    {
+        Name = name;
+        Type = valueType;
+        Class = classType;
+        Sendto = sendtoType;
+        Value = value;
+    }
+
+    /// <summary>
+    ///     Constructor that takes a single line from a NameValue field
+    /// </summary>
+    /// <param name="data"></param>
+    public NameValue(string data)
+    {
+        int i;
+
+        // Name
+        i = data.IndexOfAny(Separators);
+        if (i < 1)
         {
-            /// <summary>Unknown</summary>
-            Unknown = -1,
-            /// <summary>String value</summary>
-            String,
-            /// <summary></summary>
-            F32,
-            /// <summary></summary>
-            S32,
-            /// <summary></summary>
-            VEC3,
-            /// <summary></summary>
-            U32,
-            /// <summary>Deprecated</summary>
-            [Obsolete]
-            CAMERA,
-            /// <summary>String value, but designated as an asset</summary>
-            Asset,
-            /// <summary></summary>
-            U64
+            Name = string.Empty;
+            Type = ValueType.Unknown;
+            Class = ClassType.Unknown;
+            Sendto = SendtoType.Unknown;
+            Value = null;
+            return;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum ClassType
+        Name = data.Substring(0, i);
+        data = data.Substring(i + 1);
+
+        // Type
+        i = data.IndexOfAny(Separators);
+        if (i > 0)
         {
-            /// <summary></summary>
-            Unknown = -1,
-            /// <summary></summary>
-            ReadOnly,
-            /// <summary></summary>
-            ReadWrite,
-            /// <summary></summary>
-            Callback
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum SendtoType
-        {
-            /// <summary></summary>
-            Unknown = -1,
-            /// <summary></summary>
-            Sim,
-            /// <summary></summary>
-            DataSim,
-            /// <summary></summary>
-            SimViewer,
-            /// <summary></summary>
-            DataSimViewer
-        }
-
-        #endregion Enums
-
-
-        /// <summary></summary>
-        public string Name;
-        /// <summary></summary>
-        public ValueType Type;
-        /// <summary></summary>
-        public ClassType Class;
-        /// <summary></summary>
-        public SendtoType Sendto;
-        /// <summary></summary>
-        public object Value;
-
-
-        private static readonly string[] TypeStrings = new string[]
-        {
-            "STRING",
-            "F32",
-            "S32",
-            "VEC3",
-            "U32",
-            "ASSET",
-            "U64"
-        };
-        private static readonly string[] ClassStrings = new string[]
-        {
-            "R",    // Read-only
-            "RW",   // Read-write
-            "CB"    // Callback
-        };
-        private static readonly string[] SendtoStrings = new string[]
-        {
-            "S",    // Sim
-            "DS",   // Data Sim
-            "SV",   // Sim Viewer
-            "DSV"   // Data Sim Viewer
-        };
-        private static readonly char[] Separators = new char[]
-        {
-            ' ',
-            '\n',
-            '\t',
-            '\r'
-        };
-
-        /// <summary>
-        /// Constructor that takes all the fields as parameters
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="valueType"></param>
-        /// <param name="classType"></param>
-        /// <param name="sendtoType"></param>
-        /// <param name="value"></param>
-        public NameValue(string name, ValueType valueType, ClassType classType, SendtoType sendtoType, object value)
-        {
-            Name = name;
-            Type = valueType;
-            Class = classType;
-            Sendto = sendtoType;
-            Value = value;
-        }
-
-        /// <summary>
-        /// Constructor that takes a single line from a NameValue field
-        /// </summary>
-        /// <param name="data"></param>
-        public NameValue(string data)
-        {
-            int i;
-
-            // Name
-            i = data.IndexOfAny(Separators);
-            if (i < 1)
-            {
-                Name = String.Empty;
-                Type = ValueType.Unknown;
-                Class = ClassType.Unknown;
-                Sendto = SendtoType.Unknown;
-                Value = null;
-                return;
-            }
-            Name = data.Substring(0, i);
+            Type = GetValueType(data.Substring(0, i));
             data = data.Substring(i + 1);
 
-            // Type
+            // Class
             i = data.IndexOfAny(Separators);
             if (i > 0)
             {
-                Type = GetValueType(data.Substring(0, i));
+                Class = GetClassType(data.Substring(0, i));
                 data = data.Substring(i + 1);
 
-                // Class
+                // Sendto
                 i = data.IndexOfAny(Separators);
                 if (i > 0)
                 {
-                    Class = GetClassType(data.Substring(0, i));
+                    Sendto = GetSendtoType(data.Substring(0, 1));
                     data = data.Substring(i + 1);
-
-                    // Sendto
-                    i = data.IndexOfAny(Separators);
-                    if (i > 0)
-                    {
-                        Sendto = GetSendtoType(data.Substring(0, 1));
-                        data = data.Substring(i + 1);
-                    }
                 }
             }
-
-            // Value
-            Type = ValueType.String;
-            Class = ClassType.ReadOnly;
-            Sendto = SendtoType.Sim;
-            Value = null;
-            SetValue(data);
         }
 
-        public static string NameValuesToString(NameValue[] values)
+        // Value
+        Type = ValueType.String;
+        Class = ClassType.ReadOnly;
+        Sendto = SendtoType.Sim;
+        Value = null;
+        SetValue(data);
+    }
+
+    public static string NameValuesToString(NameValue[] values)
+    {
+        if (values == null || values.Length == 0)
+            return string.Empty;
+
+        var output = new StringBuilder();
+
+        for (var i = 0; i < values.Length; i++)
         {
-            if (values == null || values.Length == 0)
-                return String.Empty;
+            var value = values[i];
 
-            StringBuilder output = new StringBuilder();
-
-            for (int i = 0; i < values.Length; i++)
+            if (value.Value != null)
             {
-                NameValue value = values[i];
-
-                if (value.Value != null)
-                {
-                    string newLine = (i < values.Length - 1) ? "\n" : String.Empty;
-                    output.AppendFormat("{0} {1} {2} {3} {4}{5}", value.Name, TypeStrings[(int)value.Type],
-                        ClassStrings[(int)value.Class], SendtoStrings[(int)value.Sendto], value.Value.ToString(), newLine);
-                }
+                var newLine = i < values.Length - 1 ? "\n" : string.Empty;
+                output.AppendFormat("{0} {1} {2} {3} {4}{5}", value.Name, TypeStrings[(int)value.Type],
+                    ClassStrings[(int)value.Class], SendtoStrings[(int)value.Sendto], value.Value, newLine);
             }
-
-            return output.ToString();
         }
 
-        private void SetValue(string value)
+        return output.ToString();
+    }
+
+    private void SetValue(string value)
+    {
+        switch (Type)
         {
-            switch (Type)
+            case ValueType.Asset:
+            case ValueType.String:
+                Value = value;
+                break;
+            case ValueType.F32:
             {
-                case ValueType.Asset:
-                case ValueType.String:
-                    Value = value;
-                    break;
-                case ValueType.F32:
-                {
-                    float temp;
-                    Utils.TryParseSingle(value, out temp);
-                    Value = temp;
-                    break;
-                }
-                case ValueType.S32:
-                {
-                    int temp;
-                    Int32.TryParse(value, out temp);
-                    Value = temp;
-                    break;
-                }
-                case ValueType.U32:
-                {
-                    uint temp;
-                    UInt32.TryParse(value, out temp);
-                    Value = temp;
-                    break;
-                }
-                case ValueType.U64:
-                {
-                    ulong temp;
-                    UInt64.TryParse(value, out temp);
-                    Value = temp;
-                    break;
-                }
-                case ValueType.VEC3:
-                {
-                    Vector3 temp;
-                    Vector3.TryParse(value, out temp);
-                    Value = temp;
-                    break;
-                }
-                default:
-                    Value = null;
-                    break;
+                float temp;
+                Utils.TryParseSingle(value, out temp);
+                Value = temp;
+                break;
             }
-        }
-
-        private static ValueType GetValueType(string value)
-        {
-            ValueType type = ValueType.Unknown;
-
-            for (int i = 0; i < TypeStrings.Length; i++)
+            case ValueType.S32:
             {
-                if (value == TypeStrings[i])
-                {
-                    type = (ValueType)i;
-                    break;
-                }
+                int temp;
+                int.TryParse(value, out temp);
+                Value = temp;
+                break;
+            }
+            case ValueType.U32:
+            {
+                uint temp;
+                uint.TryParse(value, out temp);
+                Value = temp;
+                break;
+            }
+            case ValueType.U64:
+            {
+                ulong temp;
+                ulong.TryParse(value, out temp);
+                Value = temp;
+                break;
+            }
+            case ValueType.VEC3:
+            {
+                Vector3 temp;
+                Vector3.TryParse(value, out temp);
+                Value = temp;
+                break;
+            }
+            default:
+                Value = null;
+                break;
+        }
+    }
+
+    private static ValueType GetValueType(string value)
+    {
+        var type = ValueType.Unknown;
+
+        for (var i = 0; i < TypeStrings.Length; i++)
+            if (value == TypeStrings[i])
+            {
+                type = (ValueType)i;
+                break;
             }
 
-            if (type == ValueType.Unknown)
-                type = ValueType.String;
+        if (type == ValueType.Unknown)
+            type = ValueType.String;
 
-            return type;
-        }
+        return type;
+    }
 
-        private static ClassType GetClassType(string value)
-        {
-            ClassType type = ClassType.Unknown;
+    private static ClassType GetClassType(string value)
+    {
+        var type = ClassType.Unknown;
 
-            for (int i = 0; i < ClassStrings.Length; i++)
+        for (var i = 0; i < ClassStrings.Length; i++)
+            if (value == ClassStrings[i])
             {
-                if (value == ClassStrings[i])
-                {
-                    type = (ClassType)i;
-                    break;
-                }
+                type = (ClassType)i;
+                break;
             }
 
-            if (type == ClassType.Unknown)
-                type = ClassType.ReadOnly;
+        if (type == ClassType.Unknown)
+            type = ClassType.ReadOnly;
 
-            return type;
-        }
+        return type;
+    }
 
-        private static SendtoType GetSendtoType(string value)
-        {
-            SendtoType type = SendtoType.Unknown;
+    private static SendtoType GetSendtoType(string value)
+    {
+        var type = SendtoType.Unknown;
 
-            for (int i = 0; i < SendtoStrings.Length; i++)
+        for (var i = 0; i < SendtoStrings.Length; i++)
+            if (value == SendtoStrings[i])
             {
-                if (value == SendtoStrings[i])
-                {
-                    type = (SendtoType)i;
-                    break;
-                }
+                type = (SendtoType)i;
+                break;
             }
 
-            if (type == SendtoType.Unknown)
-                type = SendtoType.Sim;
+        if (type == SendtoType.Unknown)
+            type = SendtoType.Sim;
 
-            return type;
-        }
+        return type;
     }
 }

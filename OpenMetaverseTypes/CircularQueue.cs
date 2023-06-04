@@ -28,8 +28,8 @@ namespace OpenMetaverse;
 
 public class CircularQueue<T>
 {
-    public readonly T[] Items;
     private readonly int capacity;
+    public readonly T[] Items;
 
     private readonly object syncRoot;
 

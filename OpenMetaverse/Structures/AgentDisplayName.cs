@@ -1,5 +1,4 @@
 using System;
-using OpenMetaverse;
 using OpenMetaverse.Messages.Linden;
 using OpenMetaverse.StructuredData;
 
@@ -7,14 +6,14 @@ namespace OpenMetaverse.Structures;
 
 public class AgentDisplayName
 {
+    /// <summary> Display name </summary>
+    public string DisplayName;
+
     /// <summary> Agent UUID </summary>
     public UUID ID;
 
-    /// <summary> Username </summary>
-    public string UserName;
-
-    /// <summary> Display name </summary>
-    public string DisplayName;
+    /// <summary> Is display name default display name </summary>
+    public bool IsDefaultDisplayName;
 
     /// <summary> First name (legacy) </summary>
     public string LegacyFirstName;
@@ -22,31 +21,45 @@ public class AgentDisplayName
     /// <summary> Last name (legacy) </summary>
     public string LegacyLastName;
 
-    /// <summary> Full name (legacy) </summary>
-    public string LegacyFullName
-    {
-        get { return string.Format("{0} {1}", LegacyFirstName, LegacyLastName); }
-    }
-
-    /// <summary> Is display name default display name </summary>
-    public bool IsDefaultDisplayName;
-
     /// <summary> Cache display name until </summary>
     public DateTime NextUpdate;
 
     /// <summary> Last updated timestamp </summary>
     public DateTime Updated;
 
+    /// <summary> Username </summary>
+    public string UserName;
+
+    public AgentDisplayName()
+    {
+    }
+
+    public AgentDisplayName(UserData data)
+    {
+        ID = data.Id;
+        LegacyFirstName = data.FirstName;
+        LegacyLastName = data.LastName;
+        IsDefaultDisplayName = !data.UserDisplayName.isModified;
+        NextUpdate =
+            data.UserDisplayName.LastChange.AddHours(1); // TODO: Make this able to be customized at the server level
+        Updated = data.UserDisplayName.LastChange;
+        UserName = $"{LegacyFirstName}.${LegacyLastName}".ToLower();
+        DisplayName = data.UserDisplayName.isModified ? data.UserDisplayName.Current : LegacyFullName;
+    }
+
+    /// <summary> Full name (legacy) </summary>
+    public string LegacyFullName => string.Format("{0} {1}", LegacyFirstName, LegacyLastName);
+
     /// <summary>
-    /// Creates AgentDisplayName object from OSD
+    ///     Creates AgentDisplayName object from OSD
     /// </summary>
     /// <param name="data">Incoming OSD data</param>
     /// <returns>AgentDisplayName object</returns>
     public static AgentDisplayName FromOSD(OSD data)
     {
-        AgentDisplayName ret = new AgentDisplayName();
+        var ret = new AgentDisplayName();
 
-        OSDMap map = (OSDMap)data;
+        var map = (OSDMap)data;
         ret.ID = map["id"];
         ret.UserName = map["username"];
         ret.DisplayName = map["display_name"];
@@ -60,12 +73,12 @@ public class AgentDisplayName
     }
 
     /// <summary>
-    /// Return object as OSD map
+    ///     Return object as OSD map
     /// </summary>
     /// <returns>OSD containing agent's display name data</returns>
     public OSD GetOSD()
     {
-        OSDMap map = new OSDMap();
+        var map = new OSDMap();
 
         map["id"] = ID;
         map["username"] = UserName;
@@ -79,23 +92,6 @@ public class AgentDisplayName
         return map;
     }
 
-    public AgentDisplayName()
-    {
-        
-    }
-
-    public AgentDisplayName(UserData data)
-    {
-        ID = data.Id;
-        LegacyFirstName = data.FirstName;
-        LegacyLastName = data.LastName;
-        IsDefaultDisplayName = !data.UserDisplayName.isModified;
-        NextUpdate = data.UserDisplayName.LastChange.AddHours(1); // TODO: Make this able to be customized at the server level
-        Updated = data.UserDisplayName.LastChange;
-        UserName = $"{LegacyFirstName}.${LegacyLastName}".ToLower();
-        DisplayName = (data.UserDisplayName.isModified ? data.UserDisplayName.Current : LegacyFullName);
-    }
-
     public override string ToString()
     {
         return Helpers.StructToString(this);
@@ -103,7 +99,7 @@ public class AgentDisplayName
 
     public DisplayNameUpdateMessage CreateUpdateMessage(string oldName)
     {
-        return new DisplayNameUpdateMessage()
+        return new DisplayNameUpdateMessage
         {
             OldDisplayName = oldName,
             DisplayName = this

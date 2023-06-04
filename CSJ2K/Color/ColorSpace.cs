@@ -60,6 +60,10 @@ public class ColorSpace
 
     //UPGRADE_NOTE: Final was removed from the declaration of 'eol '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     public static readonly string eol = Environment.NewLine;
+
+    /// <summary>Input image </summary>
+    private readonly RandomAccessIO in_Renamed;
+
     private ChannelDefinitionBox cdbox;
     private ComponentMappingBox cmbox;
     private ColorSpecificationBox csbox;
@@ -68,9 +72,6 @@ public class ColorSpace
     public HeaderDecoder hd;
 
     private ImageHeaderBox ihbox;
-
-    /// <summary>Input image </summary>
-    private readonly RandomAccessIO in_Renamed;
 
     /* Image box structure as pertains to colorspacees. */
     private PaletteBox pbox;

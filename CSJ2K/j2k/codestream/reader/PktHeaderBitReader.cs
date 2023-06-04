@@ -53,11 +53,11 @@ namespace CSJ2K.j2k.codestream.reader;
 //UPGRADE_NOTE: The access modifier for this class or class field has been changed in order to prevent compilation errors due to the visibility level. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1296'"
 public class PktHeaderBitReader
 {
-	/// <summary>
-	///     The byte array that is the source of data if the PktHeaderBitReader
-	///     is instantiated with a buffer instead of a RandomAccessIO
-	/// </summary>
-	internal MemoryStream bais;
+    /// <summary>
+    ///     The byte array that is the source of data if the PktHeaderBitReader
+    ///     is instantiated with a buffer instead of a RandomAccessIO
+    /// </summary>
+    internal MemoryStream bais;
 
     /// <summary>The current bit buffer </summary>
     internal int bbuf;
@@ -173,10 +173,7 @@ public class PktHeaderBitReader
         int bits; // The read bits
 
         // Can we get all bits from the bit buffer?
-        if (n <= bpos)
-        {
-            return (bbuf >> (bpos -= n)) & ((1 << n) - 1);
-        }
+        if (n <= bpos) return (bbuf >> (bpos -= n)) & ((1 << n) - 1);
 
         // NOTE: The implementation need not be recursive but the not
         // recursive one exploits a bug in the IBM x86 JIT and caused

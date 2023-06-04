@@ -28,179 +28,193 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     Provides helper methods for parallelizing loops
+/// </summary>
+public static class Parallel
 {
+    private static readonly int processorCount = Environment.ProcessorCount;
+
     /// <summary>
-    /// Provides helper methods for parallelizing loops
+    ///     Executes a for loop in which iterations may run in parallel
     /// </summary>
-    public static class Parallel
+    /// <param name="fromInclusive">The loop will be started at this index</param>
+    /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
+    /// <param name="body">Method body to run for each iteration of the loop</param>
+    public static void For(int fromInclusive, int toExclusive, Action<int> body)
     {
-        private static readonly int processorCount = System.Environment.ProcessorCount;
+        For(processorCount, fromInclusive, toExclusive, body);
+    }
 
-        /// <summary>
-        /// Executes a for loop in which iterations may run in parallel
-        /// </summary>
-        /// <param name="fromInclusive">The loop will be started at this index</param>
-        /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
-        /// <param name="body">Method body to run for each iteration of the loop</param>
-        public static void For(int fromInclusive, int toExclusive, Action<int> body)
-        {
-            For(processorCount, fromInclusive, toExclusive, body);
-        }
+    /// <summary>
+    ///     Executes a for loop in which iterations may run in parallel
+    /// </summary>
+    /// <param name="threadCount">The number of concurrent execution threads to run</param>
+    /// <param name="fromInclusive">The loop will be started at this index</param>
+    /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
+    /// <param name="body">Method body to run for each iteration of the loop</param>
+    public static void For(int threadCount, int fromInclusive, int toExclusive, Action<int> body)
+    {
+        var counter = threadCount;
+        var threadFinishEvent = new AutoResetEvent(false);
+        Exception exception = null;
 
-        /// <summary>
-        /// Executes a for loop in which iterations may run in parallel
-        /// </summary>
-        /// <param name="threadCount">The number of concurrent execution threads to run</param>
-        /// <param name="fromInclusive">The loop will be started at this index</param>
-        /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
-        /// <param name="body">Method body to run for each iteration of the loop</param>
-        public static void For(int threadCount, int fromInclusive, int toExclusive, Action<int> body)
-        {
-            int counter = threadCount;
-            AutoResetEvent threadFinishEvent = new AutoResetEvent(false);
-            Exception exception = null;
+        --fromInclusive;
 
-            --fromInclusive;
+        for (var i = 0; i < threadCount; i++)
+            WorkPool.QueueUserWorkItem(
+                delegate(object o)
+                {
+                    var threadIndex = (int)o;
 
-            for (int i = 0; i < threadCount; i++)
-            {
-                WorkPool.QueueUserWorkItem(
-                    delegate(object o)
+                    while (exception == null)
                     {
-                        int threadIndex = (int)o;
+                        var currentIndex = Interlocked.Increment(ref fromInclusive);
 
-                        while (exception == null)
+                        if (currentIndex >= toExclusive)
+                            break;
+
+                        try
                         {
-                            int currentIndex = Interlocked.Increment(ref fromInclusive);
+                            body(currentIndex);
+                        }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                            break;
+                        }
+                    }
 
-                            if (currentIndex >= toExclusive)
+                    if (Interlocked.Decrement(ref counter) == 0)
+                        threadFinishEvent.Set();
+                }, i
+            );
+
+        threadFinishEvent.WaitOne();
+
+        if (exception != null)
+            throw exception;
+    }
+
+    /// <summary>
+    ///     Executes a foreach loop in which iterations may run in parallel
+    /// </summary>
+    /// <typeparam name="T">Object type that the collection wraps</typeparam>
+    /// <param name="enumerable">An enumerable collection to iterate over</param>
+    /// <param name="body">Method body to run for each object in the collection</param>
+    public static void ForEach<T>(IEnumerable<T> enumerable, Action<T> body)
+    {
+        ForEach(processorCount, enumerable, body);
+    }
+
+    /// <summary>
+    ///     Executes a foreach loop in which iterations may run in parallel
+    /// </summary>
+    /// <typeparam name="T">Object type that the collection wraps</typeparam>
+    /// <param name="threadCount">The number of concurrent execution threads to run</param>
+    /// <param name="enumerable">An enumerable collection to iterate over</param>
+    /// <param name="body">Method body to run for each object in the collection</param>
+    public static void ForEach<T>(int threadCount, IEnumerable<T> enumerable, Action<T> body)
+    {
+        var counter = threadCount;
+        var threadFinishEvent = new AutoResetEvent(false);
+        var enumerator = enumerable.GetEnumerator();
+        Exception exception = null;
+
+        for (var i = 0; i < threadCount; i++)
+            WorkPool.QueueUserWorkItem(
+                delegate(object o)
+                {
+                    var threadIndex = (int)o;
+
+                    while (exception == null)
+                    {
+                        T entry;
+
+                        lock (enumerator)
+                        {
+                            if (!enumerator.MoveNext())
                                 break;
-
-                            try { body(currentIndex); }
-                            catch (Exception ex) { exception = ex; break; }
+                            entry = enumerator.Current; // Explicit typecast for Mono's sake
                         }
 
-                        if (Interlocked.Decrement(ref counter) == 0)
-                            threadFinishEvent.Set();
-                    }, i
-                );
-            }
-
-            threadFinishEvent.WaitOne();
-
-            if (exception != null)
-                throw exception;
-        }
-
-        /// <summary>
-        /// Executes a foreach loop in which iterations may run in parallel
-        /// </summary>
-        /// <typeparam name="T">Object type that the collection wraps</typeparam>
-        /// <param name="enumerable">An enumerable collection to iterate over</param>
-        /// <param name="body">Method body to run for each object in the collection</param>
-        public static void ForEach<T>(IEnumerable<T> enumerable, Action<T> body)
-        {
-            ForEach<T>(processorCount, enumerable, body);
-        }
-
-        /// <summary>
-        /// Executes a foreach loop in which iterations may run in parallel
-        /// </summary>
-        /// <typeparam name="T">Object type that the collection wraps</typeparam>
-        /// <param name="threadCount">The number of concurrent execution threads to run</param>
-        /// <param name="enumerable">An enumerable collection to iterate over</param>
-        /// <param name="body">Method body to run for each object in the collection</param>
-        public static void ForEach<T>(int threadCount, IEnumerable<T> enumerable, Action<T> body)
-        {
-            int counter = threadCount;
-            AutoResetEvent threadFinishEvent = new AutoResetEvent(false);
-            IEnumerator<T> enumerator = enumerable.GetEnumerator();
-            Exception exception = null;
-
-            for (int i = 0; i < threadCount; i++)
-            {
-                WorkPool.QueueUserWorkItem(
-                    delegate(object o)
-                    {
-                        int threadIndex = (int)o;
-
-                        while (exception == null)
+                        try
                         {
-                            T entry;
-
-                            lock (enumerator)
-                            {
-                                if (!enumerator.MoveNext())
-                                    break;
-                                entry = (T)enumerator.Current; // Explicit typecast for Mono's sake
-                            }
-
-                            try { body(entry); }
-                            catch (Exception ex) { exception = ex; break; }
+                            body(entry);
                         }
-
-                        if (Interlocked.Decrement(ref counter) == 0)
-                            threadFinishEvent.Set();
-                    }, i
-                );
-            }
-
-            threadFinishEvent.WaitOne();
-
-            if (exception != null)
-                throw exception;
-        }
-
-        /// <summary>
-        /// Executes a series of tasks in parallel
-        /// </summary>
-        /// <param name="actions">A series of method bodies to execute</param>
-        public static void Invoke(params Action[] actions)
-        {
-            Invoke(processorCount, actions);
-        }
-
-        /// <summary>
-        /// Executes a series of tasks in parallel
-        /// </summary>
-        /// <param name="threadCount">The number of concurrent execution threads to run</param>
-        /// <param name="actions">A series of method bodies to execute</param>
-        public static void Invoke(int threadCount, params Action[] actions)
-        {
-            int counter = threadCount;
-            AutoResetEvent threadFinishEvent = new AutoResetEvent(false);
-            int index = -1;
-            Exception exception = null;
-
-            for (int i = 0; i < threadCount; i++)
-            {
-                WorkPool.QueueUserWorkItem(
-                    delegate(object o)
-                    {
-                        int threadIndex = (int)o;
-
-                        while (exception == null)
+                        catch (Exception ex)
                         {
-                            int currentIndex = Interlocked.Increment(ref index);
-
-                            if (currentIndex >= actions.Length)
-                                break;
-
-                            try { actions[currentIndex](); }
-                            catch (Exception ex) { exception = ex; break; }
+                            exception = ex;
+                            break;
                         }
+                    }
 
-                        if (Interlocked.Decrement(ref counter) == 0)
-                            threadFinishEvent.Set();
-                    }, i
-                );
-            }
+                    if (Interlocked.Decrement(ref counter) == 0)
+                        threadFinishEvent.Set();
+                }, i
+            );
 
-            threadFinishEvent.WaitOne();
+        threadFinishEvent.WaitOne();
 
-            if (exception != null)
-                throw exception;
-        }
+        if (exception != null)
+            throw exception;
+    }
+
+    /// <summary>
+    ///     Executes a series of tasks in parallel
+    /// </summary>
+    /// <param name="actions">A series of method bodies to execute</param>
+    public static void Invoke(params Action[] actions)
+    {
+        Invoke(processorCount, actions);
+    }
+
+    /// <summary>
+    ///     Executes a series of tasks in parallel
+    /// </summary>
+    /// <param name="threadCount">The number of concurrent execution threads to run</param>
+    /// <param name="actions">A series of method bodies to execute</param>
+    public static void Invoke(int threadCount, params Action[] actions)
+    {
+        var counter = threadCount;
+        var threadFinishEvent = new AutoResetEvent(false);
+        var index = -1;
+        Exception exception = null;
+
+        for (var i = 0; i < threadCount; i++)
+            WorkPool.QueueUserWorkItem(
+                delegate(object o)
+                {
+                    var threadIndex = (int)o;
+
+                    while (exception == null)
+                    {
+                        var currentIndex = Interlocked.Increment(ref index);
+
+                        if (currentIndex >= actions.Length)
+                            break;
+
+                        try
+                        {
+                            actions[currentIndex]();
+                        }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                            break;
+                        }
+                    }
+
+                    if (Interlocked.Decrement(ref counter) == 0)
+                        threadFinishEvent.Set();
+                }, i
+            );
+
+        threadFinishEvent.WaitOne();
+
+        if (exception != null)
+            throw exception;
     }
 }

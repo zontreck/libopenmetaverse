@@ -36,8 +36,8 @@ namespace OpenMetaverse;
 /// </summary>
 public class BlockingQueue<T> : Queue<T>
 {
-    private bool open;
     private readonly object SyncRoot;
+    private bool open;
 
     /// <summary>
     ///     Create new BlockingQueue.

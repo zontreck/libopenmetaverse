@@ -65,11 +65,11 @@ namespace CSJ2K.j2k;
 /// </summary>
 public class ModuleSpec : ICloneable
 {
-	/// <summary>
-	///     The identifier for a specification module that applies only to
-	///     components
-	/// </summary>
-	public const byte SPEC_TYPE_COMP = 0;
+    /// <summary>
+    ///     The identifier for a specification module that applies only to
+    ///     components
+    /// </summary>
+    public const byte SPEC_TYPE_COMP = 0;
 
     /// <summary>The identifier for a specification module that applies only to tiles </summary>
     public const byte SPEC_TYPE_TILE = 1;

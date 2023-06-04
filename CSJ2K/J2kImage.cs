@@ -421,7 +421,7 @@ public class J2kImage
     public static AnyBitmap FromFile(string filename)
     {
         Stream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-        AnyBitmap img = FromStream(stream);
+        var img = FromStream(stream);
         stream.Close();
         return img;
     }
@@ -574,7 +574,7 @@ public class J2kImage
         var bytesPerPixel = numComps; // Assuming 8-bit components
 
         // **** Copy to Bitmap ****
-        Image<Rgba32> dst = new Image<Rgba32>(decodedImage.ImgWidth, decodedImage.ImgHeight);
+        var dst = new Image<Rgba32>(decodedImage.ImgWidth, decodedImage.ImgHeight);
 
         var numTiles = decodedImage.getNumTiles(null);
 
@@ -661,7 +661,7 @@ public class J2kImage
                     }
                 }
 
-                IntPtr ptr = ((AnyBitmap)dst).Scan0;
+                var ptr = ((AnyBitmap)dst).Scan0;
                 Marshal.Copy(rowvalues, 0, ptr, rowvalues.Length);
             }
         }

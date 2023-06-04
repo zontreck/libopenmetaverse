@@ -60,160 +60,160 @@ namespace CSJ2K.j2k.wavelet.synthesis;
 /// </seealso>
 public class SynWTFilterIntLift5x3 : SynWTFilterInt
 {
-	/// <summary>
-	///     Returns the negative support of the low-pass analysis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     2
-	/// </returns>
-	public override int AnLowNegSupport => 2;
+    /// <summary>
+    ///     Returns the negative support of the low-pass analysis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     2
+    /// </returns>
+    public override int AnLowNegSupport => 2;
 
-	/// <summary>
-	///     Returns the positive support of the low-pass analysis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the low-pass analysis filter in the
-	///     positive direction
-	/// </returns>
-	public override int AnLowPosSupport => 2;
+    /// <summary>
+    ///     Returns the positive support of the low-pass analysis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the low-pass analysis filter in the
+    ///     positive direction
+    /// </returns>
+    public override int AnLowPosSupport => 2;
 
-	/// <summary>
-	///     Returns the negative support of the high-pass analysis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the high-pass analysis filter in the
-	///     negative direction
-	/// </returns>
-	public override int AnHighNegSupport => 1;
+    /// <summary>
+    ///     Returns the negative support of the high-pass analysis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the high-pass analysis filter in the
+    ///     negative direction
+    /// </returns>
+    public override int AnHighNegSupport => 1;
 
-	/// <summary>
-	///     Returns the positive support of the high-pass analysis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the high-pass analysis filter in the
-	///     positive direction
-	/// </returns>
-	public override int AnHighPosSupport => 1;
+    /// <summary>
+    ///     Returns the positive support of the high-pass analysis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the high-pass analysis filter in the
+    ///     positive direction
+    /// </returns>
+    public override int AnHighPosSupport => 1;
 
-	/// <summary>
-	///     Returns the negative support of the low-pass synthesis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the low-pass synthesis filter in the
-	///     negative direction
-	/// </returns>
-	public override int SynLowNegSupport => 1;
+    /// <summary>
+    ///     Returns the negative support of the low-pass synthesis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the low-pass synthesis filter in the
+    ///     negative direction
+    /// </returns>
+    public override int SynLowNegSupport => 1;
 
-	/// <summary>
-	///     Returns the positive support of the low-pass synthesis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the low-pass synthesis filter in the
-	///     positive direction
-	/// </returns>
-	public override int SynLowPosSupport => 1;
+    /// <summary>
+    ///     Returns the positive support of the low-pass synthesis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the low-pass synthesis filter in the
+    ///     positive direction
+    /// </returns>
+    public override int SynLowPosSupport => 1;
 
-	/// <summary>
-	///     Returns the negative support of the high-pass synthesis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the high-pass synthesis filter in the
-	///     negative direction
-	/// </returns>
-	public override int SynHighNegSupport => 2;
+    /// <summary>
+    ///     Returns the negative support of the high-pass synthesis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the high-pass synthesis filter in the
+    ///     negative direction
+    /// </returns>
+    public override int SynHighNegSupport => 2;
 
-	/// <summary>
-	///     Returns the positive support of the high-pass synthesis filter. That is
-	///     the number of taps of the filter in the negative direction.
-	/// </summary>
-	/// <returns>
-	///     The number of taps of the high-pass synthesis filter in the
-	///     positive direction
-	/// </returns>
-	public override int SynHighPosSupport => 2;
+    /// <summary>
+    ///     Returns the positive support of the high-pass synthesis filter. That is
+    ///     the number of taps of the filter in the negative direction.
+    /// </summary>
+    /// <returns>
+    ///     The number of taps of the high-pass synthesis filter in the
+    ///     positive direction
+    /// </returns>
+    public override int SynHighPosSupport => 2;
 
-	/// <summary>
-	///     Returns the implementation type of this filter, as defined in this
-	///     class, such as WT_FILTER_INT_LIFT, WT_FILTER_FLOAT_LIFT,
-	///     WT_FILTER_FLOAT_CONVOL.
-	/// </summary>
-	/// <returns>
-	///     WT_FILTER_INT_LIFT.
-	/// </returns>
-	public override int ImplType => WaveletFilter_Fields.WT_FILTER_INT_LIFT;
+    /// <summary>
+    ///     Returns the implementation type of this filter, as defined in this
+    ///     class, such as WT_FILTER_INT_LIFT, WT_FILTER_FLOAT_LIFT,
+    ///     WT_FILTER_FLOAT_CONVOL.
+    /// </summary>
+    /// <returns>
+    ///     WT_FILTER_INT_LIFT.
+    /// </returns>
+    public override int ImplType => WaveletFilter_Fields.WT_FILTER_INT_LIFT;
 
-	/// <summary>
-	///     Returns the reversibility of the filter. A filter is considered
-	///     reversible if it is suitable for lossless coding.
-	/// </summary>
-	/// <returns>
-	///     true since the 5x3 is reversible, provided the appropriate
-	///     rounding is performed.
-	/// </returns>
-	public override bool Reversible => true;
+    /// <summary>
+    ///     Returns the reversibility of the filter. A filter is considered
+    ///     reversible if it is suitable for lossless coding.
+    /// </summary>
+    /// <returns>
+    ///     true since the 5x3 is reversible, provided the appropriate
+    ///     rounding is performed.
+    /// </returns>
+    public override bool Reversible => true;
 
-	/// <summary>
-	///     An implementation of the synthetize_lpf() method that works on int
-	///     data, for the inverse 5x3 wavelet transform using the lifting
-	///     scheme. See the general description of the synthetize_lpf() method in
-	///     the SynWTFilter class for more details.
-	///     <p>The coefficients of the first lifting step are [-1/4 1 -1/4].</p>
-	///     <p>The coefficients of the second lifting step are [1/2 1 1/2].</p>
-	/// </summary>
-	/// <param name="lowSig">
-	///     This is the array that contains the low-pass input
-	///     signal.
-	/// </param>
-	/// <param name="lowOff">
-	///     This is the index in lowSig of the first sample to
-	///     filter.
-	/// </param>
-	/// <param name="lowLen">
-	///     This is the number of samples in the low-pass input
-	///     signal to filter.
-	/// </param>
-	/// <param name="lowStep">
-	///     This is the step, or interleave factor, of the low-pass
-	///     input signal samples in the lowSig array.
-	/// </param>
-	/// <param name="highSig">
-	///     This is the array that contains the high-pass input
-	///     signal.
-	/// </param>
-	/// <param name="highOff">
-	///     This is the index in highSig of the first sample to
-	///     filter.
-	/// </param>
-	/// <param name="highLen">
-	///     This is the number of samples in the high-pass input
-	///     signal to filter.
-	/// </param>
-	/// <param name="highStep">
-	///     This is the step, or interleave factor, of the
-	///     high-pass input signal samples in the highSig array.
-	/// </param>
-	/// <param name="outSig">
-	///     This is the array where the output signal is placed. It
-	///     should be long enough to contain the output signal.
-	/// </param>
-	/// <param name="outOff">
-	///     This is the index in outSig of the element where to put
-	///     the first output sample.
-	/// </param>
-	/// <param name="outStep">
-	///     This is the step, or interleave factor, of the output
-	///     samples in the outSig array.
-	/// </param>
-	/// <seealso cref="SynWTFilter.synthetize_lpf">
-	/// </seealso>
-	public override void synthetize_lpf(int[] lowSig, int lowOff, int lowLen, int lowStep, int[] highSig, int highOff,
+    /// <summary>
+    ///     An implementation of the synthetize_lpf() method that works on int
+    ///     data, for the inverse 5x3 wavelet transform using the lifting
+    ///     scheme. See the general description of the synthetize_lpf() method in
+    ///     the SynWTFilter class for more details.
+    ///     <p>The coefficients of the first lifting step are [-1/4 1 -1/4].</p>
+    ///     <p>The coefficients of the second lifting step are [1/2 1 1/2].</p>
+    /// </summary>
+    /// <param name="lowSig">
+    ///     This is the array that contains the low-pass input
+    ///     signal.
+    /// </param>
+    /// <param name="lowOff">
+    ///     This is the index in lowSig of the first sample to
+    ///     filter.
+    /// </param>
+    /// <param name="lowLen">
+    ///     This is the number of samples in the low-pass input
+    ///     signal to filter.
+    /// </param>
+    /// <param name="lowStep">
+    ///     This is the step, or interleave factor, of the low-pass
+    ///     input signal samples in the lowSig array.
+    /// </param>
+    /// <param name="highSig">
+    ///     This is the array that contains the high-pass input
+    ///     signal.
+    /// </param>
+    /// <param name="highOff">
+    ///     This is the index in highSig of the first sample to
+    ///     filter.
+    /// </param>
+    /// <param name="highLen">
+    ///     This is the number of samples in the high-pass input
+    ///     signal to filter.
+    /// </param>
+    /// <param name="highStep">
+    ///     This is the step, or interleave factor, of the
+    ///     high-pass input signal samples in the highSig array.
+    /// </param>
+    /// <param name="outSig">
+    ///     This is the array where the output signal is placed. It
+    ///     should be long enough to contain the output signal.
+    /// </param>
+    /// <param name="outOff">
+    ///     This is the index in outSig of the element where to put
+    ///     the first output sample.
+    /// </param>
+    /// <param name="outStep">
+    ///     This is the step, or interleave factor, of the output
+    ///     samples in the outSig array.
+    /// </param>
+    /// <seealso cref="SynWTFilter.synthetize_lpf">
+    /// </seealso>
+    public override void synthetize_lpf(int[] lowSig, int lowOff, int lowLen, int lowStep, int[] highSig, int highOff,
         int highLen, int highStep, int[] outSig, int outOff, int outStep)
     {
         int i;
@@ -274,61 +274,61 @@ public class SynWTFilterIntLift5x3 : SynWTFilterInt
         if (outLen % 2 == 0 && outLen > 1) outSig[ik] = highSig[hk] + outSig[ik - outStep];
     }
 
-	/// <summary>
-	///     An implementation of the synthetize_hpf() method that works on int
-	///     data, for the inverse 5x3 wavelet transform using thelifting
-	///     scheme. See the general description of the synthetize_hpf() method in
-	///     the SynWTFilter class for more details.
-	///     <p>The coefficients of the first lifting step are [-1/4 1 -1/4].</p>
-	///     <p>The coefficients of the second lifting step are [1/2 1 1/2].</p>
-	/// </summary>
-	/// <param name="lowSig">
-	///     This is the array that contains the low-pass input
-	///     signal.
-	/// </param>
-	/// <param name="lowOff">
-	///     This is the index in lowSig of the first sample to
-	///     filter.
-	/// </param>
-	/// <param name="lowLen">
-	///     This is the number of samples in the low-pass input
-	///     signal to filter.
-	/// </param>
-	/// <param name="lowStep">
-	///     This is the step, or interleave factor, of the low-pass
-	///     input signal samples in the lowSig array.
-	/// </param>
-	/// <param name="highSig">
-	///     This is the array that contains the high-pass input
-	///     signal.
-	/// </param>
-	/// <param name="highOff">
-	///     This is the index in highSig of the first sample to
-	///     filter.
-	/// </param>
-	/// <param name="highLen">
-	///     This is the number of samples in the high-pass input
-	///     signal to filter.
-	/// </param>
-	/// <param name="highStep">
-	///     This is the step, or interleave factor, of the
-	///     high-pass input signal samples in the highSig array.
-	/// </param>
-	/// <param name="outSig">
-	///     This is the array where the output signal is placed. It
-	///     should be long enough to contain the output signal.
-	/// </param>
-	/// <param name="outOff">
-	///     This is the index in outSig of the element where to put
-	///     the first output sample.
-	/// </param>
-	/// <param name="outStep">
-	///     This is the step, or interleave factor, of the output
-	///     samples in the outSig array.
-	/// </param>
-	/// <seealso cref="SynWTFilter.synthetize_hpf">
-	/// </seealso>
-	public override void synthetize_hpf(int[] lowSig, int lowOff, int lowLen, int lowStep, int[] highSig, int highOff,
+    /// <summary>
+    ///     An implementation of the synthetize_hpf() method that works on int
+    ///     data, for the inverse 5x3 wavelet transform using thelifting
+    ///     scheme. See the general description of the synthetize_hpf() method in
+    ///     the SynWTFilter class for more details.
+    ///     <p>The coefficients of the first lifting step are [-1/4 1 -1/4].</p>
+    ///     <p>The coefficients of the second lifting step are [1/2 1 1/2].</p>
+    /// </summary>
+    /// <param name="lowSig">
+    ///     This is the array that contains the low-pass input
+    ///     signal.
+    /// </param>
+    /// <param name="lowOff">
+    ///     This is the index in lowSig of the first sample to
+    ///     filter.
+    /// </param>
+    /// <param name="lowLen">
+    ///     This is the number of samples in the low-pass input
+    ///     signal to filter.
+    /// </param>
+    /// <param name="lowStep">
+    ///     This is the step, or interleave factor, of the low-pass
+    ///     input signal samples in the lowSig array.
+    /// </param>
+    /// <param name="highSig">
+    ///     This is the array that contains the high-pass input
+    ///     signal.
+    /// </param>
+    /// <param name="highOff">
+    ///     This is the index in highSig of the first sample to
+    ///     filter.
+    /// </param>
+    /// <param name="highLen">
+    ///     This is the number of samples in the high-pass input
+    ///     signal to filter.
+    /// </param>
+    /// <param name="highStep">
+    ///     This is the step, or interleave factor, of the
+    ///     high-pass input signal samples in the highSig array.
+    /// </param>
+    /// <param name="outSig">
+    ///     This is the array where the output signal is placed. It
+    ///     should be long enough to contain the output signal.
+    /// </param>
+    /// <param name="outOff">
+    ///     This is the index in outSig of the element where to put
+    ///     the first output sample.
+    /// </param>
+    /// <param name="outStep">
+    ///     This is the step, or interleave factor, of the output
+    ///     samples in the outSig array.
+    /// </param>
+    /// <seealso cref="SynWTFilter.synthetize_hpf">
+    /// </seealso>
+    public override void synthetize_hpf(int[] lowSig, int lowOff, int lowLen, int lowStep, int[] highSig, int highOff,
         int highLen, int highStep, int[] outSig, int outOff, int outStep)
     {
         int i;
@@ -387,38 +387,38 @@ public class SynWTFilterIntLift5x3 : SynWTFilterInt
         if (outLen % 2 == 1 && outLen > 1) outSig[ik] = highSig[hk] + outSig[ik - outStep];
     }
 
-	/// <summary>
-	///     Returns true if the wavelet filter computes or uses the same "inner"
-	///     subband coefficient as the full frame wavelet transform, and false
-	///     otherwise. In particular, for block based transforms with reduced
-	///     overlap, this method should return false. The term "inner" indicates
-	///     that this applies only with respect to the coefficient that are not
-	///     affected by image boundaries processings such as symmetric extension,
-	///     since there is not reference method for this.
-	///     <p>
-	///         The result depends on the length of the allowed overlap when
-	///         compared to the overlap required by the wavelet filter. It also depends
-	///         on how overlap processing is implemented in the wavelet filter.
-	///     </p>
-	/// </summary>
-	/// <param name="tailOvrlp">
-	///     This is the number of samples in the input signal
-	///     before the first sample to filter that can be used for overlap.
-	/// </param>
-	/// <param name="headOvrlp">
-	///     This is the number of samples in the input signal
-	///     after the last sample to filter that can be used for overlap.
-	/// </param>
-	/// <param name="inLen">
-	///     This is the lenght of the input signal to filter.The
-	///     required number of samples in the input signal after the last sample
-	///     depends on the length of the input signal.
-	/// </param>
-	/// <returns>
-	///     true if both overlaps are greater than 2, and correct
-	///     processing is applied in the analyze() method.
-	/// </returns>
-	public override bool isSameAsFullWT(int tailOvrlp, int headOvrlp, int inLen)
+    /// <summary>
+    ///     Returns true if the wavelet filter computes or uses the same "inner"
+    ///     subband coefficient as the full frame wavelet transform, and false
+    ///     otherwise. In particular, for block based transforms with reduced
+    ///     overlap, this method should return false. The term "inner" indicates
+    ///     that this applies only with respect to the coefficient that are not
+    ///     affected by image boundaries processings such as symmetric extension,
+    ///     since there is not reference method for this.
+    ///     <p>
+    ///         The result depends on the length of the allowed overlap when
+    ///         compared to the overlap required by the wavelet filter. It also depends
+    ///         on how overlap processing is implemented in the wavelet filter.
+    ///     </p>
+    /// </summary>
+    /// <param name="tailOvrlp">
+    ///     This is the number of samples in the input signal
+    ///     before the first sample to filter that can be used for overlap.
+    /// </param>
+    /// <param name="headOvrlp">
+    ///     This is the number of samples in the input signal
+    ///     after the last sample to filter that can be used for overlap.
+    /// </param>
+    /// <param name="inLen">
+    ///     This is the lenght of the input signal to filter.The
+    ///     required number of samples in the input signal after the last sample
+    ///     depends on the length of the input signal.
+    /// </param>
+    /// <returns>
+    ///     true if both overlaps are greater than 2, and correct
+    ///     processing is applied in the analyze() method.
+    /// </returns>
+    public override bool isSameAsFullWT(int tailOvrlp, int headOvrlp, int inLen)
     {
         //If the input signal has even length.
         if (inLen % 2 == 0)
@@ -434,13 +434,13 @@ public class SynWTFilterIntLift5x3 : SynWTFilterInt
         return false;
     }
 
-	/// <summary>
-	///     Returns a string of information about the synthesis wavelet filter
-	/// </summary>
-	/// <returns>
-	///     wavelet filter type.
-	/// </returns>
-	public override string ToString()
+    /// <summary>
+    ///     Returns a string of information about the synthesis wavelet filter
+    /// </summary>
+    /// <returns>
+    ///     wavelet filter type.
+    /// </returns>
+    public override string ToString()
     {
         return "w5x3 (lifting)";
     }

@@ -55,42 +55,42 @@ namespace CSJ2K.j2k.quantization;
 /// </seealso>
 public class GuardBitsSpec : ModuleSpec
 {
-	/// <summary>
-	///     Constructs an empty 'GuardBitsSpec' with specified number of tile and
-	///     components. This constructor is called by the decoder.
-	/// </summary>
-	/// <param name="nt">
-	///     Number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     Number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	public GuardBitsSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs an empty 'GuardBitsSpec' with specified number of tile and
+    ///     components. This constructor is called by the decoder.
+    /// </summary>
+    /// <param name="nt">
+    ///     Number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     Number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    public GuardBitsSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
     }
 
-	/// <summary>
-	///     Constructs a new 'GuardBitsSpec' for the specified number of components
-	///     and tiles and the arguments of "-Qguard_bits" option.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList
-	/// </param>
-	public GuardBitsSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs a new 'GuardBitsSpec' for the specified number of components
+    ///     and tiles and the arguments of "-Qguard_bits" option.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList
+    /// </param>
+    public GuardBitsSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter("Qguard_bits");
         if (param == null) throw new ArgumentException("Qguard_bits option not " + "specified");

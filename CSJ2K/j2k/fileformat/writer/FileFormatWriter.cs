@@ -76,9 +76,6 @@ public class FileFormatWriter
     /// <summary>Length of codestream </summary>
     private readonly int clength;
 
-    /// <summary>The file from which to read the codestream and write file</summary>
-    private BEBufferedRandomAccessFile fi;
-
     /// <summary>
     ///     The name of the file from which to read the codestream and to write
     ///     the JP2 file
@@ -93,6 +90,9 @@ public class FileFormatWriter
 
     /// <summary>Image width </summary>
     private readonly int width;
+
+    /// <summary>The file from which to read the codestream and write file</summary>
+    private BEBufferedRandomAccessFile fi;
 
 
     /// <summary>

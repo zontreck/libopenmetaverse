@@ -53,11 +53,11 @@ namespace CSJ2K.j2k.util;
 /// </summary>
 public class ArrayUtil
 {
-	/// <summary>
-	///     The maximum array size to do element by element copying, larger
-	///     arrays are copyied in a n optimized way.
-	/// </summary>
-	public const int MAX_EL_COPYING = 8;
+    /// <summary>
+    ///     The maximum array size to do element by element copying, larger
+    ///     arrays are copyied in a n optimized way.
+    /// </summary>
+    public const int MAX_EL_COPYING = 8;
 
     /// <summary>The number of elements to copy initially in an optimized array copy </summary>
     public const int INIT_EL_COPYING = 4;

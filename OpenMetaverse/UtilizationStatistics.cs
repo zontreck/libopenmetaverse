@@ -25,84 +25,81 @@
  */
 
 
-using System;
-using System.Text;
-using System.Threading;
 using System.Collections.Generic;
-using OpenMetaverse.Packets;
+using System.Threading;
 
-namespace OpenMetaverse.Stats
+namespace OpenMetaverse.Stats;
+
+public enum Type
 {
-    public enum Type
-        {
-            Packet,
-            Message
-        }
-    public class UtilizationStatistics
+    Packet,
+    Message
+}
+
+public class UtilizationStatistics
+{
+    private readonly Dictionary<string, Stat> m_StatsCollection;
+
+    public UtilizationStatistics()
     {
-        
-        public class Stat
+        m_StatsCollection = new Dictionary<string, Stat>();
+    }
+
+    internal void Update(string key, Type Type, long txBytes, long rxBytes)
+    {
+        lock (m_StatsCollection)
         {
-            public Type Type;
-            public long TxCount;
-            public long RxCount;
-            public long TxBytes;
-            public long RxBytes;
-
-            public Stat(Type type, long txCount, long rxCount, long txBytes, long rxBytes)
+            if (m_StatsCollection.ContainsKey(key))
             {
-                this.Type = type;
-                this.TxCount = txCount;
-                this.RxCount = rxCount;
-                this.TxBytes = txBytes;
-                this.RxBytes = rxBytes;
-            }
-        }
-                
-        private Dictionary<string, Stat> m_StatsCollection;
-
-        public UtilizationStatistics()
-        {
-            m_StatsCollection = new Dictionary<string, Stat>();
-        }
-
-        internal void Update(string key, Type Type, long txBytes, long rxBytes)
-        {            
-            lock (m_StatsCollection)
-            {
-                if(m_StatsCollection.ContainsKey(key))
+                var stat = m_StatsCollection[key];
+                if (rxBytes > 0)
                 {
-                    Stat stat = m_StatsCollection[key];
-                    if (rxBytes > 0)
-                    {
-                        Interlocked.Increment(ref stat.RxCount);
-                        Interlocked.Add(ref stat.RxBytes, rxBytes);    
-                    }
+                    Interlocked.Increment(ref stat.RxCount);
+                    Interlocked.Add(ref stat.RxBytes, rxBytes);
+                }
 
-                    if (txBytes > 0)
-                    {
-                        Interlocked.Increment(ref stat.TxCount);
-                        Interlocked.Add(ref stat.TxBytes, txBytes);
-                    }
-                                                                           
-                } else {
-                    Stat stat;
-                    if (txBytes > 0)
-                        stat = new Stat(Type, 1, 0, txBytes, 0);
-                    else
-                        stat = new Stat(Type, 0, 1, 0, rxBytes);
-
-                    m_StatsCollection.Add(key, stat);
+                if (txBytes > 0)
+                {
+                    Interlocked.Increment(ref stat.TxCount);
+                    Interlocked.Add(ref stat.TxBytes, txBytes);
                 }
             }
-        }
-
-        public Dictionary<string, Stat> GetStatistics()
-        {
-            lock(m_StatsCollection)
+            else
             {
-                return new Dictionary<string, Stat>(m_StatsCollection);
+                Stat stat;
+                if (txBytes > 0)
+                    stat = new Stat(Type, 1, 0, txBytes, 0);
+                else
+                    stat = new Stat(Type, 0, 1, 0, rxBytes);
+
+                m_StatsCollection.Add(key, stat);
             }
+        }
+    }
+
+    public Dictionary<string, Stat> GetStatistics()
+    {
+        lock (m_StatsCollection)
+        {
+            return new Dictionary<string, Stat>(m_StatsCollection);
+        }
+    }
+
+    public class Stat
+    {
+        public long RxBytes;
+        public long RxCount;
+        public long TxBytes;
+        public long TxCount;
+        public Type Type;
+
+        public Stat(Type type, long txCount, long rxCount, long txBytes, long rxBytes)
+        {
+            Type = type;
+            TxCount = txCount;
+            RxCount = rxCount;
+            TxBytes = txBytes;
+            RxBytes = rxBytes;
         }
     }
 }

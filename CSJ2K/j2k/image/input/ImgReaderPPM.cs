@@ -68,13 +68,16 @@ public class ImgReaderPPM : ImgReader
     /// <summary>Buffer for the 3 components of each pixel(in the current block) </summary>
     private readonly int[][] barr = new int[3][];
 
+    /// <summary>Data block used only to store coordinates of the buffered blocks </summary>
+    private readonly DataBlkInt dbi = new();
+
+    /// <summary>The number of bits that determine the nominal dynamic range </summary>
+    private readonly int rb;
+
     /// <summary>The line buffer. </summary>
     // This makes the class not thread safe (but it is not the only one making
     // it so)
     private byte[] buf;
-
-    /// <summary>Data block used only to store coordinates of the buffered blocks </summary>
-    private readonly DataBlkInt dbi = new();
 
     /// <summary>Where to read the data from </summary>
     //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
@@ -88,9 +91,6 @@ public class ImgReaderPPM : ImgReader
 
     /// <summary>The offset of the raw pixel data in the PPM file </summary>
     private int offset;
-
-    /// <summary>The number of bits that determine the nominal dynamic range </summary>
-    private readonly int rb;
 
     /// <summary>
     ///     Creates a new PPM file reader from the specified file.

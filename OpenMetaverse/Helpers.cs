@@ -26,631 +26,637 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OpenMetaverse.Packets;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using OpenMetaverse.StructuredData;
 using zlib;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+/// <summary>
+///     Static helper functions and global variables
+/// </summary>
+public static class Helpers
 {
     /// <summary>
-    /// Static helper functions and global variables
+    ///     Passed to Logger.Log() to identify the severity of a log entry
     /// </summary>
-    public static class Helpers
+    public enum LogLevel
     {
-        /// <summary>This header flag signals that ACKs are appended to the packet</summary>
-        public const byte MSG_APPENDED_ACKS = 0x10;
-        /// <summary>This header flag signals that this packet has been sent before</summary>
-        public const byte MSG_RESENT = 0x20;
-        /// <summary>This header flags signals that an ACK is expected for this packet</summary>
-        public const byte MSG_RELIABLE = 0x40;
-        /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
-        public const byte MSG_ZEROCODED = 0x80;
+        /// <summary>No logging information will be output</summary>
+        None,
 
         /// <summary>
-        /// Passed to Logger.Log() to identify the severity of a log entry
+        ///     Non-noisy useful information, may be helpful in
+        ///     debugging a problem
         /// </summary>
-        public enum LogLevel
-        {
-            /// <summary>No logging information will be output</summary>
-            None,
-            /// <summary>Non-noisy useful information, may be helpful in 
-            /// debugging a problem</summary>
-            Info,
-            /// <summary>A non-critical error occurred. A warning will not 
-            /// prevent the rest of the library from operating as usual, 
-            /// although it may be indicative of an underlying issue</summary>
-            Warning,
-            /// <summary>A critical error has occurred. Generally this will 
-            /// be followed by the network layer shutting down, although the 
-            /// stability of the library after an error is uncertain</summary>
-            Error,
-            /// <summary>Used for internal testing, this logging level can 
-            /// generate very noisy (long and/or repetitive) messages. Don't
-            /// pass this to the Log() function, use DebugLog() instead.
-            /// </summary>
-            Debug
-        };
+        Info,
 
         /// <summary>
-        /// 
+        ///     A non-critical error occurred. A warning will not
+        ///     prevent the rest of the library from operating as usual,
+        ///     although it may be indicative of an underlying issue
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        public static short TEOffsetShort(float offset)
-        {
-            offset = Utils.Clamp(offset, -1.0f, 1.0f);
-            offset *= 32767.0f;
-            if (offset >= 0)
-                offset += 0.5f;
-            else
-                offset -= 0.5f;
-            return (short)(offset);
-        }
-
-        public static float TEOffsetRound(float offset)
-        {
-            const float invScale = 1.0f / 32767.0f;
-            offset = Utils.Clamp(offset, -1.0f, 1.0f);
-            offset *= 32767.0f;
-            if (offset >= 0)
-                offset += 0.5f;
-            else
-                offset -= 0.5f;
-            short tmp =  (short)offset;
-            return tmp * invScale;
-        }
-
-        public static float TEOffsetFloat(short offset)
-        {
-            const float scale = 1.0f / 32767.0f;
-            return offset * scale;
-        }
+        Warning,
 
         /// <summary>
-        /// 
+        ///     A critical error has occurred. Generally this will
+        ///     be followed by the network layer shutting down, although the
+        ///     stability of the library after an error is uncertain
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public static float TEOffsetFloat(byte[] bytes, int pos)
-        {
-            const float scale = 1.0f / 32767.0f;
-            float offset = Utils.BytesToInt16(bytes, pos);
-            return offset * scale;
-        }
+        Error,
 
         /// <summary>
-        /// 
+        ///     Used for internal testing, this logging level can
+        ///     generate very noisy (long and/or repetitive) messages. Don't
+        ///     pass this to the Log() function, use DebugLog() instead.
         /// </summary>
-        /// <param name="rotation"></param>
-        /// <returns></returns>
-        public static short TERotationShort(float rotation)
-        {
-            const float TWO_PI = 6.2831853f;
-            const float scaledInvTWOPI = 32768.0f / TWO_PI;
+        Debug
+    }
 
-            rotation = (float)Math.IEEERemainder(rotation, TWO_PI);
-            rotation *= scaledInvTWOPI;
-            if (rotation >= 0)
-                rotation += 0.5f;
-            else
-                rotation -= 0.5f;
-            return (short)(rotation);
-        }
+    /// <summary>This header flag signals that ACKs are appended to the packet</summary>
+    public const byte MSG_APPENDED_ACKS = 0x10;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public static float TERotationFloat(byte[] bytes, int pos)
-        {
-            const float scale = 6.2831853f / 32768.0f;
-            return (bytes[pos] | (bytes[pos + 1] << 8)) * scale;
-        }
+    /// <summary>This header flag signals that this packet has been sent before</summary>
+    public const byte MSG_RESENT = 0x20;
 
-        public static float TERotationFloat(short s)
-        {
-            const float scale = 6.2831853f / 32768.0f;
-            return s * scale;
-        }
+    /// <summary>This header flags signals that an ACK is expected for this packet</summary>
+    public const byte MSG_RELIABLE = 0x40;
 
-        public static byte TEGlowByte(float glow)
-        {
-            return (byte)(glow * 255.0f);
-        }
+    /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
+    public const byte MSG_ZEROCODED = 0x80;
 
-        public static float TEGlowFloat(byte b)
-        {
-            const float scale = 1f / 255f;
-            return b * scale;
-        }
+    /// <summary>
+    /// </summary>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static short TEOffsetShort(float offset)
+    {
+        offset = Utils.Clamp(offset, -1.0f, 1.0f);
+        offset *= 32767.0f;
+        if (offset >= 0)
+            offset += 0.5f;
+        else
+            offset -= 0.5f;
+        return (short)offset;
+    }
 
-        public static float TEGlowFloat(byte[] bytes, int pos)
-        {
-            const float scale = 1f / 255f;
-            return bytes[pos] * scale;
-        }
+    public static float TEOffsetRound(float offset)
+    {
+        const float invScale = 1.0f / 32767.0f;
+        offset = Utils.Clamp(offset, -1.0f, 1.0f);
+        offset *= 32767.0f;
+        if (offset >= 0)
+            offset += 0.5f;
+        else
+            offset -= 0.5f;
+        var tmp = (short)offset;
+        return tmp * invScale;
+    }
 
-        public static float TEGlowRound(float glow)
-        {
-            const float scale = 1f / 255f;
-            byte tmp = (byte)(glow * 255.0f);
-            return tmp * scale;
-        }
+    public static float TEOffsetFloat(short offset)
+    {
+        const float scale = 1.0f / 32767.0f;
+        return offset * scale;
+    }
 
-        /// <summary>
-        /// Given an X/Y location in absolute (grid-relative) terms, a region
-        /// handle is returned along with the local X/Y location in that region
-        /// </summary>
-        /// <param name="globalX">The absolute X location, a number such as 
-        /// 255360.35</param>
-        /// <param name="globalY">The absolute Y location, a number such as
-        /// 255360.35</param>
-        /// <param name="localX">The sim-local X position of the global X
-        /// position, a value from 0.0 to 256.0</param>
-        /// <param name="localY">The sim-local Y position of the global Y
-        /// position, a value from 0.0 to 256.0</param>
-        /// <returns>A 64-bit region handle that can be used to teleport to</returns>
-        public static ulong GlobalPosToRegionHandle(float globalX, float globalY, out float localX, out float localY)
-        {
-            uint x = ((uint)globalX / 256) * 256;
-            uint y = ((uint)globalY / 256) * 256;
-            localX = globalX - (float)x;
-            localY = globalY - (float)y;
-            return Utils.UIntsToLong(x, y);
-        }
+    /// <summary>
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    public static float TEOffsetFloat(byte[] bytes, int pos)
+    {
+        const float scale = 1.0f / 32767.0f;
+        float offset = Utils.BytesToInt16(bytes, pos);
+        return offset * scale;
+    }
 
-        /// <summary>
-        /// Converts a floating point number to a terse string format used for
-        /// transmitting numbers in wearable asset files
-        /// </summary>
-        /// <param name="val">Floating point number to convert to a string</param>
-        /// <returns>A terse string representation of the input number</returns>
-        public static string FloatToTerseString(float val)
-        {
-            string s = string.Format(Utils.EnUsCulture, "{0:.00}", val);
+    /// <summary>
+    /// </summary>
+    /// <param name="rotation"></param>
+    /// <returns></returns>
+    public static short TERotationShort(float rotation)
+    {
+        const float TWO_PI = 6.2831853f;
+        const float scaledInvTWOPI = 32768.0f / TWO_PI;
 
-            if (val == 0)
-                return ".00";
+        rotation = (float)Math.IEEERemainder(rotation, TWO_PI);
+        rotation *= scaledInvTWOPI;
+        if (rotation >= 0)
+            rotation += 0.5f;
+        else
+            rotation -= 0.5f;
+        return (short)rotation;
+    }
 
-            // Trim trailing zeroes
-            while (s[s.Length - 1] == '0')
-                s = s.Remove(s.Length - 1, 1);
+    /// <summary>
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    public static float TERotationFloat(byte[] bytes, int pos)
+    {
+        const float scale = 6.2831853f / 32768.0f;
+        return (bytes[pos] | (bytes[pos + 1] << 8)) * scale;
+    }
 
-            // Remove superfluous decimal places after the trim
-            if (s[s.Length - 1] == '.')
-                s = s.Remove(s.Length - 1, 1);
-            // Remove leading zeroes after a negative sign
-            else if (s[0] == '-' && s[1] == '0')
-                s = s.Remove(1, 1);
-            // Remove leading zeroes in positive numbers
-            else if (s[0] == '0')
-                s = s.Remove(0, 1);
+    public static float TERotationFloat(short s)
+    {
+        const float scale = 6.2831853f / 32768.0f;
+        return s * scale;
+    }
 
-            return s;
-        }
+    public static byte TEGlowByte(float glow)
+    {
+        return (byte)(glow * 255.0f);
+    }
 
-        /// <summary>
-        /// Convert a variable length field (byte array) to a string, with a
-        /// field name prepended to each line of the output
-        /// </summary>
-        /// <remarks>If the byte array has unprintable characters in it, a 
-        /// hex dump will be written instead</remarks>
-        /// <param name="output">The StringBuilder object to write to</param>
-        /// <param name="bytes">The byte array to convert to a string</param>
-        /// <param name="fieldName">A field name to prepend to each line of output</param>
-        internal static void FieldToString(StringBuilder output, byte[] bytes, string fieldName)
-        {
-            // Check for a common case
-            if (bytes.Length == 0) return;
+    public static float TEGlowFloat(byte b)
+    {
+        const float scale = 1f / 255f;
+        return b * scale;
+    }
 
-            bool printable = true;
+    public static float TEGlowFloat(byte[] bytes, int pos)
+    {
+        const float scale = 1f / 255f;
+        return bytes[pos] * scale;
+    }
 
-            for (int i = 0; i < bytes.Length; ++i)
+    public static float TEGlowRound(float glow)
+    {
+        const float scale = 1f / 255f;
+        var tmp = (byte)(glow * 255.0f);
+        return tmp * scale;
+    }
+
+    /// <summary>
+    ///     Given an X/Y location in absolute (grid-relative) terms, a region
+    ///     handle is returned along with the local X/Y location in that region
+    /// </summary>
+    /// <param name="globalX">
+    ///     The absolute X location, a number such as
+    ///     255360.35
+    /// </param>
+    /// <param name="globalY">
+    ///     The absolute Y location, a number such as
+    ///     255360.35
+    /// </param>
+    /// <param name="localX">
+    ///     The sim-local X position of the global X
+    ///     position, a value from 0.0 to 256.0
+    /// </param>
+    /// <param name="localY">
+    ///     The sim-local Y position of the global Y
+    ///     position, a value from 0.0 to 256.0
+    /// </param>
+    /// <returns>A 64-bit region handle that can be used to teleport to</returns>
+    public static ulong GlobalPosToRegionHandle(float globalX, float globalY, out float localX, out float localY)
+    {
+        var x = (uint)globalX / 256 * 256;
+        var y = (uint)globalY / 256 * 256;
+        localX = globalX - x;
+        localY = globalY - y;
+        return Utils.UIntsToLong(x, y);
+    }
+
+    /// <summary>
+    ///     Converts a floating point number to a terse string format used for
+    ///     transmitting numbers in wearable asset files
+    /// </summary>
+    /// <param name="val">Floating point number to convert to a string</param>
+    /// <returns>A terse string representation of the input number</returns>
+    public static string FloatToTerseString(float val)
+    {
+        var s = string.Format(Utils.EnUsCulture, "{0:.00}", val);
+
+        if (val == 0)
+            return ".00";
+
+        // Trim trailing zeroes
+        while (s[s.Length - 1] == '0')
+            s = s.Remove(s.Length - 1, 1);
+
+        // Remove superfluous decimal places after the trim
+        if (s[s.Length - 1] == '.')
+            s = s.Remove(s.Length - 1, 1);
+        // Remove leading zeroes after a negative sign
+        else if (s[0] == '-' && s[1] == '0')
+            s = s.Remove(1, 1);
+        // Remove leading zeroes in positive numbers
+        else if (s[0] == '0')
+            s = s.Remove(0, 1);
+
+        return s;
+    }
+
+    /// <summary>
+    ///     Convert a variable length field (byte array) to a string, with a
+    ///     field name prepended to each line of the output
+    /// </summary>
+    /// <remarks>
+    ///     If the byte array has unprintable characters in it, a
+    ///     hex dump will be written instead
+    /// </remarks>
+    /// <param name="output">The StringBuilder object to write to</param>
+    /// <param name="bytes">The byte array to convert to a string</param>
+    /// <param name="fieldName">A field name to prepend to each line of output</param>
+    internal static void FieldToString(StringBuilder output, byte[] bytes, string fieldName)
+    {
+        // Check for a common case
+        if (bytes.Length == 0) return;
+
+        var printable = true;
+
+        for (var i = 0; i < bytes.Length; ++i)
+            // Check if there are any unprintable characters in the array
+            if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
+                                                     && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
             {
-                // Check if there are any unprintable characters in the array
-                if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
-                    && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
-                {
-                    printable = false;
-                    break;
-                }
+                printable = false;
+                break;
             }
 
-            if (printable)
+        if (printable)
+        {
+            if (fieldName.Length > 0)
             {
+                output.Append(fieldName);
+                output.Append(": ");
+            }
+
+            if (bytes[bytes.Length - 1] == 0x00)
+                output.Append(Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1));
+            else
+                output.Append(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
+        }
+        else
+        {
+            for (var i = 0; i < bytes.Length; i += 16)
+            {
+                if (i != 0)
+                    output.Append('\n');
                 if (fieldName.Length > 0)
                 {
                     output.Append(fieldName);
                     output.Append(": ");
                 }
 
-                if (bytes[bytes.Length - 1] == 0x00)
-                    output.Append(UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1));
-                else
-                    output.Append(UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length));
-            }
-            else
-            {
-                for (int i = 0; i < bytes.Length; i += 16)
-                {
-                    if (i != 0)
-                        output.Append('\n');
-                    if (fieldName.Length > 0)
-                    {
-                        output.Append(fieldName);
-                        output.Append(": ");
-                    }
-
-                    for (int j = 0; j < 16; j++)
-                    {
-                        if ((i + j) < bytes.Length)
-                            output.Append(String.Format("{0:X2} ", bytes[i + j]));
-                        else
-                            output.Append("   ");
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Decode a zerocoded byte array, used to decompress packets marked
-        /// with the zerocoded flag
-        /// </summary>
-        /// <remarks>Any time a zero is encountered, the next byte is a count 
-        /// of how many zeroes to expand. One zero is encoded with 0x00 0x01, 
-        /// two zeroes is 0x00 0x02, three zeroes is 0x00 0x03, etc. The 
-        /// first four bytes are copied directly to the output buffer.
-        /// </remarks>
-        /// <param name="src">The byte array to decode</param>
-        /// <param name="srclen">The length of the byte array to decode. This 
-        /// would be the length of the packet up to (but not including) any
-        /// appended ACKs</param>
-        /// <param name="dest">The output byte array to decode to</param>
-        /// <returns>The length of the output buffer</returns>
-        public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
-        {
-            if (srclen > src.Length)
-                throw new ArgumentException("srclen cannot be greater than src.Length");
-
-            uint zerolen = 6;
-            uint i = 0;
-
-            try
-            {
-                Buffer.BlockCopy(src, 0, dest, 0, 6);
-                for (i = zerolen; i < srclen; i++)
-                {
-                    if (src[i] == 0x00)
-                    {
-                        for (byte j = 0; j < src[i + 1]; j++)
-                        {
-                            dest[zerolen++] = 0x00;
-                        }
-
-                        i++;
-                    }
+                for (var j = 0; j < 16; j++)
+                    if (i + j < bytes.Length)
+                        output.Append(string.Format("{0:X2} ", bytes[i + j]));
                     else
-                    {
-                        dest[zerolen++] = src[i];
-                    }
-                }               
-                return (int)zerolen;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(String.Format("Zerodecoding error: i={0}, srclen={1}, zerolen={2}\n{3}\n{4}",
-                    i, srclen, zerolen, Utils.BytesToHexString(src, srclen, null), ex), LogLevel.Error);
-
-                throw new IndexOutOfRangeException(String.Format("Zerodecoding error: i={0}, srclen={1}, zerolen={2}\n{3}\n{4}",
-                    i, srclen, zerolen, Utils.BytesToHexString(src, srclen, null), ex.InnerException));
+                        output.Append("   ");
             }
         }
+    }
 
-        /// <summary>
-        /// Encode a byte array with zerocoding. Used to compress packets marked
-        /// with the zerocoded flag. Any zeroes in the array are compressed down
-        /// to a single zero byte followed by a count of how many zeroes to expand
-        /// out. A single zero becomes 0x00 0x01, two zeroes becomes 0x00 0x02,
-        /// three zeroes becomes 0x00 0x03, etc. The first four bytes are copied
-        /// directly to the output buffer.
-        /// </summary>
-        /// <param name="src">The byte array to encode</param>
-        /// <param name="srclen">The length of the byte array to encode</param>
-        /// <param name="dest">The output byte array to encode to</param>
-        /// <returns>The length of the output buffer</returns>
-        public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
+    /// <summary>
+    ///     Decode a zerocoded byte array, used to decompress packets marked
+    ///     with the zerocoded flag
+    /// </summary>
+    /// <remarks>
+    ///     Any time a zero is encountered, the next byte is a count
+    ///     of how many zeroes to expand. One zero is encoded with 0x00 0x01,
+    ///     two zeroes is 0x00 0x02, three zeroes is 0x00 0x03, etc. The
+    ///     first four bytes are copied directly to the output buffer.
+    /// </remarks>
+    /// <param name="src">The byte array to decode</param>
+    /// <param name="srclen">
+    ///     The length of the byte array to decode. This
+    ///     would be the length of the packet up to (but not including) any
+    ///     appended ACKs
+    /// </param>
+    /// <param name="dest">The output byte array to decode to</param>
+    /// <returns>The length of the output buffer</returns>
+    public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
+    {
+        if (srclen > src.Length)
+            throw new ArgumentException("srclen cannot be greater than src.Length");
+
+        uint zerolen = 6;
+        uint i = 0;
+
+        try
         {
-            
-            byte zerocount = 0;
-
             Buffer.BlockCopy(src, 0, dest, 0, 6);
-            uint zerolen = 6;
-
-            int bodylen;
-            if ((src[0] & MSG_APPENDED_ACKS) == 0)
-            {
-                bodylen = srclen;
-            }
-            else
-            {
-                bodylen = srclen - src[srclen - 1] * 4 - 1;
-            }
-
-            uint i;
-            for (i = zerolen; i < bodylen; i++)
-            {
+            for (i = zerolen; i < srclen; i++)
                 if (src[i] == 0x00)
                 {
-                    zerocount++;
+                    for (byte j = 0; j < src[i + 1]; j++) dest[zerolen++] = 0x00;
 
-                    if (zerocount == 0)
-                    {
-                        dest[zerolen++] = 0x00;
-                        dest[zerolen++] = 0xff;
-                        zerocount++;
-                    }
+                    i++;
                 }
                 else
                 {
-                    if (zerocount != 0)
-                    {
-                        dest[zerolen++] = 0x00;
-                        dest[zerolen++] = (byte)zerocount;
-                        zerocount = 0;
-                    }
-
                     dest[zerolen++] = src[i];
                 }
-            }
-
-            if (zerocount != 0)
-            {
-                dest[zerolen++] = 0x00;
-                dest[zerolen++] = (byte)zerocount;
-            }
-
-            // copy appended ACKs
-            for (; i < srclen; i++)
-            {
-                dest[zerolen++] = src[i];
-            }
 
             return (int)zerolen;
         }
-
-        /// <summary>
-        /// Calculates the CRC (cyclic redundancy check) needed to upload inventory.
-        /// </summary>
-        /// <param name="creationDate">Creation date</param>
-        /// <param name="saleType">Sale type</param>
-        /// <param name="invType">Inventory type</param>
-        /// <param name="type">Type</param>
-        /// <param name="assetID">Asset ID</param>
-        /// <param name="groupID">Group ID</param>
-        /// <param name="salePrice">Sale price</param>
-        /// <param name="ownerID">Owner ID</param>
-        /// <param name="creatorID">Creator ID</param>
-        /// <param name="itemID">Item ID</param>
-        /// <param name="folderID">Folder ID</param>
-        /// <param name="everyoneMask">Everyone mask (permissions)</param>
-        /// <param name="flags">Flags</param>
-        /// <param name="nextOwnerMask">Next owner mask (permissions)</param>
-        /// <param name="groupMask">Group mask (permissions)</param>
-        /// <param name="ownerMask">Owner mask (permissions)</param>
-        /// <returns>The calculated CRC</returns>
-        public static uint InventoryCRC(int creationDate, byte saleType, sbyte invType, sbyte type,
-            UUID assetID, UUID groupID, int salePrice, UUID ownerID, UUID creatorID,
-            UUID itemID, UUID folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
-            uint groupMask, uint ownerMask)
+        catch (Exception ex)
         {
-            uint CRC = 0;
+            Logger.Log(string.Format("Zerodecoding error: i={0}, srclen={1}, zerolen={2}\n{3}\n{4}",
+                i, srclen, zerolen, Utils.BytesToHexString(src, srclen, null), ex), LogLevel.Error);
 
-            // IDs
-            CRC += assetID.CRC(); // AssetID
-            CRC += folderID.CRC(); // FolderID
-            CRC += itemID.CRC(); // ItemID
-
-            // Permission stuff
-            CRC += creatorID.CRC(); // CreatorID
-            CRC += ownerID.CRC(); // OwnerID
-            CRC += groupID.CRC(); // GroupID
-
-            // CRC += another 4 words which always seem to be zero -- unclear if this is a UUID or what
-            CRC += ownerMask;
-            CRC += nextOwnerMask;
-            CRC += everyoneMask;
-            CRC += groupMask;
-
-            // The rest of the CRC fields
-            CRC += flags; // Flags
-            CRC += (uint)invType; // InvType
-            CRC += (uint)type; // Type 
-            CRC += (uint)creationDate; // CreationDate
-            CRC += (uint)salePrice;    // SalePrice
-            CRC += (uint)((uint)saleType * 0x07073096); // SaleType
-
-            return CRC;
+            throw new IndexOutOfRangeException(string.Format(
+                "Zerodecoding error: i={0}, srclen={1}, zerolen={2}\n{3}\n{4}",
+                i, srclen, zerolen, Utils.BytesToHexString(src, srclen, null), ex.InnerException));
         }
+    }
 
-        /// <summary>
-        /// Attempts to load a file embedded in the assembly
-        /// </summary>
-        /// <param name="resourceName">The filename of the resource to load</param>
-        /// <returns>A Stream for the requested file, or null if the resource
-        /// was not successfully loaded</returns>
-        public static System.IO.Stream GetResourceStream(string resourceName)
-        {
-            return GetResourceStream(resourceName, "openmetaverse_data");
-        }
+    /// <summary>
+    ///     Encode a byte array with zerocoding. Used to compress packets marked
+    ///     with the zerocoded flag. Any zeroes in the array are compressed down
+    ///     to a single zero byte followed by a count of how many zeroes to expand
+    ///     out. A single zero becomes 0x00 0x01, two zeroes becomes 0x00 0x02,
+    ///     three zeroes becomes 0x00 0x03, etc. The first four bytes are copied
+    ///     directly to the output buffer.
+    /// </summary>
+    /// <param name="src">The byte array to encode</param>
+    /// <param name="srclen">The length of the byte array to encode</param>
+    /// <param name="dest">The output byte array to encode to</param>
+    /// <returns>The length of the output buffer</returns>
+    public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
+    {
+        byte zerocount = 0;
 
-        /// <summary>
-        /// Attempts to load a file either embedded in the assembly or found in
-        /// a given search path
-        /// </summary>
-        /// <param name="resourceName">The filename of the resource to load</param>
-        /// <param name="searchPath">An optional path that will be searched if
-        /// the asset is not found embedded in the assembly</param>
-        /// <returns>A Stream for the requested file, or null if the resource
-        /// was not successfully loaded</returns>
-        public static System.IO.Stream GetResourceStream(string resourceName, string searchPath)
-        {
-            if (searchPath != null)
+        Buffer.BlockCopy(src, 0, dest, 0, 6);
+        uint zerolen = 6;
+
+        int bodylen;
+        if ((src[0] & MSG_APPENDED_ACKS) == 0)
+            bodylen = srclen;
+        else
+            bodylen = srclen - src[srclen - 1] * 4 - 1;
+
+        uint i;
+        for (i = zerolen; i < bodylen; i++)
+            if (src[i] == 0x00)
             {
-                Assembly gea = Assembly.GetEntryAssembly();
-                if (gea == null) gea = typeof(Helpers).Assembly;
-                string dirname = ".";
-                if (gea != null && gea.Location != null)
-                {
-                    dirname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(gea.Location), searchPath);
-                }
+                zerocount++;
 
-                string filename = System.IO.Path.Combine(dirname, resourceName);
-                try
+                if (zerocount == 0)
                 {
-                    return new System.IO.FileStream(
-                        filename,
-                        System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(string.Format("Failed opening resource from file {0}: {1}", filename, ex.Message), LogLevel.Error);
+                    dest[zerolen++] = 0x00;
+                    dest[zerolen++] = 0xff;
+                    zerocount++;
                 }
             }
             else
             {
-                try
+                if (zerocount != 0)
                 {
-                    System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-                    System.IO.Stream s = a.GetManifestResourceStream("OpenMetaverse.Resources." + resourceName);
-                    if (s != null) return s;
+                    dest[zerolen++] = 0x00;
+                    dest[zerolen++] = zerocount;
+                    zerocount = 0;
                 }
-                catch (Exception ex)
-                {
-                    Logger.Log(string.Format("Failed opening resource stream: {0}", ex.Message), LogLevel.Error);
-                }
+
+                dest[zerolen++] = src[i];
             }
 
-            return null;
-        }
-        /// <summary>
-        /// Converts a list of primitives to an object that can be serialized
-        /// with the LLSD system
-        /// </summary>
-        /// <param name="prims">Primitives to convert to a serializable object</param>
-        /// <returns>An object that can be serialized with LLSD</returns>
-        public static StructuredData.OSD PrimListToOSD(List<Primitive> prims)
+        if (zerocount != 0)
         {
-            StructuredData.OSDMap map = new OpenMetaverse.StructuredData.OSDMap(prims.Count);
-
-            for (int i = 0; i < prims.Count; i++)
-                map.Add(prims[i].LocalID.ToString(), prims[i].GetOSD());
-
-            return map;
+            dest[zerolen++] = 0x00;
+            dest[zerolen++] = zerocount;
         }
 
-        /// <summary>
-        /// Deserializes OSD in to a list of primitives
-        /// </summary>
-        /// <param name="osd">Structure holding the serialized primitive list,
-        /// must be of the SDMap type</param>
-        /// <returns>A list of deserialized primitives</returns>
-        public static List<Primitive> OSDToPrimList(StructuredData.OSD osd)
+        // copy appended ACKs
+        for (; i < srclen; i++) dest[zerolen++] = src[i];
+
+        return (int)zerolen;
+    }
+
+    /// <summary>
+    ///     Calculates the CRC (cyclic redundancy check) needed to upload inventory.
+    /// </summary>
+    /// <param name="creationDate">Creation date</param>
+    /// <param name="saleType">Sale type</param>
+    /// <param name="invType">Inventory type</param>
+    /// <param name="type">Type</param>
+    /// <param name="assetID">Asset ID</param>
+    /// <param name="groupID">Group ID</param>
+    /// <param name="salePrice">Sale price</param>
+    /// <param name="ownerID">Owner ID</param>
+    /// <param name="creatorID">Creator ID</param>
+    /// <param name="itemID">Item ID</param>
+    /// <param name="folderID">Folder ID</param>
+    /// <param name="everyoneMask">Everyone mask (permissions)</param>
+    /// <param name="flags">Flags</param>
+    /// <param name="nextOwnerMask">Next owner mask (permissions)</param>
+    /// <param name="groupMask">Group mask (permissions)</param>
+    /// <param name="ownerMask">Owner mask (permissions)</param>
+    /// <returns>The calculated CRC</returns>
+    public static uint InventoryCRC(int creationDate, byte saleType, sbyte invType, sbyte type,
+        UUID assetID, UUID groupID, int salePrice, UUID ownerID, UUID creatorID,
+        UUID itemID, UUID folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
+        uint groupMask, uint ownerMask)
+    {
+        uint CRC = 0;
+
+        // IDs
+        CRC += assetID.CRC(); // AssetID
+        CRC += folderID.CRC(); // FolderID
+        CRC += itemID.CRC(); // ItemID
+
+        // Permission stuff
+        CRC += creatorID.CRC(); // CreatorID
+        CRC += ownerID.CRC(); // OwnerID
+        CRC += groupID.CRC(); // GroupID
+
+        // CRC += another 4 words which always seem to be zero -- unclear if this is a UUID or what
+        CRC += ownerMask;
+        CRC += nextOwnerMask;
+        CRC += everyoneMask;
+        CRC += groupMask;
+
+        // The rest of the CRC fields
+        CRC += flags; // Flags
+        CRC += (uint)invType; // InvType
+        CRC += (uint)type; // Type 
+        CRC += (uint)creationDate; // CreationDate
+        CRC += (uint)salePrice; // SalePrice
+        CRC += (uint)saleType * 0x07073096; // SaleType
+
+        return CRC;
+    }
+
+    /// <summary>
+    ///     Attempts to load a file embedded in the assembly
+    /// </summary>
+    /// <param name="resourceName">The filename of the resource to load</param>
+    /// <returns>
+    ///     A Stream for the requested file, or null if the resource
+    ///     was not successfully loaded
+    /// </returns>
+    public static Stream GetResourceStream(string resourceName)
+    {
+        return GetResourceStream(resourceName, "openmetaverse_data");
+    }
+
+    /// <summary>
+    ///     Attempts to load a file either embedded in the assembly or found in
+    ///     a given search path
+    /// </summary>
+    /// <param name="resourceName">The filename of the resource to load</param>
+    /// <param name="searchPath">
+    ///     An optional path that will be searched if
+    ///     the asset is not found embedded in the assembly
+    /// </param>
+    /// <returns>
+    ///     A Stream for the requested file, or null if the resource
+    ///     was not successfully loaded
+    /// </returns>
+    public static Stream GetResourceStream(string resourceName, string searchPath)
+    {
+        if (searchPath != null)
         {
-            if (osd.Type != StructuredData.OSDType.Map)
-                throw new ArgumentException("LLSD must be in the Map structure");
+            var gea = Assembly.GetEntryAssembly();
+            if (gea == null) gea = typeof(Helpers).Assembly;
+            var dirname = ".";
+            if (gea != null && gea.Location != null)
+                dirname = Path.Combine(Path.GetDirectoryName(gea.Location), searchPath);
 
-            StructuredData.OSDMap map = (StructuredData.OSDMap)osd;
-            List<Primitive> prims = new List<Primitive>(map.Count);
-
-            foreach (KeyValuePair<string, StructuredData.OSD> kvp in map)
+            var filename = Path.Combine(dirname, resourceName);
+            try
             {
-                Primitive prim = Primitive.FromOSD(kvp.Value);
-                prim.LocalID = UInt32.Parse(kvp.Key);
-                prims.Add(prim);
+                return new FileStream(
+                    filename,
+                    FileMode.Open, FileAccess.Read, FileShare.Read);
             }
-
-            return prims;
-        }
-
-        /// <summary>
-        /// Converts a struct or class object containing fields only into a key value separated string
-        /// </summary>
-        /// <param name="t">The struct object</param>
-        /// <returns>A string containing the struct fields as the keys, and the field value as the value separated</returns>
-        /// <example>
-        /// <code>
-        /// // Add the following code to any struct or class containing only fields to override the ToString() 
-        /// // method to display the values of the passed object
-        /// 
-        /// /// <summary>Print the struct data as a string</summary>
-        /// ///<returns>A string containing the field name, and field value</returns>
-        ///public override string ToString()
-        ///{
-        ///    return Helpers.StructToString(this);
-        ///}
-        /// </code>
-        /// </example>
-        public static string StructToString(object t)
-        {
-            StringBuilder result = new StringBuilder();
-            Type structType = t.GetType();
-            FieldInfo[] fields = structType.GetFields();
-
-            foreach (FieldInfo field in fields)
+            catch (Exception ex)
             {
-                result.Append(field.Name + ": " + field.GetValue(t) + " ");
+                Logger.Log(string.Format("Failed opening resource from file {0}: {1}", filename, ex.Message),
+                    LogLevel.Error);
             }
-            result.AppendLine();
-            return result.ToString().TrimEnd();
         }
-
-        public static void CopyStream(Stream input, Stream output)
+        else
         {
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            try
             {
-                output.Write(buffer, 0, read);
+                var a = Assembly.GetExecutingAssembly();
+                var s = a.GetManifestResourceStream("OpenMetaverse.Resources." + resourceName);
+                if (s != null) return s;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(string.Format("Failed opening resource stream: {0}", ex.Message), LogLevel.Error);
             }
         }
 
-        public static byte[] ZCompressOSD(OSD data)
+        return null;
+    }
+
+    /// <summary>
+    ///     Converts a list of primitives to an object that can be serialized
+    ///     with the LLSD system
+    /// </summary>
+    /// <param name="prims">Primitives to convert to a serializable object</param>
+    /// <returns>An object that can be serialized with LLSD</returns>
+    public static OSD PrimListToOSD(List<Primitive> prims)
+    {
+        var map = new OSDMap(prims.Count);
+
+        for (var i = 0; i < prims.Count; i++)
+            map.Add(prims[i].LocalID.ToString(), prims[i].GetOSD());
+
+        return map;
+    }
+
+    /// <summary>
+    ///     Deserializes OSD in to a list of primitives
+    /// </summary>
+    /// <param name="osd">
+    ///     Structure holding the serialized primitive list,
+    ///     must be of the SDMap type
+    /// </param>
+    /// <returns>A list of deserialized primitives</returns>
+    public static List<Primitive> OSDToPrimList(OSD osd)
+    {
+        if (osd.Type != OSDType.Map)
+            throw new ArgumentException("LLSD must be in the Map structure");
+
+        var map = (OSDMap)osd;
+        var prims = new List<Primitive>(map.Count);
+
+        foreach (KeyValuePair<string, OSD> kvp in map)
         {
-            byte[] ret = null;
-
-            using (MemoryStream outMemoryStream = new MemoryStream())
-            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream, zlibConst.Z_BEST_COMPRESSION))
-            using (Stream inMemoryStream = new MemoryStream(OSDParser.SerializeLLSDBinary(data, false)))
-            {
-                CopyStream(inMemoryStream, outZStream);
-                outZStream.finish();
-                ret = outMemoryStream.ToArray();
-            }
-
-            return ret;
+            var prim = Primitive.FromOSD(kvp.Value);
+            prim.LocalID = uint.Parse(kvp.Key);
+            prims.Add(prim);
         }
 
-        public static OSD ZDecompressOSD(byte[] data)
+        return prims;
+    }
+
+    /// <summary>
+    ///     Converts a struct or class object containing fields only into a key value separated string
+    /// </summary>
+    /// <param name="t">The struct object</param>
+    /// <returns>A string containing the struct fields as the keys, and the field value as the value separated</returns>
+    /// <example>
+    ///     <code>
+    ///  // Add the following code to any struct or class containing only fields to override the ToString() 
+    ///  // method to display the values of the passed object
+    ///  
+    ///  /// <summary>Print the struct data as a string</summary>
+    ///  ///<returns>A string containing the field name, and field value</returns>
+    /// public override string ToString()
+    /// {
+    ///     return Helpers.StructToString(this);
+    /// }
+    ///  </code>
+    /// </example>
+    public static string StructToString(object t)
+    {
+        var result = new StringBuilder();
+        var structType = t.GetType();
+        var fields = structType.GetFields();
+
+        foreach (var field in fields) result.Append(field.Name + ": " + field.GetValue(t) + " ");
+        result.AppendLine();
+        return result.ToString().TrimEnd();
+    }
+
+    public static void CopyStream(Stream input, Stream output)
+    {
+        var buffer = new byte[4096];
+        int read;
+        while ((read = input.Read(buffer, 0, buffer.Length)) > 0) output.Write(buffer, 0, read);
+    }
+
+    public static byte[] ZCompressOSD(OSD data)
+    {
+        byte[] ret = null;
+
+        using (var outMemoryStream = new MemoryStream())
+        using (var outZStream = new ZOutputStream(outMemoryStream, zlibConst.Z_BEST_COMPRESSION))
+        using (Stream inMemoryStream = new MemoryStream(OSDParser.SerializeLLSDBinary(data, false)))
         {
-            OSD ret;
-
-            using (MemoryStream input = new MemoryStream(data))
-            using (MemoryStream output = new MemoryStream())
-            using (ZOutputStream zout = new ZOutputStream(output))
-            {
-                CopyStream(input, zout);
-                zout.finish();
-                output.Seek(0, SeekOrigin.Begin);
-                ret = OSDParser.DeserializeLLSDBinary(output);
-            }
-
-            return ret;
+            CopyStream(inMemoryStream, outZStream);
+            outZStream.finish();
+            ret = outMemoryStream.ToArray();
         }
+
+        return ret;
+    }
+
+    public static OSD ZDecompressOSD(byte[] data)
+    {
+        OSD ret;
+
+        using (var input = new MemoryStream(data))
+        using (var output = new MemoryStream())
+        using (var zout = new ZOutputStream(output))
+        {
+            CopyStream(input, zout);
+            zout.finish();
+            output.Seek(0, SeekOrigin.Begin);
+            ret = OSDParser.DeserializeLLSDBinary(output);
+        }
+
+        return ret;
     }
 }

@@ -9,18 +9,19 @@
 using System;
 using System.IO;
 using IronSoftware.Drawing;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace CSJ2K.j2k.image.input;
 
 public class ImgReaderGDI : ImgReader
 {
-    /// <summary>Buffer for the components of each pixel(in the current block) </summary>
-    private int[][] barr;
-
     /// <summary>Data block used only to store coordinates of the buffered blocks </summary>
     private readonly DataBlkInt dbi = new();
+
+    /// <summary>The number of bits that determine the nominal dynamic range </summary>
+    private readonly int rb;
+
+    /// <summary>Buffer for the components of each pixel(in the current block) </summary>
+    private int[][] barr;
 
     private AnyBitmap image;
 
@@ -29,9 +30,6 @@ public class ImgReaderGDI : ImgReader
     ///     filters). This avoid allocating new DataBlk at each time
     /// </summary>
     private DataBlkInt intBlk;
-
-    /// <summary>The number of bits that determine the nominal dynamic range </summary>
-    private readonly int rb;
 
     public ImgReaderGDI(AnyBitmap image)
     {

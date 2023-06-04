@@ -172,15 +172,6 @@ public class HeaderDecoder
     //UPGRADE_NOTE: Final was removed from the declaration of 'pinfo'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     private static readonly string[][] pinfo = null;
 
-    /// <summary>The horizontal code-block partition origin </summary>
-    private int cb0x = -1;
-
-    /// <summary>The vertical code-block partition origin </summary>
-    private int cb0y = -1;
-
-    /// <summary>The decoder specifications </summary>
-    private DecoderSpecs decSpec;
-
     /// <summary>Whether or not to display general information </summary>
     //private bool verbose;
 
@@ -192,6 +183,15 @@ public class HeaderDecoder
     ///     in headers
     /// </summary>
     private readonly HeaderInfo hi;
+
+    /// <summary>The horizontal code-block partition origin </summary>
+    private int cb0x = -1;
+
+    /// <summary>The vertical code-block partition origin </summary>
+    private int cb0y = -1;
+
+    /// <summary>The decoder specifications </summary>
+    private DecoderSpecs decSpec;
 
     /// <summary>The reset mask for new tiles </summary>
     //UPGRADE_NOTE: Final was removed from the declaration of 'TILE_RESET '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"

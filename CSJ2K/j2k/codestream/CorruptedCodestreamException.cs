@@ -56,22 +56,22 @@ namespace CSJ2K.j2k.codestream;
 [Serializable]
 public class CorruptedCodestreamException : IOException
 {
-	/// <summary>
-	///     Constructs a new <tt>CorruptedCodestreamException</tt> exception with
-	///     no detail message.
-	/// </summary>
-	public CorruptedCodestreamException()
+    /// <summary>
+    ///     Constructs a new <tt>CorruptedCodestreamException</tt> exception with
+    ///     no detail message.
+    /// </summary>
+    public CorruptedCodestreamException()
     {
     }
 
-	/// <summary>
-	///     Constructs a new <tt>CorruptedCodestreamException</tt> exception with
-	///     the specified detail message.
-	/// </summary>
-	/// <param name="s">
-	///     The detail message.
-	/// </param>
-	public CorruptedCodestreamException(string s) : base(s)
+    /// <summary>
+    ///     Constructs a new <tt>CorruptedCodestreamException</tt> exception with
+    ///     the specified detail message.
+    /// </summary>
+    /// <param name="s">
+    ///     The detail message.
+    /// </param>
+    public CorruptedCodestreamException(string s) : base(s)
     {
     }
 }

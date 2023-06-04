@@ -80,25 +80,25 @@ namespace CSJ2K.j2k.image.output;
 /// </summary>
 public class ImgWriterPGM : ImgWriter
 {
-    /// <summary>The line buffer. </summary>
-    // This makes the class not thrad safe
-    // (but it is not the only one making it so)
-    private byte[] buf;
-
     /// <summary>The index of the component from where to get the data </summary>
     private readonly int c;
-
-    /// <summary>
-    ///     A DataBlk, just used to avoid allocating a new one each time
-    ///     it is needed
-    /// </summary>
-    private DataBlkInt db = new();
 
     /// <summary>The number of fractional bits in the source data </summary>
     private readonly int fb;
 
     /// <summary>Value used to inverse level shift </summary>
     private readonly int levShift;
+
+    /// <summary>The line buffer. </summary>
+    // This makes the class not thrad safe
+    // (but it is not the only one making it so)
+    private byte[] buf;
+
+    /// <summary>
+    ///     A DataBlk, just used to avoid allocating a new one each time
+    ///     it is needed
+    /// </summary>
+    private DataBlkInt db = new();
 
     /// <summary>The offset of the raw pixel data in the PGM file </summary>
     private int offset;

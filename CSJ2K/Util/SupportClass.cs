@@ -21,11 +21,11 @@ using System.Threading;
 /// </summary>
 public interface IThreadRunnable
 {
-	/// <summary>
-	///     This method has to be implemented in order that starting of the thread causes the object's
-	///     run method to be called in that separately executing thread.
-	/// </summary>
-	void Run();
+    /// <summary>
+    ///     This method has to be implemented in order that starting of the thread causes the object's
+    ///     run method to be called in that separately executing thread.
+    /// </summary>
+    void Run();
 }
 
 /// <summary>
@@ -33,12 +33,12 @@ public interface IThreadRunnable
 /// </summary>
 internal class SupportClass
 {
-	/// <summary>
-	///     Converts an array of sbytes to an array of bytes
-	/// </summary>
-	/// <param name="sbyteArray">The array of sbytes to be converted</param>
-	/// <returns>The new array of bytes</returns>
-	public static byte[] ToByteArray(sbyte[] sbyteArray)
+    /// <summary>
+    ///     Converts an array of sbytes to an array of bytes
+    /// </summary>
+    /// <param name="sbyteArray">The array of sbytes to be converted</param>
+    /// <returns>The new array of bytes</returns>
+    public static byte[] ToByteArray(sbyte[] sbyteArray)
     {
         byte[] byteArray = null;
 
@@ -52,22 +52,22 @@ internal class SupportClass
         return byteArray;
     }
 
-	/// <summary>
-	///     Converts a string to an array of bytes
-	/// </summary>
-	/// <param name="sourceString">The string to be converted</param>
-	/// <returns>The new array of bytes</returns>
-	public static byte[] ToByteArray(string sourceString)
+    /// <summary>
+    ///     Converts a string to an array of bytes
+    /// </summary>
+    /// <param name="sourceString">The string to be converted</param>
+    /// <returns>The new array of bytes</returns>
+    public static byte[] ToByteArray(string sourceString)
     {
         return Encoding.UTF8.GetBytes(sourceString);
     }
 
-	/// <summary>
-	///     Converts a array of object-type instances to a byte-type array.
-	/// </summary>
-	/// <param name="tempObjectArray">Array to convert.</param>
-	/// <returns>An array of byte type elements.</returns>
-	public static byte[] ToByteArray(object[] tempObjectArray)
+    /// <summary>
+    ///     Converts a array of object-type instances to a byte-type array.
+    /// </summary>
+    /// <param name="tempObjectArray">Array to convert.</param>
+    /// <returns>An array of byte type elements.</returns>
+    public static byte[] ToByteArray(object[] tempObjectArray)
     {
         byte[] byteArray = null;
         if (tempObjectArray != null)
@@ -289,13 +289,13 @@ internal class SupportClass
     /// </summary>
     public class RandomAccessFileSupport
     {
-	    /// <summary>
-	    ///     Creates a new random acces stream with read-write or read rights
-	    /// </summary>
-	    /// <param name="fileName">A relative or absolute path for the file to open</param>
-	    /// <param name="mode">Mode to open the file in</param>
-	    /// <returns>The new System.IO.FileStream</returns>
-	    public static FileStream CreateRandomAccessFile(string fileName, string mode)
+        /// <summary>
+        ///     Creates a new random acces stream with read-write or read rights
+        /// </summary>
+        /// <param name="fileName">A relative or absolute path for the file to open</param>
+        /// <param name="mode">Mode to open the file in</param>
+        /// <returns>The new System.IO.FileStream</returns>
+        public static FileStream CreateRandomAccessFile(string fileName, string mode)
         {
             FileStream newFile = null;
 
@@ -311,23 +311,23 @@ internal class SupportClass
             return newFile;
         }
 
-	    /// <summary>
-	    ///     Creates a new random acces stream with read-write or read rights
-	    /// </summary>
-	    /// <param name="fileName">File infomation for the file to open</param>
-	    /// <param name="mode">Mode to open the file in</param>
-	    /// <returns>The new System.IO.FileStream</returns>
-	    public static FileStream CreateRandomAccessFile(FileInfo fileName, string mode)
+        /// <summary>
+        ///     Creates a new random acces stream with read-write or read rights
+        /// </summary>
+        /// <param name="fileName">File infomation for the file to open</param>
+        /// <param name="mode">Mode to open the file in</param>
+        /// <returns>The new System.IO.FileStream</returns>
+        public static FileStream CreateRandomAccessFile(FileInfo fileName, string mode)
         {
             return CreateRandomAccessFile(fileName.FullName, mode);
         }
 
-	    /// <summary>
-	    ///     Writes the data to the specified file stream
-	    /// </summary>
-	    /// <param name="data">Data to write</param>
-	    /// <param name="fileStream">File to write to</param>
-	    public static void WriteBytes(string data, FileStream fileStream)
+        /// <summary>
+        ///     Writes the data to the specified file stream
+        /// </summary>
+        /// <param name="data">Data to write</param>
+        /// <param name="fileStream">File to write to</param>
+        public static void WriteBytes(string data, FileStream fileStream)
         {
             var index = 0;
             var length = data.Length;
@@ -336,22 +336,22 @@ internal class SupportClass
                 fileStream.WriteByte((byte)data[index++]);
         }
 
-	    /// <summary>
-	    ///     Writes the received string to the file stream
-	    /// </summary>
-	    /// <param name="data">String of information to write</param>
-	    /// <param name="fileStream">File to write to</param>
-	    public static void WriteChars(string data, FileStream fileStream)
+        /// <summary>
+        ///     Writes the received string to the file stream
+        /// </summary>
+        /// <param name="data">String of information to write</param>
+        /// <param name="fileStream">File to write to</param>
+        public static void WriteChars(string data, FileStream fileStream)
         {
             WriteBytes(data, fileStream);
         }
 
-	    /// <summary>
-	    ///     Writes the received data to the file stream
-	    /// </summary>
-	    /// <param name="sByteArray">Data to write</param>
-	    /// <param name="fileStream">File to write to</param>
-	    public static void WriteRandomFile(sbyte[] sByteArray, FileStream fileStream)
+        /// <summary>
+        ///     Writes the received data to the file stream
+        /// </summary>
+        /// <param name="sByteArray">Data to write</param>
+        /// <param name="fileStream">File to write to</param>
+        public static void WriteRandomFile(sbyte[] sByteArray, FileStream fileStream)
         {
             var byteArray = ToByteArray(sByteArray);
             fileStream.Write(byteArray, 0, byteArray.Length);
@@ -367,14 +367,14 @@ internal class SupportClass
         /// Char representation of the String to tokenize.
         private readonly char[] chars;
 
+        /// Include demiliters in the results.
+        private readonly bool includeDelims;
+
         /// Position over the string
         private long currentPos;
 
         //The tokenizer uses the default delimiter set: the space character, the tab character, the newline character, and the carriage-return character and the form-feed character
         private string delimiters = " \t\n\r\f";
-
-        /// Include demiliters in the results.
-        private readonly bool includeDelims;
 
         /// <summary>
         ///     Initializes a new class instance with a specified string to process
@@ -667,10 +667,10 @@ internal class SupportClass
     /// </summary>
     public class StreamTokenizerSupport
     {
-	    /// <summary>
-	    ///     Internal constants and fields
-	    /// </summary>
-	    private const string TOKEN = "Token[";
+        /// <summary>
+        ///     Internal constants and fields
+        /// </summary>
+        private const string TOKEN = "Token[";
 
         private const string NOTHING = "NOTHING";
         private const string NUMBER = "number=";
@@ -731,12 +731,12 @@ internal class SupportClass
         public const int TT_WORD = -3;
 
         private readonly sbyte[] attribute = new sbyte[256];
-        private StringBuilder buf;
-        private bool eolIsSignificant;
 
         private readonly BackReader inReader;
         private readonly BackInputStream inStream;
         private readonly BackStringReader inStringReader;
+        private StringBuilder buf;
+        private bool eolIsSignificant;
         private int lineno = 1;
         private bool lowerCaseMode;
 
@@ -1797,62 +1797,62 @@ internal class SupportClass
     /// </summary>
     public class ThreadClass : IThreadRunnable
     {
-	    /// <summary>
-	    ///     The instance of System.Threading.Thread
-	    /// </summary>
-	    private Thread threadField;
+        /// <summary>
+        ///     The instance of System.Threading.Thread
+        /// </summary>
+        private Thread threadField;
 
-	    /// <summary>
-	    ///     Initializes a new instance of the ThreadClass class
-	    /// </summary>
-	    public ThreadClass()
+        /// <summary>
+        ///     Initializes a new instance of the ThreadClass class
+        /// </summary>
+        public ThreadClass()
         {
             threadField = new Thread(Run);
         }
 
-	    /// <summary>
-	    ///     Initializes a new instance of the Thread class.
-	    /// </summary>
-	    /// <param name="Name">The name of the thread</param>
-	    public ThreadClass(string Name)
+        /// <summary>
+        ///     Initializes a new instance of the Thread class.
+        /// </summary>
+        /// <param name="Name">The name of the thread</param>
+        public ThreadClass(string Name)
         {
             threadField = new Thread(Run);
             this.Name = Name;
         }
 
-	    /// <summary>
-	    ///     Initializes a new instance of the Thread class.
-	    /// </summary>
-	    /// <param name="Start">A ThreadStart delegate that references the methods to be invoked when this thread begins executing</param>
-	    public ThreadClass(ThreadStart Start)
+        /// <summary>
+        ///     Initializes a new instance of the Thread class.
+        /// </summary>
+        /// <param name="Start">A ThreadStart delegate that references the methods to be invoked when this thread begins executing</param>
+        public ThreadClass(ThreadStart Start)
         {
             threadField = new Thread(Start);
         }
 
-	    /// <summary>
-	    ///     Initializes a new instance of the Thread class.
-	    /// </summary>
-	    /// <param name="Start">A ThreadStart delegate that references the methods to be invoked when this thread begins executing</param>
-	    /// <param name="Name">The name of the thread</param>
-	    public ThreadClass(ThreadStart Start, string Name)
+        /// <summary>
+        ///     Initializes a new instance of the Thread class.
+        /// </summary>
+        /// <param name="Start">A ThreadStart delegate that references the methods to be invoked when this thread begins executing</param>
+        /// <param name="Name">The name of the thread</param>
+        public ThreadClass(ThreadStart Start, string Name)
         {
             threadField = new Thread(Start);
             this.Name = Name;
         }
 
-	    /// <summary>
-	    ///     Gets the current thread instance
-	    /// </summary>
-	    public Thread Instance
+        /// <summary>
+        ///     Gets the current thread instance
+        /// </summary>
+        public Thread Instance
         {
             get => threadField;
             set => threadField = value;
         }
 
-	    /// <summary>
-	    ///     Gets or sets the name of the thread
-	    /// </summary>
-	    public string Name
+        /// <summary>
+        ///     Gets or sets the name of the thread
+        /// </summary>
+        public string Name
         {
             get => threadField.Name;
             set
@@ -1862,65 +1862,65 @@ internal class SupportClass
             }
         }
 
-	    /// <summary>
-	    ///     Gets or sets a value indicating the scheduling priority of a thread
-	    /// </summary>
-	    public ThreadPriority Priority
+        /// <summary>
+        ///     Gets or sets a value indicating the scheduling priority of a thread
+        /// </summary>
+        public ThreadPriority Priority
         {
             get => threadField.Priority;
             set => threadField.Priority = value;
         }
 
-	    /// <summary>
-	    ///     Gets a value indicating the execution status of the current thread
-	    /// </summary>
-	    public bool IsAlive => threadField.IsAlive;
+        /// <summary>
+        ///     Gets a value indicating the execution status of the current thread
+        /// </summary>
+        public bool IsAlive => threadField.IsAlive;
 
-	    /// <summary>
-	    ///     Gets or sets a value indicating whether or not a thread is a background thread.
-	    /// </summary>
-	    public bool IsBackground
+        /// <summary>
+        ///     Gets or sets a value indicating whether or not a thread is a background thread.
+        /// </summary>
+        public bool IsBackground
         {
             get => threadField.IsBackground;
             set => threadField.IsBackground = value;
         }
 
-	    /// <summary>
-	    ///     This method has no functionality unless the method is overridden
-	    /// </summary>
-	    public virtual void Run()
+        /// <summary>
+        ///     This method has no functionality unless the method is overridden
+        /// </summary>
+        public virtual void Run()
         {
         }
 
-	    /// <summary>
-	    ///     Causes the operating system to change the state of the current thread instance to ThreadState.Running
-	    /// </summary>
-	    public virtual void Start()
+        /// <summary>
+        ///     Causes the operating system to change the state of the current thread instance to ThreadState.Running
+        /// </summary>
+        public virtual void Start()
         {
             threadField.Start();
         }
 
-	    /// <summary>
-	    ///     Interrupts a thread that is in the WaitSleepJoin thread state
-	    /// </summary>
-	    public virtual void Interrupt()
+        /// <summary>
+        ///     Interrupts a thread that is in the WaitSleepJoin thread state
+        /// </summary>
+        public virtual void Interrupt()
         {
             threadField.Interrupt();
         }
 
-	    /// <summary>
-	    ///     Blocks the calling thread until a thread terminates
-	    /// </summary>
-	    public void Join()
+        /// <summary>
+        ///     Blocks the calling thread until a thread terminates
+        /// </summary>
+        public void Join()
         {
             threadField.Join();
         }
 
-	    /// <summary>
-	    ///     Blocks the calling thread until a thread terminates or the specified time elapses
-	    /// </summary>
-	    /// <param name="MiliSeconds">Time of wait in milliseconds</param>
-	    public void Join(long MiliSeconds)
+        /// <summary>
+        ///     Blocks the calling thread until a thread terminates or the specified time elapses
+        /// </summary>
+        /// <param name="MiliSeconds">Time of wait in milliseconds</param>
+        public void Join(long MiliSeconds)
         {
             lock (this)
             {
@@ -1928,12 +1928,12 @@ internal class SupportClass
             }
         }
 
-	    /// <summary>
-	    ///     Blocks the calling thread until a thread terminates or the specified time elapses
-	    /// </summary>
-	    /// <param name="MiliSeconds">Time of wait in milliseconds</param>
-	    /// <param name="NanoSeconds">Time of wait in nanoseconds</param>
-	    public void Join(long MiliSeconds, int NanoSeconds)
+        /// <summary>
+        ///     Blocks the calling thread until a thread terminates or the specified time elapses
+        /// </summary>
+        /// <param name="MiliSeconds">Time of wait in milliseconds</param>
+        /// <param name="NanoSeconds">Time of wait in nanoseconds</param>
+        public void Join(long MiliSeconds, int NanoSeconds)
         {
             lock (this)
             {
@@ -2012,12 +2012,12 @@ internal class SupportClass
     /// </summary>
     public class StackSupport
     {
-	    /// <summary>
-	    ///     Removes the element at the top of the stack and returns it.
-	    /// </summary>
-	    /// <param name="stack">The stack where the element at the top will be returned and removed.</param>
-	    /// <returns>The element at the top of the stack.</returns>
-	    public static object Pop(ArrayList stack)
+        /// <summary>
+        ///     Removes the element at the top of the stack and returns it.
+        /// </summary>
+        /// <param name="stack">The stack where the element at the top will be returned and removed.</param>
+        /// <returns>The element at the top of the stack.</returns>
+        public static object Pop(ArrayList stack)
         {
             var obj = stack[stack.Count - 1];
             stack.RemoveAt(stack.Count - 1);

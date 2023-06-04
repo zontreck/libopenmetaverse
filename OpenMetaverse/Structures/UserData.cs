@@ -4,14 +4,14 @@ namespace OpenMetaverse.Structures;
 
 public class UserData
 {
-    public UUID Id;
     public string FirstName;
-    public string LastName;
-    public string HomeURL;
-    public Dictionary<string, object> ServerURLs;
-    public bool IsUnknownUser;
     public bool HasGridUserTried;
+    public string HomeURL;
+    public UUID Id;
     public bool IsLocal;
+    public bool IsUnknownUser;
+    public string LastName;
     public double LastWebFail = -1;
-    public DisplayName UserDisplayName = new DisplayName();
+    public Dictionary<string, object> ServerURLs;
+    public DisplayName UserDisplayName = new();
 }

@@ -99,6 +99,12 @@ public class ForwCompTransf : ImgDataAdapter, BlkImgDataSrc
         }
     };
 
+    /// <summary>The component transformations specifications </summary>
+    private readonly CompTransfSpec cts;
+
+    /// <summary>The source of image data </summary>
+    private readonly BlkImgDataSrc src;
+
     /// <summary>Block used to request component with index 0 </summary>
     private DataBlkInt block0;
 
@@ -108,17 +114,11 @@ public class ForwCompTransf : ImgDataAdapter, BlkImgDataSrc
     /// <summary>Block used to request component with index 2</summary>
     private DataBlkInt block2;
 
-    /// <summary>The component transformations specifications </summary>
-    private readonly CompTransfSpec cts;
-
     /// <summary>
     ///     Output block used instead of the one provided as an argument if the
     ///     later is DataBlkFloat.
     /// </summary>
     private DataBlk outBlk;
-
-    /// <summary>The source of image data </summary>
-    private readonly BlkImgDataSrc src;
 
     /// <summary>The bit-depths of transformed components </summary>
     private int[] tdepth;

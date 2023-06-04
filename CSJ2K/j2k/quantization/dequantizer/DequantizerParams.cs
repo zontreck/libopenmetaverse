@@ -52,15 +52,15 @@ namespace CSJ2K.j2k.quantization.dequantizer;
 /// </summary>
 public abstract class DequantizerParams
 {
-	/// <summary>
-	///     Returns the type of the dequantizer for which the parameters are. The
-	///     types are defined in the Dequantizer class.
-	/// </summary>
-	/// <returns>
-	///     The type of the dequantizer for which the parameters
-	///     are.
-	/// </returns>
-	/// <seealso cref="Dequantizer">
-	/// </seealso>
-	public abstract int DequantizerType { get; }
+    /// <summary>
+    ///     Returns the type of the dequantizer for which the parameters are. The
+    ///     types are defined in the Dequantizer class.
+    /// </summary>
+    /// <returns>
+    ///     The type of the dequantizer for which the parameters
+    ///     are.
+    /// </returns>
+    /// <seealso cref="Dequantizer">
+    /// </seealso>
+    public abstract int DequantizerType { get; }
 }

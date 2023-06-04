@@ -259,16 +259,16 @@ public class PrecinctSizeSpec : ModuleSpec
                                     for (ti = tileSpec.Length - 1; ti >= 0; ti--)
                                         if (tileSpec[ti])
                                             setTileDef(ti, v);
-                                else if (curSpecType == SPEC_COMP_DEF)
-                                    for (ci = compSpec.Length - 1; ci >= 0; ci--)
-                                    {
-                                        if (compSpec[ci]) setCompDef(ci, v);
-                                    }
-                                else
-                                    for (ti = tileSpec.Length - 1; ti >= 0; ti--)
-                                    for (ci = compSpec.Length - 1; ci >= 0; ci--)
-                                        if (tileSpec[ti] && compSpec[ci])
-                                            setTileCompVal(ti, ci, v);
+                                        else if (curSpecType == SPEC_COMP_DEF)
+                                            for (ci = compSpec.Length - 1; ci >= 0; ci--)
+                                            {
+                                                if (compSpec[ci]) setCompDef(ci, v);
+                                            }
+                                        else
+                                            for (ti = tileSpec.Length - 1; ti >= 0; ti--)
+                                            for (ci = compSpec.Length - 1; ci >= 0; ci--)
+                                                if (tileSpec[ti] && compSpec[ci])
+                                                    setTileCompVal(ti, ci, v);
 
                                 // Re-initialize
                                 curSpecType = SPEC_DEF;

@@ -23,69 +23,69 @@ namespace CSJ2K.Icc;
 /// </author>
 public class MatrixBasedRestrictedProfile : RestrictedICCProfile
 {
-	/// <summary> Construct a 3 component RestrictedICCProfile</summary>
-	/// <param name="rcurve">
-	///     Red TRC curve
-	/// </param>
-	/// <param name="gcurve">
-	///     Green TRC curve
-	/// </param>
-	/// <param name="bcurve">
-	///     Blue TRC curve
-	/// </param>
-	/// <param name="rcolorant">
-	///     Red colorant
-	/// </param>
-	/// <param name="gcolorant">
-	///     Green colorant
-	/// </param>
-	/// <param name="bcolorant">
-	///     Blue colorant
-	/// </param>
-	protected internal MatrixBasedRestrictedProfile(ICCCurveType rcurve, ICCCurveType gcurve, ICCCurveType bcurve,
+    /// <summary> Construct a 3 component RestrictedICCProfile</summary>
+    /// <param name="rcurve">
+    ///     Red TRC curve
+    /// </param>
+    /// <param name="gcurve">
+    ///     Green TRC curve
+    /// </param>
+    /// <param name="bcurve">
+    ///     Blue TRC curve
+    /// </param>
+    /// <param name="rcolorant">
+    ///     Red colorant
+    /// </param>
+    /// <param name="gcolorant">
+    ///     Green colorant
+    /// </param>
+    /// <param name="bcolorant">
+    ///     Blue colorant
+    /// </param>
+    protected internal MatrixBasedRestrictedProfile(ICCCurveType rcurve, ICCCurveType gcurve, ICCCurveType bcurve,
         ICCXYZType rcolorant, ICCXYZType gcolorant, ICCXYZType bcolorant) : base(rcurve, gcurve, bcurve, rcolorant,
         gcolorant, bcolorant)
     {
     }
 
-	/// <summary> Get the type of RestrictedICCProfile for this object</summary>
-	/// <returns>
-	///     kThreeCompInput
-	/// </returns>
-	public override int Type => kThreeCompInput;
+    /// <summary> Get the type of RestrictedICCProfile for this object</summary>
+    /// <returns>
+    ///     kThreeCompInput
+    /// </returns>
+    public override int Type => kThreeCompInput;
 
-	/// <summary> Factory method which returns a 3 component RestrictedICCProfile</summary>
-	/// <param name="rcurve">
-	///     Red TRC curve
-	/// </param>
-	/// <param name="gcurve">
-	///     Green TRC curve
-	/// </param>
-	/// <param name="bcurve">
-	///     Blue TRC curve
-	/// </param>
-	/// <param name="rcolorant">
-	///     Red colorant
-	/// </param>
-	/// <param name="gcolorant">
-	///     Green colorant
-	/// </param>
-	/// <param name="bcolorant">
-	///     Blue colorant
-	/// </param>
-	/// <returns>
-	///     the RestrictedICCProfile
-	/// </returns>
-	public new static RestrictedICCProfile createInstance(ICCCurveType rcurve, ICCCurveType gcurve, ICCCurveType bcurve,
+    /// <summary> Factory method which returns a 3 component RestrictedICCProfile</summary>
+    /// <param name="rcurve">
+    ///     Red TRC curve
+    /// </param>
+    /// <param name="gcurve">
+    ///     Green TRC curve
+    /// </param>
+    /// <param name="bcurve">
+    ///     Blue TRC curve
+    /// </param>
+    /// <param name="rcolorant">
+    ///     Red colorant
+    /// </param>
+    /// <param name="gcolorant">
+    ///     Green colorant
+    /// </param>
+    /// <param name="bcolorant">
+    ///     Blue colorant
+    /// </param>
+    /// <returns>
+    ///     the RestrictedICCProfile
+    /// </returns>
+    public new static RestrictedICCProfile createInstance(ICCCurveType rcurve, ICCCurveType gcurve, ICCCurveType bcurve,
         ICCXYZType rcolorant, ICCXYZType gcolorant, ICCXYZType bcolorant)
     {
         return new MatrixBasedRestrictedProfile(rcurve, gcurve, bcurve, rcolorant, gcolorant, bcolorant);
     }
 
-	/// <returns>
-	///     String representation of a MatrixBasedRestrictedProfile
-	/// </returns>
-	public override string ToString()
+    /// <returns>
+    ///     String representation of a MatrixBasedRestrictedProfile
+    /// </returns>
+    public override string ToString()
     {
         var rep = new StringBuilder("[Matrix-Based Input Restricted ICC profile").Append(eol);
 

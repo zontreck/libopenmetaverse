@@ -22,26 +22,26 @@ namespace CSJ2K.Icc.Lut;
 /// </author>
 public class LookUpTable16LinearSRGBtoSRGB : LookUpTable16
 {
-	/// <summary> Construct the lut</summary>
-	/// <param name="wShadowCutoff">
-	///     size of shadow region
-	/// </param>
-	/// <param name="dfShadowSlope">
-	///     shadow region parameter
-	/// </param>
-	/// <param name="ksRGBLinearMaxValue">
-	///     size of lut
-	/// </param>
-	/// <param name="ksRGB8ScaleAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGBExponent">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGB8ReduceAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	protected internal LookUpTable16LinearSRGBtoSRGB(int wShadowCutoff, double dfShadowSlope, int ksRGBLinearMaxValue,
+    /// <summary> Construct the lut</summary>
+    /// <param name="wShadowCutoff">
+    ///     size of shadow region
+    /// </param>
+    /// <param name="dfShadowSlope">
+    ///     shadow region parameter
+    /// </param>
+    /// <param name="ksRGBLinearMaxValue">
+    ///     size of lut
+    /// </param>
+    /// <param name="ksRGB8ScaleAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGBExponent">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGB8ReduceAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    protected internal LookUpTable16LinearSRGBtoSRGB(int wShadowCutoff, double dfShadowSlope, int ksRGBLinearMaxValue,
         double ksRGB8ScaleAfterExp, double ksRGBExponent, double ksRGB8ReduceAfterExp) : base(ksRGBLinearMaxValue + 1,
         0)
     {
@@ -61,29 +61,29 @@ public class LookUpTable16LinearSRGBtoSRGB : LookUpTable16
                 ksRGB8ReduceAfterExp + 0.5);
     }
 
-	/// <summary> Factory method for creating the lut.</summary>
-	/// <param name="wShadowCutoff">
-	///     size of shadow region
-	/// </param>
-	/// <param name="dfShadowSlope">
-	///     shadow region parameter
-	/// </param>
-	/// <param name="ksRGBLinearMaxValue">
-	///     size of lut
-	/// </param>
-	/// <param name="ksRGB8ScaleAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGBExponent">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGB8ReduceAfterEx">
-	///     post shadow region parameter
-	/// </param>
-	/// <returns>
-	///     the lut
-	/// </returns>
-	public static LookUpTable16LinearSRGBtoSRGB createInstance(int wShadowCutoff, double dfShadowSlope,
+    /// <summary> Factory method for creating the lut.</summary>
+    /// <param name="wShadowCutoff">
+    ///     size of shadow region
+    /// </param>
+    /// <param name="dfShadowSlope">
+    ///     shadow region parameter
+    /// </param>
+    /// <param name="ksRGBLinearMaxValue">
+    ///     size of lut
+    /// </param>
+    /// <param name="ksRGB8ScaleAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGBExponent">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGB8ReduceAfterEx">
+    ///     post shadow region parameter
+    /// </param>
+    /// <returns>
+    ///     the lut
+    /// </returns>
+    public static LookUpTable16LinearSRGBtoSRGB createInstance(int wShadowCutoff, double dfShadowSlope,
         int ksRGBLinearMaxValue, double ksRGB8ScaleAfterExp, double ksRGBExponent, double ksRGB8ReduceAfterEx)
     {
         return new LookUpTable16LinearSRGBtoSRGB(wShadowCutoff, dfShadowSlope, ksRGBLinearMaxValue, ksRGB8ScaleAfterExp,

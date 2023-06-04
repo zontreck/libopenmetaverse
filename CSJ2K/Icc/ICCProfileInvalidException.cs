@@ -26,11 +26,11 @@ namespace CSJ2K.Icc;
 [Serializable]
 public class ICCProfileInvalidException : ICCProfileException
 {
-	/// <summary> Contruct with message</summary>
-	/// <param name="msg">
-	///     returned by getMessage()
-	/// </param>
-	internal ICCProfileInvalidException(string msg) : base(msg)
+    /// <summary> Contruct with message</summary>
+    /// <param name="msg">
+    ///     returned by getMessage()
+    /// </param>
+    internal ICCProfileInvalidException(string msg) : base(msg)
     {
     }
 

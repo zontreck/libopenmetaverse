@@ -93,11 +93,11 @@ namespace CSJ2K.j2k.entropy.encoder;
 /// </seealso>
 public class CBlkRateDistStats : CodedCBlk
 {
-	/// <summary>
-	///     Array of flags indicating terminated passes (valid or non-valid
-	///     truncation points).
-	/// </summary>
-	public bool[] isTermPass;
+    /// <summary>
+    ///     Array of flags indicating terminated passes (valid or non-valid
+    ///     truncation points).
+    /// </summary>
+    public bool[] isTermPass;
 
     /// <summary>The number of ROI coefficients in the code-block </summary>
     public int nROIcoeff = 0;

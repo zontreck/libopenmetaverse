@@ -62,28 +62,28 @@ namespace CSJ2K.j2k.codestream;
 /// </summary>
 public struct ProgressionType
 {
-	/// <summary>
-	///     The codestream is Layer/Resolution/Component/Position progressive : 0
-	/// </summary>
-	public const int LY_RES_COMP_POS_PROG = 0;
+    /// <summary>
+    ///     The codestream is Layer/Resolution/Component/Position progressive : 0
+    /// </summary>
+    public const int LY_RES_COMP_POS_PROG = 0;
 
-	/// <summary>
-	///     The codestream is Resolution/Layer/Component/Position progressive : 1
-	/// </summary>
-	public const int RES_LY_COMP_POS_PROG = 1;
+    /// <summary>
+    ///     The codestream is Resolution/Layer/Component/Position progressive : 1
+    /// </summary>
+    public const int RES_LY_COMP_POS_PROG = 1;
 
-	/// <summary>
-	///     The codestream is Resolution/Position/Component/Layer progressive : 2
-	/// </summary>
-	public const int RES_POS_COMP_LY_PROG = 2;
+    /// <summary>
+    ///     The codestream is Resolution/Position/Component/Layer progressive : 2
+    /// </summary>
+    public const int RES_POS_COMP_LY_PROG = 2;
 
-	/// <summary>
-	///     The codestream is Position/Component/Resolution/Layer progressive : 3
-	/// </summary>
-	public const int POS_COMP_RES_LY_PROG = 3;
+    /// <summary>
+    ///     The codestream is Position/Component/Resolution/Layer progressive : 3
+    /// </summary>
+    public const int POS_COMP_RES_LY_PROG = 3;
 
-	/// <summary>
-	///     The codestream is Component/Position/Resolution/Layer progressive : 4
-	/// </summary>
-	public const int COMP_POS_RES_LY_PROG = 4;
+    /// <summary>
+    ///     The codestream is Component/Position/Resolution/Layer progressive : 4
+    /// </summary>
+    public const int COMP_POS_RES_LY_PROG = 4;
 }

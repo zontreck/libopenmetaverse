@@ -58,11 +58,11 @@ namespace CSJ2K.j2k.image;
 /// </summary>
 public class ImgDataConverter : ImgDataAdapter, BlkImgDataSrc
 {
-    /// <summary>The number of fraction bits in the casted ints </summary>
-    private int fp;
-
     /// <summary>The source of image data </summary>
     private readonly BlkImgDataSrc src;
+
+    /// <summary>The number of fraction bits in the casted ints </summary>
+    private int fp;
 
     /// <summary>
     ///     The block used to request data from the source in the case that a

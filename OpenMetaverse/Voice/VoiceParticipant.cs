@@ -32,8 +32,8 @@ namespace OpenMetaverse.Voice;
 
 public class VoiceParticipant
 {
-    private bool muted;
     private readonly VoiceSession session;
+    private bool muted;
     private int volume;
 
     public VoiceParticipant(string puri, VoiceSession s)

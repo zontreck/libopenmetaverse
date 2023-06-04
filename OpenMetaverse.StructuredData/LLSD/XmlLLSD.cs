@@ -755,9 +755,7 @@ public static partial class OSDParser
         }
 
         if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != type)
-        {
             throw new OSDException("Expected </" + type + ">");
-        }
 
         reader.Read();
         return ret;

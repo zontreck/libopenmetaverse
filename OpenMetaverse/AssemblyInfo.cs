@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 //
 // General Information about an assembly is controlled through the following 
@@ -10,9 +9,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("openmetaverse.co")]
 [assembly: AssemblyProduct("OpenMetaverse")]
-[assembly: AssemblyCopyright("Copyright © openmetaverse.co 2006-2015")]
+[assembly: AssemblyCopyright("Copyright ï¿½ openmetaverse.co 2006-2015")]
 [assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]		
+[assembly: AssemblyCulture("")]
 
 //
 // Version information for an assembly consists of the following four values:

@@ -74,174 +74,174 @@ public interface BinaryDataInput
 	/// </seealso>
 	int ByteOrdering { get; }
 
-	/// <summary>
-	///     Should read a signed byte (i.e., 8 bit) from the input.  reading, the
-	///     input should be realigned at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned signed byte (8 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	byte readByte();
+    /// <summary>
+    ///     Should read a signed byte (i.e., 8 bit) from the input.  reading, the
+    ///     input should be realigned at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned signed byte (8 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    byte readByte();
 
-	/// <summary>
-	///     Should read an unsigned byte (i.e., 8 bit) from the input. It is
-	///     returned as an <tt>int</tt> since Java does not have an unsigned byte
-	///     type. Prior to reading, the input should be realigned at the byte
-	///     level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned unsigned byte (8 bit) from the input, as
-	///     an <tt>int</tt>.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	byte readUnsignedByte();
+    /// <summary>
+    ///     Should read an unsigned byte (i.e., 8 bit) from the input. It is
+    ///     returned as an <tt>int</tt> since Java does not have an unsigned byte
+    ///     type. Prior to reading, the input should be realigned at the byte
+    ///     level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned unsigned byte (8 bit) from the input, as
+    ///     an <tt>int</tt>.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    byte readUnsignedByte();
 
-	/// <summary>
-	///     Should read a signed short (i.e., 16 bit) from the input. Prior to
-	///     reading, the input should be realigned at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned signed short (16 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	short readShort();
+    /// <summary>
+    ///     Should read a signed short (i.e., 16 bit) from the input. Prior to
+    ///     reading, the input should be realigned at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned signed short (16 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    short readShort();
 
-	/// <summary>
-	///     Should read an unsigned short (i.e., 16 bit) from the input. It is
-	///     returned as an <tt>int</tt> since Java does not have an unsigned short
-	///     type. Prior to reading, the input should be realigned at the byte
-	///     level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned unsigned short (16 bit) from the input,
-	///     as an <tt>int</tt>.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	int readUnsignedShort();
+    /// <summary>
+    ///     Should read an unsigned short (i.e., 16 bit) from the input. It is
+    ///     returned as an <tt>int</tt> since Java does not have an unsigned short
+    ///     type. Prior to reading, the input should be realigned at the byte
+    ///     level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned unsigned short (16 bit) from the input,
+    ///     as an <tt>int</tt>.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    int readUnsignedShort();
 
-	/// <summary>
-	///     Should read a signed int (i.e., 32 bit) from the input. Prior to
-	///     reading, the input should be realigned at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned signed int (32 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	int readInt();
+    /// <summary>
+    ///     Should read a signed int (i.e., 32 bit) from the input. Prior to
+    ///     reading, the input should be realigned at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned signed int (32 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    int readInt();
 
-	/// <summary>
-	///     Should read an unsigned int (i.e., 32 bit) from the input. It is
-	///     returned as a <tt>long</tt> since Java does not have an unsigned short
-	///     type. Prior to reading, the input should be realigned at the byte
-	///     level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned unsigned int (32 bit) from the input, as
-	///     a <tt>long</tt>.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	long readUnsignedInt();
+    /// <summary>
+    ///     Should read an unsigned int (i.e., 32 bit) from the input. It is
+    ///     returned as a <tt>long</tt> since Java does not have an unsigned short
+    ///     type. Prior to reading, the input should be realigned at the byte
+    ///     level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned unsigned int (32 bit) from the input, as
+    ///     a <tt>long</tt>.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    long readUnsignedInt();
 
-	/// <summary>
-	///     Should read a signed long (i.e., 64 bit) from the input. Prior to
-	///     reading, the input should be realigned at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned signed long (64 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	long readLong();
+    /// <summary>
+    ///     Should read a signed long (i.e., 64 bit) from the input. Prior to
+    ///     reading, the input should be realigned at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned signed long (64 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    long readLong();
 
-	/// <summary>
-	///     Should read an IEEE single precision (i.e., 32 bit) floating-point
-	///     number from the input. Prior to reading, the input should be realigned
-	///     at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned IEEE float (32 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	float readFloat();
+    /// <summary>
+    ///     Should read an IEEE single precision (i.e., 32 bit) floating-point
+    ///     number from the input. Prior to reading, the input should be realigned
+    ///     at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned IEEE float (32 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    float readFloat();
 
-	/// <summary>
-	///     Should read an IEEE double precision (i.e., 64 bit) floating-point
-	///     number from the input. Prior to reading, the input should be realigned
-	///     at the byte level.
-	/// </summary>
-	/// <returns>
-	///     The next byte-aligned IEEE double (64 bit) from the input.
-	/// </returns>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before getting
-	///     all the necessary data.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	double readDouble();
+    /// <summary>
+    ///     Should read an IEEE double precision (i.e., 64 bit) floating-point
+    ///     number from the input. Prior to reading, the input should be realigned
+    ///     at the byte level.
+    /// </summary>
+    /// <returns>
+    ///     The next byte-aligned IEEE double (64 bit) from the input.
+    /// </returns>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before getting
+    ///     all the necessary data.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    double readDouble();
 
-	/// <summary>
-	///     Skips <tt>n</tt> bytes from the input. Prior to skipping, the input
-	///     should be realigned at the byte level.
-	/// </summary>
-	/// <param name="n">
-	///     The number of bytes to skip
-	/// </param>
-	/// <exception cref="EOFException">
-	///     If the end-of file was reached before all the
-	///     bytes could be skipped.
-	/// </exception>
-	/// <exception cref="IOException">
-	///     If an I/O error ocurred.
-	/// </exception>
-	int skipBytes(int n);
+    /// <summary>
+    ///     Skips <tt>n</tt> bytes from the input. Prior to skipping, the input
+    ///     should be realigned at the byte level.
+    /// </summary>
+    /// <param name="n">
+    ///     The number of bytes to skip
+    /// </param>
+    /// <exception cref="EOFException">
+    ///     If the end-of file was reached before all the
+    ///     bytes could be skipped.
+    /// </exception>
+    /// <exception cref="IOException">
+    ///     If an I/O error ocurred.
+    /// </exception>
+    int skipBytes(int n);
 }

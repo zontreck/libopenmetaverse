@@ -62,11 +62,11 @@ namespace CSJ2K.j2k.entropy.decoder;
 /// </seealso>
 public class DecLyrdCBlk : CodedCBlk
 {
-	/// <summary>
-	///     The coded (compressed) data length. The data is stored in the 'data'
-	///     array (see super class).
-	/// </summary>
-	public int dl;
+    /// <summary>
+    ///     The coded (compressed) data length. The data is stored in the 'data'
+    ///     array (see super class).
+    /// </summary>
+    public int dl;
 
     /// <summary>The index of the first truncation point returned </summary>
     public int ftpIdx;

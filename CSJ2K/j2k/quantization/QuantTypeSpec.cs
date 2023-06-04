@@ -67,44 +67,44 @@ namespace CSJ2K.j2k.quantization;
 /// </seealso>
 public class QuantTypeSpec : ModuleSpec
 {
-	/// <summary>
-	///     Constructs an empty 'QuantTypeSpec' with the specified number of tiles
-	///     and components. This constructor is called by the decoder.
-	/// </summary>
-	/// <param name="nt">
-	///     Number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     Number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the allowed specifications for this module
-	///     i.e. tile specific, component specific or both.
-	/// </param>
-	public QuantTypeSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs an empty 'QuantTypeSpec' with the specified number of tiles
+    ///     and components. This constructor is called by the decoder.
+    /// </summary>
+    /// <param name="nt">
+    ///     Number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     Number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the allowed specifications for this module
+    ///     i.e. tile specific, component specific or both.
+    /// </param>
+    public QuantTypeSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
     }
 
 
-	/// <summary>
-	///     Constructs a new 'QuantTypeSpec' for the specified number of components
-	///     and tiles and the arguments of "-Qtype" option. This constructor is
-	///     called by the encoder.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList
-	/// </param>
-	public QuantTypeSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs a new 'QuantTypeSpec' for the specified number of components
+    ///     and tiles and the arguments of "-Qtype" option. This constructor is
+    ///     called by the encoder.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList
+    /// </param>
+    public QuantTypeSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter("Qtype");
         if (param == null)
@@ -254,13 +254,13 @@ public class QuantTypeSpec : ModuleSpec
         }
     }
 
-	/// <summary>
-	///     Check the reversibility of the whole image.
-	/// </summary>
-	/// <returns>
-	///     Whether or not the whole image is reversible
-	/// </returns>
-	public virtual bool FullyReversible
+    /// <summary>
+    ///     Check the reversibility of the whole image.
+    /// </summary>
+    /// <returns>
+    ///     Whether or not the whole image is reversible
+    /// </returns>
+    public virtual bool FullyReversible
     {
         get
         {
@@ -280,13 +280,13 @@ public class QuantTypeSpec : ModuleSpec
         }
     }
 
-	/// <summary>
-	///     Check the irreversibility of the whole image.
-	/// </summary>
-	/// <returns>
-	///     Whether or not the whole image is reversible
-	/// </returns>
-	public virtual bool FullyNonReversible
+    /// <summary>
+    ///     Check the irreversibility of the whole image.
+    /// </summary>
+    /// <returns>
+    ///     Whether or not the whole image is reversible
+    /// </returns>
+    public virtual bool FullyNonReversible
     {
         get
         {
@@ -299,39 +299,39 @@ public class QuantTypeSpec : ModuleSpec
         }
     }
 
-	/// <summary>
-	///     Returns true if given tile-component uses derived quantization step
-	///     size.
-	/// </summary>
-	/// <param name="t">
-	///     Tile index
-	/// </param>
-	/// <param name="c">
-	///     Component index
-	/// </param>
-	/// <returns>
-	///     True if derived quantization step size
-	/// </returns>
-	public virtual bool isDerived(int t, int c)
+    /// <summary>
+    ///     Returns true if given tile-component uses derived quantization step
+    ///     size.
+    /// </summary>
+    /// <param name="t">
+    ///     Tile index
+    /// </param>
+    /// <param name="c">
+    ///     Component index
+    /// </param>
+    /// <returns>
+    ///     True if derived quantization step size
+    /// </returns>
+    public virtual bool isDerived(int t, int c)
     {
         if (((string)getTileCompVal(t, c)).Equals("derived"))
             return true;
         return false;
     }
 
-	/// <summary>
-	///     Check the reversibility of the given tile-component.
-	/// </summary>
-	/// <param name="t">
-	///     The index of the tile
-	/// </param>
-	/// <param name="c">
-	///     The index of the component
-	/// </param>
-	/// <returns>
-	///     Whether or not the tile-component is reversible
-	/// </returns>
-	public virtual bool isReversible(int t, int c)
+    /// <summary>
+    ///     Check the reversibility of the given tile-component.
+    /// </summary>
+    /// <param name="t">
+    ///     The index of the tile
+    /// </param>
+    /// <param name="c">
+    ///     The index of the component
+    /// </param>
+    /// <returns>
+    ///     Whether or not the tile-component is reversible
+    /// </returns>
+    public virtual bool isReversible(int t, int c)
     {
         if (((string)getTileCompVal(t, c)).Equals("reversible"))
             return true;

@@ -28,75 +28,74 @@ using System;
 using System.Collections.Generic;
 using IronSoftware.Drawing;
 
-namespace OpenMetaverse.Rendering
+namespace OpenMetaverse.Rendering;
+
+[AttributeUsage(AttributeTargets.Class)]
+public class RendererNameAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class RendererNameAttribute : System.Attribute
+    private readonly string _name;
+
+    public RendererNameAttribute(string name)
     {
-        private string _name;
-
-        public RendererNameAttribute(string name)
-            : base()
-        {
-            _name = name;
-        }
-
-        public override string ToString()
-        {
-            return _name;
-        }
+        _name = name;
     }
+
+    public override string ToString()
+    {
+        return _name;
+    }
+}
+
+/// <summary>
+///     Abstract base for rendering plugins
+/// </summary>
+public interface IRendering
+{
+    /// <summary>
+    ///     Generates a basic mesh structure from a primitive
+    /// </summary>
+    /// <param name="prim">Primitive to generate the mesh from</param>
+    /// <param name="lod">Level of detail to generate the mesh at</param>
+    /// <returns>The generated mesh</returns>
+    SimpleMesh GenerateSimpleMesh(Primitive prim, DetailLevel lod);
 
     /// <summary>
-    /// Abstract base for rendering plugins
+    ///     Generates a basic mesh structure from a sculpted primitive and
+    ///     texture
     /// </summary>
-    public interface IRendering
-    {
-        /// <summary>
-        /// Generates a basic mesh structure from a primitive
-        /// </summary>
-        /// <param name="prim">Primitive to generate the mesh from</param>
-        /// <param name="lod">Level of detail to generate the mesh at</param>
-        /// <returns>The generated mesh</returns>
-        SimpleMesh GenerateSimpleMesh(Primitive prim, DetailLevel lod);
+    /// <param name="prim">Sculpted primitive to generate the mesh from</param>
+    /// <param name="sculptTexture">Sculpt texture</param>
+    /// <param name="lod">Level of detail to generate the mesh at</param>
+    /// <returns>The generated mesh</returns>
+    SimpleMesh GenerateSimpleSculptMesh(Primitive prim, AnyBitmap sculptTexture, DetailLevel lod);
 
-        /// <summary>
-        /// Generates a basic mesh structure from a sculpted primitive and
-        /// texture
-        /// </summary>
-        /// <param name="prim">Sculpted primitive to generate the mesh from</param>
-        /// <param name="sculptTexture">Sculpt texture</param>
-        /// <param name="lod">Level of detail to generate the mesh at</param>
-        /// <returns>The generated mesh</returns>
-        SimpleMesh GenerateSimpleSculptMesh(Primitive prim, AnyBitmap sculptTexture, DetailLevel lod);
+    /// <summary>
+    ///     Generates a series of faces, each face containing a mesh and
+    ///     metadata
+    /// </summary>
+    /// <param name="prim">Primitive to generate the mesh from</param>
+    /// <param name="lod">Level of detail to generate the mesh at</param>
+    /// <returns>The generated mesh</returns>
+    FacetedMesh GenerateFacetedMesh(Primitive prim, DetailLevel lod);
 
-        /// <summary>
-        /// Generates a series of faces, each face containing a mesh and
-        /// metadata
-        /// </summary>
-        /// <param name="prim">Primitive to generate the mesh from</param>
-        /// <param name="lod">Level of detail to generate the mesh at</param>
-        /// <returns>The generated mesh</returns>
-        FacetedMesh GenerateFacetedMesh(Primitive prim, DetailLevel lod);
+    /// <summary>
+    ///     Generates a series of faces for a sculpted prim, each face
+    ///     containing a mesh and metadata
+    /// </summary>
+    /// <param name="prim">Sculpted primitive to generate the mesh from</param>
+    /// <param name="sculptTexture">Sculpt texture</param>
+    /// <param name="lod">Level of detail to generate the mesh at</param>
+    /// <returns>The generated mesh</returns>
+    FacetedMesh GenerateFacetedSculptMesh(Primitive prim, AnyBitmap sculptTexture, DetailLevel lod);
 
-        /// <summary>
-        /// Generates a series of faces for a sculpted prim, each face 
-        /// containing a mesh and metadata
-        /// </summary>
-        /// <param name="prim">Sculpted primitive to generate the mesh from</param>
-        /// <param name="sculptTexture">Sculpt texture</param>
-        /// <param name="lod">Level of detail to generate the mesh at</param>
-        /// <returns>The generated mesh</returns>
-        FacetedMesh GenerateFacetedSculptMesh(Primitive prim, AnyBitmap sculptTexture, DetailLevel lod);
-
-        /// <summary>
-        /// Apply texture coordinate modifications from a
-        /// <seealso cref="TextureEntryFace"/> to a list of vertices
-        /// </summary>
-        /// <param name="vertices">Vertex list to modify texture coordinates for</param>
-        /// <param name="center">Center-point of the face</param>
-        /// <param name="teFace">Face texture parameters</param>
-        /// <param name="primScale">Scale of the prim</param>
-        void TransformTexCoords (List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace, Vector3 primScale);
-    }
+    /// <summary>
+    ///     Apply texture coordinate modifications from a
+    ///     <seealso cref="TextureEntryFace" /> to a list of vertices
+    /// </summary>
+    /// <param name="vertices">Vertex list to modify texture coordinates for</param>
+    /// <param name="center">Center-point of the face</param>
+    /// <param name="teFace">Face texture parameters</param>
+    /// <param name="primScale">Scale of the prim</param>
+    void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace,
+        Vector3 primScale);
 }

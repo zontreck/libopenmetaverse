@@ -63,17 +63,17 @@ namespace CSJ2K.j2k.io;
 /// </summary>
 public struct EndianType_Fields
 {
-	/// <summary>
-	///     Identifier for big-endian byte ordering (i.e. most significant
-	///     byte first)
-	/// </summary>
-	public const int BIG_ENDIAN = 0;
+    /// <summary>
+    ///     Identifier for big-endian byte ordering (i.e. most significant
+    ///     byte first)
+    /// </summary>
+    public const int BIG_ENDIAN = 0;
 
-	/// <summary>
-	///     Identifier for little-endian byte ordering (i.e. least
-	///     significant byte first)
-	/// </summary>
-	public const int LITTLE_ENDIAN = 1;
+    /// <summary>
+    ///     Identifier for little-endian byte ordering (i.e. least
+    ///     significant byte first)
+    /// </summary>
+    public const int LITTLE_ENDIAN = 1;
 }
 
 public interface EndianType

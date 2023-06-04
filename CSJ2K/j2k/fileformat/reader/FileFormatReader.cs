@@ -60,14 +60,14 @@ namespace CSJ2K.j2k.fileformat.reader;
 /// </seealso>
 public class FileFormatReader
 {
+    /// <summary>The random access from which the file format boxes are read </summary>
+    private readonly RandomAccessIO in_Renamed;
+
     /// <summary>The lengths of the codestreams in the fileformat</summary>
     private ArrayList codeStreamLength;
 
     /// <summary>The positions of the codestreams in the fileformat</summary>
     private ArrayList codeStreamPos;
-
-    /// <summary>The random access from which the file format boxes are read </summary>
-    private readonly RandomAccessIO in_Renamed;
 
     /// <summary>Flag indicating whether or not the JP2 file format is used </summary>
     public bool JP2FFUsed;

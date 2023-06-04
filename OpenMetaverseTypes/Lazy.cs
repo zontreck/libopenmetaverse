@@ -31,8 +31,8 @@ namespace OpenMetaverse;
 
 public class Lazy<T>
 {
-    private volatile bool _isValueCreated;
     private readonly object _lock;
+    private volatile bool _isValueCreated;
     private T _value;
     private Func<T> _valueFactory;
 

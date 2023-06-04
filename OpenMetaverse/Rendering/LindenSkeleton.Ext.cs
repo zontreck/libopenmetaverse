@@ -23,120 +23,123 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace OpenMetaverse.Rendering
+namespace OpenMetaverse.Rendering;
+
+/// <summary>
+///     load the 'avatar_skeleton.xml'
+/// </summary>
+/// <remarks>
+///     Partial class which extends the auto-generated 'LindenSkeleton.Xsd.cs'.eton.xsd
+/// </remarks>
+public partial class LindenSkeleton
 {
     /// <summary>
-    /// load the 'avatar_skeleton.xml'
+    ///     Load a skeleton from a given file.
     /// </summary>
     /// <remarks>
-    /// Partial class which extends the auto-generated 'LindenSkeleton.Xsd.cs'.eton.xsd
+    ///     We use xml scema validation on top of the xml de-serializer, since the schema has
+    ///     some stricter checks than the de-serializer provides. E.g. the vector attributes
+    ///     are guaranteed to hold only 3 float values. This reduces the need for error checking
+    ///     while working with the loaded skeleton.
     /// </remarks>
-    public partial class LindenSkeleton
-   {
-        /// <summary>
-        /// Load a skeleton from a given file.
-        /// </summary>
-        /// <remarks>
-        /// We use xml scema validation on top of the xml de-serializer, since the schema has
-        /// some stricter checks than the de-serializer provides. E.g. the vector attributes
-        /// are guaranteed to hold only 3 float values. This reduces the need for error checking
-        /// while working with the loaded skeleton.
-        /// </remarks>
-        /// <returns>A valid recursive skeleton</returns>
-        public static LindenSkeleton Load()
+    /// <returns>A valid recursive skeleton</returns>
+    public static LindenSkeleton Load()
+    {
+        return Load(null);
+    }
+
+    /// <summary>
+    ///     Load a skeleton from a given file.
+    /// </summary>
+    /// <remarks>
+    ///     We use xml scema validation on top of the xml de-serializer, since the schema has
+    ///     some stricter checks than the de-serializer provides. E.g. the vector attributes
+    ///     are guaranteed to hold only 3 float values. This reduces the need for error checking
+    ///     while working with the loaded skeleton.
+    /// </remarks>
+    /// <param name="fileName">The path to the skeleton definition file</param>
+    /// <returns>A valid recursive skeleton</returns>
+    public static LindenSkeleton Load(string fileName)
+    {
+        if (fileName == null)
+            fileName = System.IO.Path.Combine(Settings.RESOURCE_DIR, "avatar_skeleton.xml");
+
+        LindenSkeleton result;
+
+        using (var skeletonData = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+        using (var reader = XmlReader.Create(skeletonData))
         {
-            return Load(null);
+            var ser = new XmlSerializer(typeof(LindenSkeleton));
+            result = (LindenSkeleton)ser.Deserialize(reader);
         }
 
-        /// <summary>
-        /// Load a skeleton from a given file.
-        /// </summary>
-        /// <remarks>
-        /// We use xml scema validation on top of the xml de-serializer, since the schema has
-        /// some stricter checks than the de-serializer provides. E.g. the vector attributes
-        /// are guaranteed to hold only 3 float values. This reduces the need for error checking
-        /// while working with the loaded skeleton.
-        /// </remarks>
-        /// <param name="fileName">The path to the skeleton definition file</param>
-        /// <returns>A valid recursive skeleton</returns>
-        public static LindenSkeleton Load(string fileName)
+        return result;
+    }
+
+    /// <summary>
+    ///     Build and "expanded" list of joints
+    /// </summary>
+    /// <remarks>
+    ///     The algorithm is based on this description:
+    ///     >An "expanded" list of joints, not just a
+    ///     >linear array of the joints as defined in the skeleton file.
+    ///     >In particular, any joint that has more than one child will
+    ///     >be repeated in the list for each of its children.
+    /// </remarks>
+    /// <param name="jointsFilter">The list should only take these joint names in consideration</param>
+    /// <returns>An "expanded" joints list as a flat list of bone names</returns>
+    public List<string> BuildExpandedJointList(IEnumerable<string> jointsFilter)
+    {
+        var expandedJointList = new List<string>();
+
+        // not really sure about this algorithm, but it seems to fit the bill:
+        // and the mesh doesn't seem to be overly distorted
+        if (bone.bone != null)
+            foreach (var child in bone.bone)
+                ExpandJoint(bone, child, expandedJointList, jointsFilter);
+
+        return expandedJointList;
+    }
+
+    /// <summary>
+    ///     Expand one joint
+    /// </summary>
+    /// <param name="parentJoint">The parent of the joint we are operating on</param>
+    /// <param name="currentJoint">The joint we are supposed to expand</param>
+    /// <param name="expandedJointList">Joint list that we will extend upon</param>
+    /// <param name="jointsFilter">The expanded list should only contain these joints</param>
+    private void ExpandJoint(Joint parentJoint, Joint currentJoint, List<string> expandedJointList,
+        IEnumerable<string> jointsFilter)
+    {
+        // does the mesh reference this joint
+        if (jointsFilter.Contains(currentJoint.name))
         {
-            if (fileName == null)
-                fileName = System.IO.Path.Combine(Settings.RESOURCE_DIR, "avatar_skeleton.xml");
-
-            LindenSkeleton result;
-
-            using (FileStream skeletonData = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            using (XmlReader reader = XmlReader.Create(skeletonData))
+            if (expandedJointList.Count > 0 && parentJoint != null &&
+                parentJoint.name == expandedJointList[expandedJointList.Count - 1])
             {
-                XmlSerializer ser = new XmlSerializer(typeof(LindenSkeleton));
-                result = (LindenSkeleton)ser.Deserialize(reader);
+                expandedJointList.Add(currentJoint.name);
             }
-            return result;
-        }
-
-        /// <summary>
-        /// Build and "expanded" list of joints
-        /// </summary>
-        /// <remarks>
-        /// The algorithm is based on this description:
-        /// 
-        /// >An "expanded" list of joints, not just a
-        /// >linear array of the joints as defined in the skeleton file.
-        /// >In particular, any joint that has more than one child will
-        /// >be repeated in the list for each of its children.
-        /// </remarks>
-        /// <param name="jointsFilter">The list should only take these joint names in consideration</param>
-        /// <returns>An "expanded" joints list as a flat list of bone names</returns>
-        public List<string> BuildExpandedJointList(IEnumerable<string> jointsFilter)
-        {
-            List<string> expandedJointList = new List<string>();
-
-            // not really sure about this algorithm, but it seems to fit the bill:
-            // and the mesh doesn't seem to be overly distorted
-            if(bone.bone != null)
-                foreach (Joint child in bone.bone)
-                    ExpandJoint(bone, child, expandedJointList, jointsFilter);
-
-            return expandedJointList;
-        }
-
-        /// <summary>
-        /// Expand one joint
-        /// </summary>
-        /// <param name="parentJoint">The parent of the joint we are operating on</param>
-        /// <param name="currentJoint">The joint we are supposed to expand</param>
-        /// <param name="expandedJointList">Joint list that we will extend upon</param>
-        /// <param name="jointsFilter">The expanded list should only contain these joints</param>
-        private void ExpandJoint(Joint parentJoint, Joint currentJoint, List<string> expandedJointList, IEnumerable<string> jointsFilter)
-        {
-            // does the mesh reference this joint
-            if (jointsFilter.Contains(currentJoint.name))
+            else
             {
-                if (expandedJointList.Count > 0 && parentJoint != null &&
-                    parentJoint.name == expandedJointList[expandedJointList.Count - 1])
-                    expandedJointList.Add(currentJoint.name);
+                if (parentJoint != null)
+                    expandedJointList.Add(parentJoint.name);
                 else
-                {
-                    if (parentJoint != null)
-                        expandedJointList.Add(parentJoint.name);
-                    else
-                        expandedJointList.Add(currentJoint.name);        // only happens on the root joint
+                    expandedJointList.Add(currentJoint.name); // only happens on the root joint
 
-                    expandedJointList.Add(currentJoint.name);
-                }
+                expandedJointList.Add(currentJoint.name);
             }
-
-            // recurse the joint hierarchy
-            if(currentJoint.bone != null)
-                foreach (Joint child in currentJoint.bone)
-                    ExpandJoint(currentJoint, child, expandedJointList, jointsFilter);
         }
+
+        // recurse the joint hierarchy
+        if (currentJoint.bone != null)
+            foreach (var child in currentJoint.bone)
+                ExpandJoint(currentJoint, child, expandedJointList, jointsFilter);
     }
 }

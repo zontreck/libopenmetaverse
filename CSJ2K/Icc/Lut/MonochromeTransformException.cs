@@ -25,11 +25,11 @@ namespace CSJ2K.Icc.Lut;
 [Serializable]
 public class MonochromeTransformException : Exception
 {
-	/// <summary> Contruct with message</summary>
-	/// <param name="msg">
-	///     returned by getMessage()
-	/// </param>
-	internal MonochromeTransformException(string msg) : base(msg)
+    /// <summary> Contruct with message</summary>
+    /// <param name="msg">
+    ///     returned by getMessage()
+    /// </param>
+    internal MonochromeTransformException(string msg) : base(msg)
     {
     }
 

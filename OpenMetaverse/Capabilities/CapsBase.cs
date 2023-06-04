@@ -25,259 +25,268 @@
  */
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Security;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 
-namespace OpenMetaverse.Http
+namespace OpenMetaverse.Http;
+
+public static class CapsBase
 {
-    public static class CapsBase
+    public delegate void DownloadProgressEventHandler(HttpWebRequest request, HttpWebResponse response,
+        int bytesReceived, int totalBytesToReceive);
+
+    public delegate void OpenWriteEventHandler(HttpWebRequest request);
+
+    public delegate void RequestCompletedEventHandler(HttpWebRequest request, HttpWebResponse response,
+        byte[] responseData, Exception error);
+
+    static CapsBase()
     {
-        public delegate void OpenWriteEventHandler(HttpWebRequest request);
-        public delegate void DownloadProgressEventHandler(HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive);
-        public delegate void RequestCompletedEventHandler(HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error);
-        public static bool ValidateServerCertificate(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
+        // Even though this will compile on Mono 2.4, it throws a runtime exception
+        ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertificate;
+    }
+
+    public static bool ValidateServerCertificate(
+        object sender,
+        X509Certificate certificate,
+        X509Chain chain,
+        SslPolicyErrors sslPolicyErrors)
+    {
+        //if (m_NoVerifyCertChain)
+        sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
+
+        //if (m_NoVerifyCertHostname)
+        sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
+
+        if (sslPolicyErrors == SslPolicyErrors.None)
+            return true;
+
+        return false;
+    }
+
+    public static HttpWebRequest UploadDataAsync(Uri address, X509Certificate2 clientCert, string contentType,
+        byte[] data,
+        int millisecondsTimeout, OpenWriteEventHandler openWriteCallback,
+        DownloadProgressEventHandler downloadProgressCallback,
+        RequestCompletedEventHandler completedCallback)
+    {
+        // Create the request
+        var request = SetupRequest(address, clientCert);
+        request.ContentLength = data.Length;
+        if (!string.IsNullOrEmpty(contentType))
+            request.ContentType = contentType;
+        request.Method = "POST";
+
+        // Create an object to hold all of the state for this request
+        var state = new RequestState(request, data, millisecondsTimeout, openWriteCallback,
+            downloadProgressCallback, completedCallback);
+
+        // Start the request for a stream to upload to
+        var result = request.BeginGetRequestStream(OpenWrite, state);
+        // Register a timeout for the request
+        ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout,
+            true);
+
+        return request;
+    }
+
+    public static HttpWebRequest DownloadStringAsync(Uri address, X509Certificate2 clientCert, int millisecondsTimeout,
+        DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
+    {
+        // Create the request
+        var request = SetupRequest(address, clientCert);
+        request.Method = "GET";
+        DownloadDataAsync(request, millisecondsTimeout, downloadProgressCallback, completedCallback);
+        return request;
+    }
+
+    public static void DownloadDataAsync(HttpWebRequest request, int millisecondsTimeout,
+        DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
+    {
+        // Create an object to hold all of the state for this request
+        var state = new RequestState(request, null, millisecondsTimeout, null, downloadProgressCallback,
+            completedCallback);
+
+        // Start the request for the remote server response
+        var result = request.BeginGetResponse(GetResponse, state);
+        // Register a timeout for the request
+        ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout,
+            true);
+    }
+
+    private static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
+    {
+        if (address == null)
+            throw new ArgumentNullException("address");
+
+        // Create the request
+        var request = (HttpWebRequest)WebRequest.Create(address);
+
+        // Add the client certificate to the request if one was given
+        if (clientCert != null)
+            request.ClientCertificates.Add(clientCert);
+
+        // Leave idle connections to this endpoint open for up to 60 seconds
+        request.ServicePoint.MaxIdleTime = 1000 * 60;
+        // Disable stupid Expect-100: Continue header
+        request.ServicePoint.Expect100Continue = false;
+        // Crank up the max number of connections per endpoint
+        // We set this manually here instead of in ServicePointManager to avoid intereference with callers.
+        if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
         {
-            //if (m_NoVerifyCertChain)
-                sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
-
-            //if (m_NoVerifyCertHostname)
-                sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
-
-            if (sslPolicyErrors == SslPolicyErrors.None)
-                return true;
-
-            return false;
+            Logger.Log(
+                string.Format(
+                    "In CapsBase.SetupRequest() setting conn limit for {0}:{1} to {2}",
+                    address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
+            request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
         }
 
-        static CapsBase()
-        {
-            // Even though this will compile on Mono 2.4, it throws a runtime exception
-            ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertificate;
-        }
+        // Caps requests are never sent as trickles of data, so Nagle's
+        // coalescing algorithm won't help us
+        request.ServicePoint.UseNagleAlgorithm = false;
+        // If not on mono, set accept-encoding header that allows response compression
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        return request;
+    }
 
-        private class RequestState
-        {
-            public HttpWebRequest Request;
-            public byte[] UploadData;
-            public int MillisecondsTimeout;
-            public OpenWriteEventHandler OpenWriteCallback;
-            public DownloadProgressEventHandler DownloadProgressCallback;
-            public RequestCompletedEventHandler CompletedCallback;
+    private static void OpenWrite(IAsyncResult ar)
+    {
+        var state = (RequestState)ar.AsyncState;
 
-            public RequestState(HttpWebRequest request, byte[] uploadData, int millisecondsTimeout, OpenWriteEventHandler openWriteCallback,
-                DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
+        try
+        {
+            // Get the stream to write our upload to
+            using (var uploadStream = state.Request.EndGetRequestStream(ar))
             {
-                Request = request;
-                UploadData = uploadData;
-                MillisecondsTimeout = millisecondsTimeout;
-                OpenWriteCallback = openWriteCallback;
-                DownloadProgressCallback = downloadProgressCallback;
-                CompletedCallback = completedCallback;
+                // Fire the callback for successfully opening the stream
+                if (state.OpenWriteCallback != null)
+                    state.OpenWriteCallback(state.Request);
+
+                // Write our data to the upload stream
+                uploadStream.Write(state.UploadData, 0, state.UploadData.Length);
             }
-        }
-
-        public static HttpWebRequest UploadDataAsync(Uri address, X509Certificate2 clientCert, string contentType, byte[] data,
-            int millisecondsTimeout, OpenWriteEventHandler openWriteCallback, DownloadProgressEventHandler downloadProgressCallback,
-            RequestCompletedEventHandler completedCallback)
-        {
-            // Create the request
-            HttpWebRequest request = SetupRequest(address, clientCert);
-            request.ContentLength = data.Length;
-            if (!String.IsNullOrEmpty(contentType))
-                request.ContentType = contentType;
-            request.Method = "POST";
-
-            // Create an object to hold all of the state for this request
-            RequestState state = new RequestState(request, data, millisecondsTimeout, openWriteCallback,
-                downloadProgressCallback, completedCallback);
-
-            // Start the request for a stream to upload to
-            IAsyncResult result = request.BeginGetRequestStream(OpenWrite, state);
-            // Register a timeout for the request
-            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
-
-            return request;
-        }
-
-        public static HttpWebRequest DownloadStringAsync(Uri address, X509Certificate2 clientCert, int millisecondsTimeout,
-            DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
-        {
-            // Create the request
-            HttpWebRequest request = SetupRequest(address, clientCert);
-            request.Method = "GET";
-            DownloadDataAsync(request, millisecondsTimeout, downloadProgressCallback, completedCallback);
-            return request;
-        }
-
-        public static void DownloadDataAsync(HttpWebRequest request, int millisecondsTimeout,
-            DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
-        {
-            // Create an object to hold all of the state for this request
-            RequestState state = new RequestState(request, null, millisecondsTimeout, null, downloadProgressCallback,
-                completedCallback);
 
             // Start the request for the remote server response
-            IAsyncResult result = request.BeginGetResponse(GetResponse, state);
+            var result = state.Request.BeginGetResponse(GetResponse, state);
             // Register a timeout for the request
-            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
+            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state,
+                state.MillisecondsTimeout, true);
         }
-
-        static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
+        catch (Exception ex)
         {
-            if (address == null)
-                throw new ArgumentNullException("address");
-
-            // Create the request
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(address);
-
-            // Add the client certificate to the request if one was given
-            if (clientCert != null)
-                request.ClientCertificates.Add(clientCert);
-
-            // Leave idle connections to this endpoint open for up to 60 seconds
-            request.ServicePoint.MaxIdleTime = 1000 * 60;
-            // Disable stupid Expect-100: Continue header
-            request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections per endpoint
-            // We set this manually here instead of in ServicePointManager to avoid intereference with callers.
-            if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
-            {
-                Logger.Log(
-                    string.Format(
-                        "In CapsBase.SetupRequest() setting conn limit for {0}:{1} to {2}", 
-                        address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
-                request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
-            }
-            // Caps requests are never sent as trickles of data, so Nagle's
-            // coalescing algorithm won't help us
-            request.ServicePoint.UseNagleAlgorithm = false;
-            // If not on mono, set accept-encoding header that allows response compression
-            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            return request;
+            //Logger.Log.Debug("CapsBase.OpenWrite(): " + ex.Message);
+            if (state.CompletedCallback != null)
+                state.CompletedCallback(state.Request, null, null, ex);
         }
+    }
 
-        static void OpenWrite(IAsyncResult ar)
+    private static void GetResponse(IAsyncResult ar)
+    {
+        var state = (RequestState)ar.AsyncState;
+        HttpWebResponse response = null;
+        byte[] responseData = null;
+        Exception error = null;
+
+        try
         {
-            RequestState state = (RequestState)ar.AsyncState;
-
-            try
+            using (response = (HttpWebResponse)state.Request.EndGetResponse(ar))
             {
-                // Get the stream to write our upload to
-                using (Stream uploadStream = state.Request.EndGetRequestStream(ar))
+                // Get the stream for downloading the response
+                using (var responseStream = response.GetResponseStream())
                 {
-                    // Fire the callback for successfully opening the stream
-                    if (state.OpenWriteCallback != null)
-                        state.OpenWriteCallback(state.Request);
+                    #region Read the response
 
-                    // Write our data to the upload stream
-                    uploadStream.Write(state.UploadData, 0, state.UploadData.Length);
-                }
+                    // If Content-Length is set we create a buffer of the exact size, otherwise
+                    // a MemoryStream is used to receive the response
+                    var nolength = response.ContentLength <= 0 || Type.GetType("Mono.Runtime") != null;
+                    var size = nolength ? 8192 : (int)response.ContentLength;
+                    var ms = nolength ? new MemoryStream() : null;
+                    var buffer = new byte[size];
 
-                // Start the request for the remote server response
-                IAsyncResult result = state.Request.BeginGetResponse(GetResponse, state);
-                // Register a timeout for the request
-                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state,
-                    state.MillisecondsTimeout, true);
-            }
-            catch (Exception ex)
-            {
-                //Logger.Log.Debug("CapsBase.OpenWrite(): " + ex.Message);
-                if (state.CompletedCallback != null)
-                    state.CompletedCallback(state.Request, null, null, ex);
-            }
-        }
+                    var bytesRead = 0;
+                    var offset = 0;
+                    var totalBytesRead = 0;
+                    var totalSize = nolength ? 0 : size;
 
-        static void GetResponse(IAsyncResult ar)
-        {
-            RequestState state = (RequestState)ar.AsyncState;
-            HttpWebResponse response = null;
-            byte[] responseData = null;
-            Exception error = null;
-
-            try
-            {
-                using (response = (HttpWebResponse)state.Request.EndGetResponse(ar))
-                {
-                    // Get the stream for downloading the response
-                    using (Stream responseStream = response.GetResponseStream())
+                    while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
                     {
-                        #region Read the response
-
-                        // If Content-Length is set we create a buffer of the exact size, otherwise
-                        // a MemoryStream is used to receive the response
-                        bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
-                        int size = (nolength) ? 8192 : (int)response.ContentLength;
-                        MemoryStream ms = (nolength) ? new MemoryStream() : null;
-                        byte[] buffer = new byte[size];
-
-                        int bytesRead = 0;
-                        int offset = 0;
-                        int totalBytesRead = 0;
-                        int totalSize = nolength ? 0 : size;
-
-                        while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
-                        {
-                            totalBytesRead += bytesRead;
-
-                            if (nolength)
-                            {
-                                totalSize += (size - bytesRead);
-                                ms.Write(buffer, 0, bytesRead);
-                            }
-                            else
-                            {
-                                offset += bytesRead;
-                                size -= bytesRead;
-                            }
-
-                            // Fire the download progress callback for each chunk of received data
-                            if (state.DownloadProgressCallback != null)
-                                state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
-                        }
+                        totalBytesRead += bytesRead;
 
                         if (nolength)
                         {
-                            responseData = ms.ToArray();
-                            ms.Close();
-                            ms.Dispose();
+                            totalSize += size - bytesRead;
+                            ms.Write(buffer, 0, bytesRead);
                         }
                         else
                         {
-                            responseData = buffer;
+                            offset += bytesRead;
+                            size -= bytesRead;
                         }
 
-                        #endregion Read the response
+                        // Fire the download progress callback for each chunk of received data
+                        if (state.DownloadProgressCallback != null)
+                            state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
                     }
+
+                    if (nolength)
+                    {
+                        responseData = ms.ToArray();
+                        ms.Close();
+                        ms.Dispose();
+                    }
+                    else
+                    {
+                        responseData = buffer;
+                    }
+
+                    #endregion Read the response
                 }
             }
-            catch (Exception ex)
-            {
-                // Logger.DebugLog("CapsBase.GetResponse(): " + ex.Message);
-                error = ex;
-            }
-
-            if (state.CompletedCallback != null)
-                state.CompletedCallback(state.Request, response, responseData, error);
+        }
+        catch (Exception ex)
+        {
+            // Logger.DebugLog("CapsBase.GetResponse(): " + ex.Message);
+            error = ex;
         }
 
-        static void TimeoutCallback(object state, bool timedOut)
+        if (state.CompletedCallback != null)
+            state.CompletedCallback(state.Request, response, responseData, error);
+    }
+
+    private static void TimeoutCallback(object state, bool timedOut)
+    {
+        if (timedOut)
         {
-            if (timedOut)
-            {
-                RequestState requestState = state as RequestState;
-                //Logger.Log.Debug("CapsBase.TimeoutCallback(): Request to " + requestState.Request.RequestUri +
-                //    " timed out after " + requestState.MillisecondsTimeout + " milliseconds");
-                if (requestState != null && requestState.Request != null)
-                    requestState.Request.Abort();
-            }
+            var requestState = state as RequestState;
+            //Logger.Log.Debug("CapsBase.TimeoutCallback(): Request to " + requestState.Request.RequestUri +
+            //    " timed out after " + requestState.MillisecondsTimeout + " milliseconds");
+            if (requestState != null && requestState.Request != null)
+                requestState.Request.Abort();
+        }
+    }
+
+    private class RequestState
+    {
+        public readonly RequestCompletedEventHandler CompletedCallback;
+        public readonly DownloadProgressEventHandler DownloadProgressCallback;
+        public readonly int MillisecondsTimeout;
+        public readonly OpenWriteEventHandler OpenWriteCallback;
+        public readonly HttpWebRequest Request;
+        public readonly byte[] UploadData;
+
+        public RequestState(HttpWebRequest request, byte[] uploadData, int millisecondsTimeout,
+            OpenWriteEventHandler openWriteCallback,
+            DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
+        {
+            Request = request;
+            UploadData = uploadData;
+            MillisecondsTimeout = millisecondsTimeout;
+            OpenWriteCallback = openWriteCallback;
+            DownloadProgressCallback = downloadProgressCallback;
+            CompletedCallback = completedCallback;
         }
     }
 }

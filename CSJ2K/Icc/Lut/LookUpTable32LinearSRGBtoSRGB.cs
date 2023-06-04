@@ -23,26 +23,26 @@ namespace CSJ2K.Icc.Lut;
 /// </author>
 public class LookUpTable32LinearSRGBtoSRGB : LookUpTable32
 {
-	/// <summary> Construct the lut</summary>
-	/// <param name="wShadowCutoff">
-	///     size of shadow region
-	/// </param>
-	/// <param name="dfShadowSlope">
-	///     shadow region parameter
-	/// </param>
-	/// <param name="ksRGBLinearMaxValue">
-	///     size of lut
-	/// </param>
-	/// <param name="ksRGB8ScaleAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGBExponent">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGB8ReduceAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	protected internal LookUpTable32LinearSRGBtoSRGB(int inMax, int outMax, double shadowCutoff, double shadowSlope,
+    /// <summary> Construct the lut</summary>
+    /// <param name="wShadowCutoff">
+    ///     size of shadow region
+    /// </param>
+    /// <param name="dfShadowSlope">
+    ///     shadow region parameter
+    /// </param>
+    /// <param name="ksRGBLinearMaxValue">
+    ///     size of lut
+    /// </param>
+    /// <param name="ksRGB8ScaleAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGBExponent">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGB8ReduceAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    protected internal LookUpTable32LinearSRGBtoSRGB(int inMax, int outMax, double shadowCutoff, double shadowSlope,
         double scaleAfterExp, double exponent, double reduceAfterExp) : base(inMax + 1, outMax)
     {
         var i = -1;
@@ -76,29 +76,29 @@ public class LookUpTable32LinearSRGBtoSRGB : LookUpTable32
                            shift);
     }
 
-	/// <summary> Factory method for creating the lut.</summary>
-	/// <param name="wShadowCutoff">
-	///     size of shadow region
-	/// </param>
-	/// <param name="dfShadowSlope">
-	///     shadow region parameter
-	/// </param>
-	/// <param name="ksRGBLinearMaxValue">
-	///     size of lut
-	/// </param>
-	/// <param name="ksRGB8ScaleAfterExp">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGBExponent">
-	///     post shadow region parameter
-	/// </param>
-	/// <param name="ksRGB8ReduceAfterEx">
-	///     post shadow region parameter
-	/// </param>
-	/// <returns>
-	///     the lut
-	/// </returns>
-	public static LookUpTable32LinearSRGBtoSRGB createInstance(int inMax, int outMax, double shadowCutoff,
+    /// <summary> Factory method for creating the lut.</summary>
+    /// <param name="wShadowCutoff">
+    ///     size of shadow region
+    /// </param>
+    /// <param name="dfShadowSlope">
+    ///     shadow region parameter
+    /// </param>
+    /// <param name="ksRGBLinearMaxValue">
+    ///     size of lut
+    /// </param>
+    /// <param name="ksRGB8ScaleAfterExp">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGBExponent">
+    ///     post shadow region parameter
+    /// </param>
+    /// <param name="ksRGB8ReduceAfterEx">
+    ///     post shadow region parameter
+    /// </param>
+    /// <returns>
+    ///     the lut
+    /// </returns>
+    public static LookUpTable32LinearSRGBtoSRGB createInstance(int inMax, int outMax, double shadowCutoff,
         double shadowSlope, double scaleAfterExp, double exponent, double reduceAfterExp)
     {
         return new LookUpTable32LinearSRGBtoSRGB(inMax, outMax, shadowCutoff, shadowSlope, scaleAfterExp, exponent,

@@ -75,6 +75,7 @@ namespace CSJ2K.j2k.entropy.encoder;
 ///                         fact that a brach of the type "if (bit==mPS[li])" is replaced by two
 ///                         simpler braches of the type "if (bit==0)" and "if (q<0)" may contribute to
 /// that.
+///         
 ///         </p>
 ///         <p>
 ///             2) Removing cT
@@ -87,6 +88,7 @@ namespace CSJ2K.j2k.entropy.encoder;
 ///                 done efficiently with "c<0" since C is a signed quantity. Care must be
 /// taken in byteOut() to reset the bit in order to not interfere with other
 /// bits in the C register. See JPEG book, page 228.
+///                 
 ///                 <br>
 ///                     There is NO speed improvement in doing this. I don't really know why since
 ///                     the number of operations whenever a renormalization occurs is
@@ -122,6 +124,7 @@ namespace CSJ2K.j2k.entropy.encoder;
 ///                                 < 0x8000". This test is simpler in
 /// Java since it involves only 1 operation (although the original test can be
 /// converted to only one operation by  smart Just-In-Time compilers)
+///                                 
 ///                                 <br>
 ///                                     This change has been integrated in the decoding procedures.
 ///                         </p>
@@ -149,51 +152,51 @@ namespace CSJ2K.j2k.entropy.encoder;
 /// </summary>
 public class MQCoder
 {
-	/// <summary>
-	///     Identifier for the lazy length calculation. The lazy length
-	///     calculation is not optimal but is extremely simple.
-	/// </summary>
-	public const int LENGTH_LAZY = 0;
+    /// <summary>
+    ///     Identifier for the lazy length calculation. The lazy length
+    ///     calculation is not optimal but is extremely simple.
+    /// </summary>
+    public const int LENGTH_LAZY = 0;
 
-	/// <summary>
-	///     Identifier for a very simple length calculation. This provides better
-	///     results than the 'LENGTH_LAZY' computation. This is the old length
-	///     calculation that was implemented in this class.
-	/// </summary>
-	public const int LENGTH_LAZY_GOOD = 1;
+    /// <summary>
+    ///     Identifier for a very simple length calculation. This provides better
+    ///     results than the 'LENGTH_LAZY' computation. This is the old length
+    ///     calculation that was implemented in this class.
+    /// </summary>
+    public const int LENGTH_LAZY_GOOD = 1;
 
-	/// <summary>
-	///     Identifier for the near optimal length calculation. This calculation
-	///     is more complex than the lazy one but provides an almost optimal length
-	///     calculation.
-	/// </summary>
-	public const int LENGTH_NEAR_OPT = 2;
+    /// <summary>
+    ///     Identifier for the near optimal length calculation. This calculation
+    ///     is more complex than the lazy one but provides an almost optimal length
+    ///     calculation.
+    /// </summary>
+    public const int LENGTH_NEAR_OPT = 2;
 
-	/// <summary>
-	///     The identifier fort the termination that uses a full flush. This is
-	///     the less efficient termination.
-	/// </summary>
-	public const int TERM_FULL = 0;
+    /// <summary>
+    ///     The identifier fort the termination that uses a full flush. This is
+    ///     the less efficient termination.
+    /// </summary>
+    public const int TERM_FULL = 0;
 
-	/// <summary>
-	///     The identifier for the termination that uses the near optimal length
-	///     calculation to terminate the arithmetic codewrod
-	/// </summary>
-	public const int TERM_NEAR_OPT = 1;
+    /// <summary>
+    ///     The identifier for the termination that uses the near optimal length
+    ///     calculation to terminate the arithmetic codewrod
+    /// </summary>
+    public const int TERM_NEAR_OPT = 1;
 
-	/// <summary>
-	///     The identifier for the easy termination that is simpler than the
-	///     'TERM_NEAR_OPT' one but slightly less efficient.
-	/// </summary>
-	public const int TERM_EASY = 2;
+    /// <summary>
+    ///     The identifier for the easy termination that is simpler than the
+    ///     'TERM_NEAR_OPT' one but slightly less efficient.
+    /// </summary>
+    public const int TERM_EASY = 2;
 
-	/// <summary>
-	///     The identifier for the predictable termination policy for error
-	///     resilience. This is the same as the 'TERM_EASY' one but an special
-	///     sequence of bits is embodied in the spare bits for error resilience
-	///     purposes.
-	/// </summary>
-	public const int TERM_PRED_ER = 3;
+    /// <summary>
+    ///     The identifier for the predictable termination policy for error
+    ///     resilience. This is the same as the 'TERM_EASY' one but an special
+    ///     sequence of bits is embodied in the spare bits for error resilience
+    ///     purposes.
+    /// </summary>
+    public const int TERM_PRED_ER = 3;
 
     /// <summary>The data structures containing the probabilities for the LPS </summary>
     //UPGRADE_NOTE: Final was removed from the declaration of 'qe'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"

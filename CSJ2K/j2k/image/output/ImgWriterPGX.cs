@@ -104,22 +104,31 @@ public class ImgWriterPGX : ImgWriter
     /// <summary>The bit-depth of the input file (must be between 1 and 31)</summary>
     private readonly int bitDepth;
 
+    /// <summary>The index of the component from where to get the data </summary>
+    private readonly int c;
+
+    /// <summary>The number of fractional bits in the source data </summary>
+    private readonly int fb;
+
+    /// <summary>The offset of the raw pixel data in the PGX file </summary>
+    private readonly int offset;
+
+    /// <summary>
+    ///     The pack length of one sample (in bytes, according to the output
+    ///     bit-depth
+    /// </summary>
+    private readonly int packBytes;
+
     /// <summary>The line buffer. </summary>
     // This makes the class not thrad safe
     // (but it is not the only one making it so)
     private byte[] buf;
-
-    /// <summary>The index of the component from where to get the data </summary>
-    private readonly int c;
 
     /// <summary>
     ///     A DataBlk, just used to avoid allocating a new one each time it is
     ///     needed
     /// </summary>
     private DataBlkInt db = new();
-
-    /// <summary>The number of fractional bits in the source data </summary>
-    private readonly int fb;
 
     /// <summary>
     ///     Whether the data must be signed when writing or not. In the latter
@@ -139,18 +148,9 @@ public class ImgWriterPGX : ImgWriter
     /// <summary>Used during saturation (0 if unsigned, -2^(bitdepth-1) if signed) </summary>
     internal int minVal;
 
-    /// <summary>The offset of the raw pixel data in the PGX file </summary>
-    private readonly int offset;
-
     /// <summary>Where to write the data </summary>
     //UPGRADE_TODO: Class 'java.io.RandomAccessFile' was converted to 'System.IO.FileStream' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioRandomAccessFile'"
     private FileStream out_Renamed;
-
-    /// <summary>
-    ///     The pack length of one sample (in bytes, according to the output
-    ///     bit-depth
-    /// </summary>
-    private readonly int packBytes;
 
     /// <summary>
     ///     Creates a new writer to the specified File object, to write data from

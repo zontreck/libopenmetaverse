@@ -26,11 +26,11 @@ namespace CSJ2K.Color;
 [Serializable]
 public class ColorSpaceException : Exception
 {
-	/// <summary> Contruct with message</summary>
-	/// <param name="msg">
-	///     returned by getMessage()
-	/// </param>
-	public ColorSpaceException(string msg) : base(msg)
+    /// <summary> Contruct with message</summary>
+    /// <param name="msg">
+    ///     returned by getMessage()
+    /// </param>
+    public ColorSpaceException(string msg) : base(msg)
     {
     }
 

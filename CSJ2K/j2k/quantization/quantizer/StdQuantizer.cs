@@ -112,6 +112,12 @@ public class StdQuantizer : Quantizer
     /// <summary>The guard bits specifications </summary>
     private readonly GuardBitsSpec gbs;
 
+    /// <summary>The quantization step size specifications </summary>
+    private readonly QuantStepSizeSpec qsss;
+
+    /// <summary>The quantization type specifications </summary>
+    private readonly QuantTypeSpec qts;
+
     /// <summary>
     ///     The 'CBlkWTDataFloat' object used to request data, used when
     ///     quantizing floating-point data.
@@ -119,12 +125,6 @@ public class StdQuantizer : Quantizer
     // This variable makes the class thread unsafe, but it avoids allocating
     // new objects for code-block that is quantized.
     private CBlkWTDataFloat infblk;
-
-    /// <summary>The quantization step size specifications </summary>
-    private readonly QuantStepSizeSpec qsss;
-
-    /// <summary>The quantization type specifications </summary>
-    private readonly QuantTypeSpec qts;
 
     /// <summary>
     ///     Initializes the source of wavelet transform coefficients. The

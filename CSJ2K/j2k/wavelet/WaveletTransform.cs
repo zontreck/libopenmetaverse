@@ -63,17 +63,17 @@ namespace CSJ2K.j2k.wavelet;
 /// </summary>
 public struct WaveletTransform_Fields
 {
-	/// <summary>
-	///     ID for line based implementations of wavelet transforms.
-	/// </summary>
-	public static readonly int WT_IMPL_LINE = 0;
+    /// <summary>
+    ///     ID for line based implementations of wavelet transforms.
+    /// </summary>
+    public static readonly int WT_IMPL_LINE = 0;
 
-	/// <summary>
-	///     ID for full-page based implementations of wavelet transforms. Full-page
-	///     based implementations should be avoided since they require large
-	///     amounts of memory.
-	/// </summary>
-	public static readonly int WT_IMPL_FULL = 2;
+    /// <summary>
+    ///     ID for full-page based implementations of wavelet transforms. Full-page
+    ///     based implementations should be avoided since they require large
+    ///     amounts of memory.
+    /// </summary>
+    public static readonly int WT_IMPL_FULL = 2;
 }
 
 public interface WaveletTransform : ImgData

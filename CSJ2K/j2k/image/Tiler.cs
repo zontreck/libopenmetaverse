@@ -73,12 +73,6 @@ namespace CSJ2K.j2k.image;
 /// </seealso>
 public class Tiler : ImgDataAdapter, BlkImgDataSrc
 {
-    /// <summary>The component height in the current active tile, for each component </summary>
-    private int[] compH;
-
-    /// <summary>The component width in the current active tile, for each component </summary>
-    private int[] compW;
-
     /// <summary>The number of tiles in the horizontal direction. </summary>
     private readonly int ntX;
 
@@ -87,30 +81,6 @@ public class Tiler : ImgDataAdapter, BlkImgDataSrc
 
     /// <summary>The source of image data </summary>
     private readonly BlkImgDataSrc src;
-
-    /// <summary>
-    ///     The horizontal coordinates of the upper-left corner of the components
-    ///     in the current tile
-    /// </summary>
-    private int[] tcx0;
-
-    /// <summary>
-    ///     The vertical coordinates of the upper-left corner of the components in
-    ///     the current tile.
-    /// </summary>
-    private int[] tcy0;
-
-    /// <summary>The height of the current tile, on the reference grid. </summary>
-    private int tileH;
-
-    /// <summary>The width of the current tile, on the reference grid. </summary>
-    private int tileW;
-
-    /// <summary>The horizontal index of the current tile </summary>
-    private int tx;
-
-    /// <summary>The vertical index of the current tile </summary>
-    private int ty;
 
     /// <summary>Horizontal coordinate of the upper left hand reference grid point.</summary>
     private readonly int x0siz;
@@ -141,6 +111,36 @@ public class Tiler : ImgDataAdapter, BlkImgDataSrc
     ///     there is no tiling in that direction.
     /// </summary>
     private readonly int ytsiz;
+
+    /// <summary>The component height in the current active tile, for each component </summary>
+    private int[] compH;
+
+    /// <summary>The component width in the current active tile, for each component </summary>
+    private int[] compW;
+
+    /// <summary>
+    ///     The horizontal coordinates of the upper-left corner of the components
+    ///     in the current tile
+    /// </summary>
+    private int[] tcx0;
+
+    /// <summary>
+    ///     The vertical coordinates of the upper-left corner of the components in
+    ///     the current tile.
+    /// </summary>
+    private int[] tcy0;
+
+    /// <summary>The height of the current tile, on the reference grid. </summary>
+    private int tileH;
+
+    /// <summary>The width of the current tile, on the reference grid. </summary>
+    private int tileW;
+
+    /// <summary>The horizontal index of the current tile </summary>
+    private int tx;
+
+    /// <summary>The vertical index of the current tile </summary>
+    private int ty;
 
     /// <summary>
     ///     Constructs a new tiler with the specified 'BlkImgDataSrc' source,

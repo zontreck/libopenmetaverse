@@ -24,54 +24,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.IO;
 using IronSoftware.Drawing;
 using SixLabors.ImageSharp;
 
-namespace OpenMetaverse.Imaging
+namespace OpenMetaverse.Imaging;
+
+/// <summary>
+///     Capability to load TGAs to Bitmap
+/// </summary>
+public class LoadTGAClass
 {
-    /// <summary>
-    /// Capability to load TGAs to Bitmap 
-    /// </summary>
-    public class LoadTGAClass
+    public static Size GetTGASize(string filename)
     {
+        var bmp = LoadTGA(filename);
 
-        public static Size GetTGASize(string filename)
+
+        return new Size(bmp.Width, bmp.Height);
+    }
+
+    public static AnyBitmap LoadTGA(Stream source)
+    {
+        return AnyBitmap.FromStream(source);
+    }
+
+    public static ManagedImage LoadTGAImage(Stream source)
+    {
+        return new ManagedImage(AnyBitmap.FromStream(source));
+    }
+
+    public static AnyBitmap LoadTGA(string filename)
+    {
+        try
         {
-            AnyBitmap bmp = LoadTGA(filename);
-            
-
-            return new Size(bmp.Width, bmp.Height);
-
-        }
-
-        public static AnyBitmap LoadTGA(System.IO.Stream source)
-        {
-            return AnyBitmap.FromStream(source);
-            
-        }
-
-        public static ManagedImage LoadTGAImage(System.IO.Stream source)
-        {
-            return new ManagedImage(AnyBitmap.FromStream(source));
-        }
-        
-        public static AnyBitmap LoadTGA(string filename)
-        {
-            try
+            using (var f = File.OpenRead(filename))
             {
-                using (System.IO.FileStream f = System.IO.File.OpenRead(filename))
-                {
-                    return LoadTGA(f);
-                }
+                return LoadTGA(f);
             }
-            catch (System.IO.DirectoryNotFoundException)
-            {
-                return null;	// file not found
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                return null; // file not found
-            }
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return null; // file not found
+        }
+        catch (FileNotFoundException)
+        {
+            return null; // file not found
         }
     }
 }

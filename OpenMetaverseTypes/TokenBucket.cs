@@ -34,6 +34,12 @@ namespace OpenMetaverse;
 /// </summary>
 public class TokenBucket
 {
+    /// <summary>
+    ///     Parent bucket to this bucket, or null if this is a root
+    ///     bucket
+    /// </summary>
+    private readonly TokenBucket parent;
+
     /// <summary>Number of tokens currently in the bucket</summary>
     private int content;
 
@@ -45,12 +51,6 @@ public class TokenBucket
     ///     infinite capacity
     /// </summary>
     private int maxBurst;
-
-    /// <summary>
-    ///     Parent bucket to this bucket, or null if this is a root
-    ///     bucket
-    /// </summary>
-    private readonly TokenBucket parent;
 
     /// <summary>
     ///     Rate that the bucket fills, in bytes per millisecond. If

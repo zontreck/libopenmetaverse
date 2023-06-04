@@ -61,6 +61,9 @@ public class ImgReaderPGM : ImgReader
     /// <summary>DC offset value used when reading image </summary>
     public static int DC_OFFSET = 128;
 
+    /// <summary>The number of bits that determine the nominal dynamic range </summary>
+    private readonly int rb;
+
     /// <summary>The line buffer. </summary>
     // This makes the class not thrad safe
     // (but it is not the only one making it so)
@@ -78,9 +81,6 @@ public class ImgReaderPGM : ImgReader
 
     /// <summary>The offset of the raw pixel data in the PGM file </summary>
     private int offset;
-
-    /// <summary>The number of bits that determine the nominal dynamic range </summary>
-    private readonly int rb;
 
     /// <summary>
     ///     Creates a new PGM file reader from the specified file.

@@ -26,30 +26,27 @@
 
 #define SMARTHREADPOOL_REF
 
-using System;
-using System.IO;
-using System.Reflection;
-
+using System.Threading;
 #if SMARTHREADPOOL_REF
 using Amib.Threading;
+
 #else
 using System.Threading;
 #endif
 
 namespace OpenMetaverse
 {
-
 // Use statically referenced SmartThreadPool.dll
 #if SMARTHREADPOOL_REF
     public static class WorkPool
     {
-        internal static SmartThreadPool Pool = null;
+        internal static SmartThreadPool Pool;
 
         public static bool Init(bool useSmartThredPool)
         {
             if (Pool == null)
             {
-                STPStartInfo param = new STPStartInfo();
+                var param = new STPStartInfo();
                 param.MinWorkerThreads = 2;
                 param.MaxWorkerThreads = 50;
                 param.ThreadPoolName = "LibOpenMetaverse Main ThreadPool";
@@ -57,6 +54,7 @@ namespace OpenMetaverse
 
                 Pool = new SmartThreadPool(param);
             }
+
             return true;
         }
 
@@ -69,33 +67,32 @@ namespace OpenMetaverse
             }
         }
 
-        public static void QueueUserWorkItem(System.Threading.WaitCallback callback)
+        public static void QueueUserWorkItem(WaitCallback callback)
         {
             if (Pool != null)
-            {
-                Pool.QueueWorkItem(state => { callback.Invoke(state); return null; });
-            }
+                Pool.QueueWorkItem(state =>
+                {
+                    callback.Invoke(state);
+                    return null;
+                });
             else
-            {
-                System.Threading.ThreadPool.QueueUserWorkItem(state => callback.Invoke(state));
-            }
+                ThreadPool.QueueUserWorkItem(state => callback.Invoke(state));
         }
 
-        public static void QueueUserWorkItem(System.Threading.WaitCallback callback, object state)
+        public static void QueueUserWorkItem(WaitCallback callback, object state)
         {
             if (Pool != null)
-            {
-                Pool.QueueWorkItem(sync => { callback.Invoke(sync); return null; }, state);
-            }
+                Pool.QueueWorkItem(sync =>
+                {
+                    callback.Invoke(sync);
+                    return null;
+                }, state);
             else
-            {
-                System.Threading.ThreadPool.QueueUserWorkItem(sync => callback.Invoke(sync), state);
-            }
+                ThreadPool.QueueUserWorkItem(sync => callback.Invoke(sync), state);
         }
     }
 
 #else
-
     // Try to load SmartThreadPool.dll during initialization
     // Fallback to System.Threading.ThreadPool if that fails
     public static class WorkPoolDynamic
@@ -125,7 +122,8 @@ namespace OpenMetaverse
                 STPStartInfo.GetProperty("MinWorkerThreads").SetValue(param, 2, null);
                 Pool = Activator.CreateInstance(SmartThreadPoolType, new object[] { param });
                 QueueWorkItemFunc = SmartThreadPoolType.GetMethod("QueueWorkItem", new Type[] { WorkItemCallbackType });
-                QueueWorkItemFunc2 = SmartThreadPoolType.GetMethod("QueueWorkItem", new Type[] { WorkItemCallbackType, typeof(object) });
+                QueueWorkItemFunc2 =
+ SmartThreadPoolType.GetMethod("QueueWorkItem", new Type[] { WorkItemCallbackType, typeof(object) });
                 ShutdownFunc = SmartThreadPoolType.GetMethod("Shutdown", new Type[] { });
 
                 Invoker = (inv, state) =>

@@ -54,10 +54,12 @@ public class ICCProfiler : ColorSpaceMapper
     //UPGRADE_NOTE: Final was removed from the declaration of 'BLUE '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
     //UPGRADE_NOTE: The initialization of  'BLUE' was moved to static method 'icc.ICCProfiler'. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1005'"
     private static readonly int BLUE;
-    internal ICCProfile icc;
 
     /// <summary>The image's ICC profile. </summary>
     private readonly RestrictedICCProfile iccp;
+
+    private readonly object xform;
+    internal ICCProfile icc;
 
     // ICCProfiles.
     internal RestrictedICCProfile ricc;
@@ -65,8 +67,6 @@ public class ICCProfiler : ColorSpaceMapper
 
     // Temporary variables needed during profiling.
     private DataBlkInt[] tempInt; // Holds the results of the transform.
-
-    private readonly object xform;
 
     /* end class ICCProfiler */
     static ICCProfiler()

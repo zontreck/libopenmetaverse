@@ -122,26 +122,26 @@ namespace CSJ2K.j2k.util;
 /// </seealso>
 public class ThreadPool
 {
-	/// <summary>
-	///     The name of the property that sets the concurrency level:
-	///     jj2000.j2k.util.ThreadPool.concurrency
-	/// </summary>
-	public const string CONCURRENCY_PROP_NAME = "jj2000.j2k.util.ThreadPool.concurrency";
+    /// <summary>
+    ///     The name of the property that sets the concurrency level:
+    ///     jj2000.j2k.util.ThreadPool.concurrency
+    /// </summary>
+    public const string CONCURRENCY_PROP_NAME = "jj2000.j2k.util.ThreadPool.concurrency";
 
-	/// <summary>
-	///     The array of idle threads and the lock for the manipulation of the
-	///     idle thread list.
-	/// </summary>
-	private readonly ThreadPoolThread[] idle;
-
-    /// <summary>The number of idle threads </summary>
-    private int nidle;
+    /// <summary>
+    ///     The array of idle threads and the lock for the manipulation of the
+    ///     idle thread list.
+    /// </summary>
+    private readonly ThreadPoolThread[] idle;
 
     /// <summary>The name of the pool </summary>
     private readonly string poolName;
 
     /// <summary>The priority for the pool </summary>
     private readonly int poolPriority;
+
+    /// <summary>The number of idle threads </summary>
+    private int nidle;
 
     /// <summary>The last error thrown by a target. Null if none </summary>
     // NOTE: needs to be volatile, so that only one copy exits in memory
@@ -478,7 +478,7 @@ public class ThreadPool
 
         private void InitBlock(ThreadPool enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>

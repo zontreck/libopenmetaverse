@@ -22,33 +22,33 @@ namespace CSJ2K.Icc;
 /// </author>
 public class ICCMonochromeInputProfile : ICCProfile
 {
-	/// <summary> Construct a ICCMonochromeInputProfile corresponding to the profile file</summary>
-	/// <param name="f">
-	///     disk based ICCMonochromeInputProfile
-	/// </param>
-	/// <returns>
-	///     theICCMonochromeInputProfile
-	/// </returns>
-	/// <exception cref="ColorSpaceException">
-	/// </exception>
-	/// <exception cref="ICCProfileInvalidException">
-	/// </exception>
-	protected internal ICCMonochromeInputProfile(ColorSpace csm) : base(csm)
+    /// <summary> Construct a ICCMonochromeInputProfile corresponding to the profile file</summary>
+    /// <param name="f">
+    ///     disk based ICCMonochromeInputProfile
+    /// </param>
+    /// <returns>
+    ///     theICCMonochromeInputProfile
+    /// </returns>
+    /// <exception cref="ColorSpaceException">
+    /// </exception>
+    /// <exception cref="ICCProfileInvalidException">
+    /// </exception>
+    protected internal ICCMonochromeInputProfile(ColorSpace csm) : base(csm)
     {
     }
 
-	/// <summary> Return the ICCProfile embedded in the input image</summary>
-	/// <param name="in">
-	///     jp2 image with embedded profile
-	/// </param>
-	/// <returns>
-	///     ICCMonochromeInputProfile
-	/// </returns>
-	/// <exception cref="ColorSpaceICCProfileInvalidExceptionException">
-	/// </exception>
-	/// <exception cref="">
-	/// </exception>
-	public static ICCMonochromeInputProfile createInstance(ColorSpace csm)
+    /// <summary> Return the ICCProfile embedded in the input image</summary>
+    /// <param name="in">
+    ///     jp2 image with embedded profile
+    /// </param>
+    /// <returns>
+    ///     ICCMonochromeInputProfile
+    /// </returns>
+    /// <exception cref="ColorSpaceICCProfileInvalidExceptionException">
+    /// </exception>
+    /// <exception cref="">
+    /// </exception>
+    public static ICCMonochromeInputProfile createInstance(ColorSpace csm)
     {
         return new ICCMonochromeInputProfile(csm);
     }

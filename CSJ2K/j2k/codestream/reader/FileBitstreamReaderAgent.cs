@@ -77,33 +77,16 @@ namespace CSJ2K.j2k.codestream.reader;
 /// </seealso>
 public class FileBitstreamReaderAgent : BitstreamReaderAgent
 {
-	/// <summary>
-	///     Backup of the number of bytes allocated to each tile. This array is
-	///     used to restore the number of bytes to read in each tile when the
-	///     codestream is read several times (for instance when decoding an R,G,B
-	///     image to three output files)
-	/// </summary>
-	private readonly int[] baknBytes;
-
-	/// <summary>
-	///     Array containing information for all the code-blocks:
-	///     <ul>
-	///         <li>1st dim: component index.</li>
-	///         <li>2nd dim: resolution level index.</li>
-	///         <li>3rd dim: subband index.</li>
-	///         <li>4th/5th dim: code-block index (vert. and horiz.).</li>
-	///     </ul>
-	/// </summary>
-	private CBlkInfo[][][][][] cbI;
-
-    /// <summary>The current tile part being used </summary>
-    private int curTilePart;
+    /// <summary>
+    ///     Backup of the number of bytes allocated to each tile. This array is
+    ///     used to restore the number of bytes to read in each tile when the
+    ///     codestream is read several times (for instance when decoding an R,G,B
+    ///     image to three output files)
+    /// </summary>
+    private readonly int[] baknBytes;
 
     /// <summary>Offset of the first packet in each tile-part in each tile </summary>
     private readonly int[][] firstPackOff;
-
-    /// <summary>First tile part header length</summary>
-    private int firstTilePartHeadLen;
 
     /// <summary>Length of main and tile-parts headers </summary>
     private readonly int headLen;
@@ -117,20 +100,8 @@ public class FileBitstreamReaderAgent : BitstreamReaderAgent
     /// <summary>The RandomAccessIO where to get data from </summary>
     private readonly RandomAccessIO in_Renamed;
 
-    /// <summary>Whether or not a EOC marker has been found instead of a SOT </summary>
-    private bool isEOCFound;
-
-    /// <summary>
-    ///     Whether or not the last read Psot value was zero. Only the Psot in the
-    ///     last tile-part in the codestream can have such a value.
-    /// </summary>
-    private bool isPsotEqualsZero = true;
-
     /// <summary>True if truncation mode is used. False if parsing mode </summary>
     private readonly bool isTruncMode;
-
-    /// <summary>Layer starting positions</summary>
-    public List<int> layerStarts;
 
     /// <summary>The maximum number of layers to decode for any code-block </summary>
     private readonly int lQuit;
@@ -145,20 +116,8 @@ public class FileBitstreamReaderAgent : BitstreamReaderAgent
     /// </summary>
     private readonly int[] nBytes;
 
-    /// <summary>Reference to the PktDecoder instance </summary>
-    public PktDecoder pktDec;
-
-    /// <summary>Length of each packet head found in the tile </summary>
-    private ArrayList pktHL;
-
-    /// <summary>Reference to the ParameterList instance </summary>
-    private ParameterList pl;
-
     /// <summary>Whether or not to print information found in codestream </summary>
     private readonly bool printInfo;
-
-    /// <summary>The number of tile-parts that remain to read </summary>
-    private int remainingTileParts;
 
     /// <summary>Length of all tile-part headers </summary>
     private readonly int[][] tilePartHeadLen;
@@ -187,11 +146,52 @@ public class FileBitstreamReaderAgent : BitstreamReaderAgent
     /// <summary>Total length of each tile </summary>
     private readonly int[] totTileLen;
 
-    /// <summary>Thetotal  number of tile-parts read so far </summary>
-    private int totTilePartsRead;
-
     /// <summary>Whether or not to use only first progression order </summary>
     private readonly bool usePOCQuit;
+
+    /// <summary>
+    ///     Array containing information for all the code-blocks:
+    ///     <ul>
+    ///         <li>1st dim: component index.</li>
+    ///         <li>2nd dim: resolution level index.</li>
+    ///         <li>3rd dim: subband index.</li>
+    ///         <li>4th/5th dim: code-block index (vert. and horiz.).</li>
+    ///     </ul>
+    /// </summary>
+    private CBlkInfo[][][][][] cbI;
+
+    /// <summary>The current tile part being used </summary>
+    private int curTilePart;
+
+    /// <summary>First tile part header length</summary>
+    private int firstTilePartHeadLen;
+
+    /// <summary>Whether or not a EOC marker has been found instead of a SOT </summary>
+    private bool isEOCFound;
+
+    /// <summary>
+    ///     Whether or not the last read Psot value was zero. Only the Psot in the
+    ///     last tile-part in the codestream can have such a value.
+    /// </summary>
+    private bool isPsotEqualsZero = true;
+
+    /// <summary>Layer starting positions</summary>
+    public List<int> layerStarts;
+
+    /// <summary>Reference to the PktDecoder instance </summary>
+    public PktDecoder pktDec;
+
+    /// <summary>Length of each packet head found in the tile </summary>
+    private ArrayList pktHL;
+
+    /// <summary>Reference to the ParameterList instance </summary>
+    private ParameterList pl;
+
+    /// <summary>The number of tile-parts that remain to read </summary>
+    private int remainingTileParts;
+
+    /// <summary>Thetotal  number of tile-parts read so far </summary>
+    private int totTilePartsRead;
 
     /// <summary>
     ///     Reads all tiles headers and keep offset of their first

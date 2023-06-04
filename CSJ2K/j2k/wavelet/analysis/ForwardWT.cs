@@ -64,11 +64,11 @@ namespace CSJ2K.j2k.wavelet.analysis;
 /// </summary>
 public abstract class ForwardWT : ImgDataAdapter, ForwWT, CBlkWTDataSrc
 {
-	/// <summary>
-	///     ID for the dyadic wavelet tree decomposition (also called "Mallat" in
-	///     JPEG 2000): 0x00.
-	/// </summary>
-	public const int WT_DECOMP_DYADIC = 0;
+    /// <summary>
+    ///     ID for the dyadic wavelet tree decomposition (also called "Mallat" in
+    ///     JPEG 2000): 0x00.
+    /// </summary>
+    public const int WT_DECOMP_DYADIC = 0;
 
     /// <summary>The prefix for wavelet transform options: 'W' </summary>
     public const char OPT_PREFIX = 'W';

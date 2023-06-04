@@ -57,25 +57,25 @@ namespace CSJ2K.j2k.image;
 /// </seealso>
 public interface ImgData
 {
-	/// <summary>
-	///     Returns the overall width of the current tile in pixels. This is the
-	///     tile's width without accounting for any component subsampling. This is
-	///     also referred as the reference grid width in the current tile.
-	/// </summary>
-	/// <returns>
-	///     The total current tile's width in pixels.
-	/// </returns>
-	int TileWidth { get; }
+    /// <summary>
+    ///     Returns the overall width of the current tile in pixels. This is the
+    ///     tile's width without accounting for any component subsampling. This is
+    ///     also referred as the reference grid width in the current tile.
+    /// </summary>
+    /// <returns>
+    ///     The total current tile's width in pixels.
+    /// </returns>
+    int TileWidth { get; }
 
-	/// <summary>
-	///     Returns the overall height of the current tile in pixels. This is the
-	///     tile's height without accounting for any component subsampling. This is
-	///     also referred as the reference grid height in the current tile.
-	/// </summary>
-	/// <returns>
-	///     The total current tile's height in pixels.
-	/// </returns>
-	int TileHeight { get; }
+    /// <summary>
+    ///     Returns the overall height of the current tile in pixels. This is the
+    ///     tile's height without accounting for any component subsampling. This is
+    ///     also referred as the reference grid height in the current tile.
+    /// </summary>
+    /// <returns>
+    ///     The total current tile's height in pixels.
+    /// </returns>
+    int TileHeight { get; }
 
     /// <summary>Returns the nominal tiles width </summary>
     int NomTileWidth { get; }

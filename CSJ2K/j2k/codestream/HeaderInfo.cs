@@ -56,24 +56,24 @@ namespace CSJ2K.j2k.codestream;
 /// </summary>
 public class HeaderInfo : FilterTypes, ICloneable
 {
-	/// <summary>
-	///     Reference to the COC marker segments found in main and first tile-part
-	///     header. The key is either "main_c"+componentIndex or
-	///     "t"+tileIdx+"_c"+component_index.
-	/// </summary>
-	public Hashtable cocValue = Hashtable.Synchronized(new Hashtable());
+    /// <summary>
+    ///     Reference to the COC marker segments found in main and first tile-part
+    ///     header. The key is either "main_c"+componentIndex or
+    ///     "t"+tileIdx+"_c"+component_index.
+    /// </summary>
+    public Hashtable cocValue = Hashtable.Synchronized(new Hashtable());
 
-	/// <summary>
-	///     Reference to the COD marker segments found in main and first tile-part
-	///     header. The key is either "main" or "t"+tileIdx.
-	/// </summary>
-	public Hashtable codValue = Hashtable.Synchronized(new Hashtable());
+    /// <summary>
+    ///     Reference to the COD marker segments found in main and first tile-part
+    ///     header. The key is either "main" or "t"+tileIdx.
+    /// </summary>
+    public Hashtable codValue = Hashtable.Synchronized(new Hashtable());
 
-	/// <summary>
-	///     Reference to the COM marker segments found in main and tile-part
-	///     headers. The key is either "main_"+comIdx or "t"+tileIdx+"_"+comIdx.
-	/// </summary>
-	public Hashtable comValue = Hashtable.Synchronized(new Hashtable());
+    /// <summary>
+    ///     Reference to the COM marker segments found in main and tile-part
+    ///     headers. The key is either "main_"+comIdx or "t"+tileIdx+"_"+comIdx.
+    /// </summary>
+    public Hashtable comValue = Hashtable.Synchronized(new Hashtable());
 
     /// <summary>Reference to the CRG marker segment found in main header </summary>
     public CRG crgValue;
@@ -428,7 +428,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>
@@ -532,7 +532,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this SOT marker segment </summary>
@@ -598,7 +598,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this COD marker segment </summary>
@@ -723,7 +723,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this COC marker segment </summary>
@@ -812,7 +812,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this RGN marker segment </summary>
@@ -868,7 +868,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this QCD marker segment </summary>
@@ -968,7 +968,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this QCC marker segment </summary>
@@ -1051,7 +1051,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in this POC marker segment </summary>
@@ -1109,7 +1109,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in the CRG marker segment </summary>
@@ -1140,7 +1140,7 @@ public class HeaderInfo : FilterTypes, ICloneable
 
         private void InitBlock(HeaderInfo enclosingInstance)
         {
-            this.Enclosing_Instance = enclosingInstance;
+            Enclosing_Instance = enclosingInstance;
         }
 
         /// <summary>Display information found in the COM marker segment </summary>

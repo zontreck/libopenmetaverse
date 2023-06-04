@@ -60,23 +60,20 @@ namespace CSJ2K.j2k.wavelet.analysis;
 /// </seealso>
 public class ForwWTFull : ForwardWT
 {
-	/// <summary>
-	///     The horizontal coordinate of the code-block partition origin on the
-	///     reference grid
-	/// </summary>
-	private readonly int cb0x;
+    /// <summary>
+    ///     The horizontal coordinate of the code-block partition origin on the
+    ///     reference grid
+    /// </summary>
+    private readonly int cb0x;
 
-	/// <summary>
-	///     The vertical coordinate of the code-block partition on the reference
-	///     grid
-	/// </summary>
-	private readonly int cb0y;
+    /// <summary>
+    ///     The vertical coordinate of the code-block partition on the reference
+    ///     grid
+    /// </summary>
+    private readonly int cb0y;
 
     /// <summary>The code-block size specifications </summary>
     private readonly CBlkSizeSpec cblks;
-
-    /// <summary>The subband being dealt with in each component </summary>
-    internal SubbandAn[] currentSubband;
 
     /// <summary>Block storing the full band decomposition for each component. </summary>
     private readonly DataBlk[] decomposedComps;
@@ -86,9 +83,6 @@ public class ForwWTFull : ForwardWT
 
     /// <summary>Wavelet filters for all components and tiles </summary>
     private readonly AnWTFilterSpec filters;
-
-    /// <summary>Boolean to know if one are currently dealing with int or float data.</summary>
-    private bool intData;
 
     /// <summary>
     ///     The vertical index of the last "sent" code-block in the current
@@ -101,12 +95,6 @@ public class ForwWTFull : ForwardWT
     ///     subband in each component. It should be -1 if none have been sent yet.
     /// </summary>
     private readonly int[] lastn;
-
-    /// <summary>
-    ///     Cache  object   to  avoid  excessive  allocation/desallocation.  This
-    ///     variable makes the class inheritently thread unsafe.
-    /// </summary>
-    internal Coord ncblks;
 
     /// <summary>The precinct partition specifications </summary>
     private readonly PrecinctSizeSpec pss;
@@ -126,6 +114,18 @@ public class ForwWTFull : ForwardWT
     ///     </p>
     /// </summary>
     private readonly SubbandAn[][] subbTrees;
+
+    /// <summary>The subband being dealt with in each component </summary>
+    internal SubbandAn[] currentSubband;
+
+    /// <summary>Boolean to know if one are currently dealing with int or float data.</summary>
+    private bool intData;
+
+    /// <summary>
+    ///     Cache  object   to  avoid  excessive  allocation/desallocation.  This
+    ///     variable makes the class inheritently thread unsafe.
+    /// </summary>
+    internal Coord ncblks;
 
     /// <summary>
     ///     Initializes this object with the given source of image data and with

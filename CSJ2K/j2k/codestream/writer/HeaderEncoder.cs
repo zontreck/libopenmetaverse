@@ -110,6 +110,15 @@ public class HeaderEncoder
         }
     };
 
+    /// <summary>Whether or not to write the JJ2000 COM marker segment </summary>
+    private readonly bool enJJ2KMarkSeg = true;
+
+    /// <summary>The number of components in the image </summary>
+    private readonly int nComp;
+
+    /// <summary>Other COM marker segments specified in the command line </summary>
+    private readonly string otherCOMMarkSeg;
+
     /// <summary>
     ///     The ByteArrayOutputStream to store header data. This handler is kept
     ///     in order to use methods not accessible from a general
@@ -138,9 +147,6 @@ public class HeaderEncoder
     /// <summary>The encoder specifications </summary>
     protected internal EncoderSpecs encSpec;
 
-    /// <summary>Whether or not to write the JJ2000 COM marker segment </summary>
-    private readonly bool enJJ2KMarkSeg = true;
-
     /// <summary>
     ///     The DataOutputStream to store header data. This kind of object is
     ///     useful to write short, int, .... It's constructor takes baos as
@@ -156,14 +162,8 @@ public class HeaderEncoder
     /// </summary>
     protected internal bool[] isOrigSig;
 
-    /// <summary>The number of components in the image </summary>
-    private readonly int nComp;
-
     /// <summary>The image data reader. Source of original data info </summary>
     protected internal ImgData origSrc;
-
-    /// <summary>Other COM marker segments specified in the command line </summary>
-    private readonly string otherCOMMarkSeg;
 
     /// <summary>Reference to the rate allocator </summary>
     protected internal PostCompRateAllocator ralloc;

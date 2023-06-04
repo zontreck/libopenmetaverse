@@ -70,25 +70,25 @@ namespace CSJ2K.j2k.wavelet;
 /// </summary>
 public class WTDecompSpec
 {
-	/// <summary>
-	///     ID for the dyadic wavelet tree decomposition (also called
-	///     "Mallat" in JPEG 2000): 0x00.
-	/// </summary>
-	public const int WT_DECOMP_DYADIC = 0;
+    /// <summary>
+    ///     ID for the dyadic wavelet tree decomposition (also called
+    ///     "Mallat" in JPEG 2000): 0x00.
+    /// </summary>
+    public const int WT_DECOMP_DYADIC = 0;
 
-	/// <summary>
-	///     ID for the SPACL (as defined in JPEG 2000) wavelet tree
-	///     decomposition (1 level of decomposition in the high bands and
-	///     some specified number for the lowest LL band): 0x02.
-	/// </summary>
-	public const int WT_DECOMP_SPACL = 2;
+    /// <summary>
+    ///     ID for the SPACL (as defined in JPEG 2000) wavelet tree
+    ///     decomposition (1 level of decomposition in the high bands and
+    ///     some specified number for the lowest LL band): 0x02.
+    /// </summary>
+    public const int WT_DECOMP_SPACL = 2;
 
-	/// <summary>
-	///     ID for the PACKET (as defined in JPEG 2000) wavelet tree
-	///     decomposition (2 levels of decomposition in the high bands and
-	///     some specified number for the lowest LL band): 0x01.
-	/// </summary>
-	public const int WT_DECOMP_PACKET = 1;
+    /// <summary>
+    ///     ID for the PACKET (as defined in JPEG 2000) wavelet tree
+    ///     decomposition (2 levels of decomposition in the high bands and
+    ///     some specified number for the lowest LL band): 0x01.
+    /// </summary>
+    public const int WT_DECOMP_PACKET = 1;
 
     /// <summary>The identifier for "main default" specified decomposition </summary>
     public const byte DEC_SPEC_MAIN_DEF = 0;
@@ -105,12 +105,6 @@ public class WTDecompSpec
     /// </summary>
     public const byte DEC_SPEC_TILE_COMP = 3;
 
-    /// <summary>The component main default decomposition, for each component. </summary>
-    private int[] compMainDefDecompType;
-
-    /// <summary>The component main default decomposition levels, for each component </summary>
-    private int[] compMainDefLevels;
-
     /// <summary>The main default decomposition </summary>
     private readonly int mainDefDecompType;
 
@@ -124,6 +118,12 @@ public class WTDecompSpec
     /// </summary>
     // Use byte to save memory (no need for speed here).
     private readonly byte[] specValType;
+
+    /// <summary>The component main default decomposition, for each component. </summary>
+    private int[] compMainDefDecompType;
+
+    /// <summary>The component main default decomposition levels, for each component </summary>
+    private int[] compMainDefLevels;
 
     /// <summary>
     ///     Constructs a new 'WTDecompSpec' for the specified number of components

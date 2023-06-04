@@ -27,161 +27,172 @@
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using OpenMetaverse.StructuredData;
 
-namespace OpenMetaverse.Http
+namespace OpenMetaverse.Http;
+
+public class CapsClient
 {
-    public class CapsClient
+    public delegate void CompleteCallback(CapsClient client, OSD result, Exception error);
+
+    public delegate void DownloadProgressCallback(CapsClient client, int bytesReceived, int totalBytesToReceive);
+
+    protected Uri _Address;
+    protected X509Certificate2 _ClientCert;
+    protected string _ContentType;
+    protected byte[] _PostData;
+    protected HttpWebRequest _Request;
+    protected OSD _Response;
+    protected AutoResetEvent _ResponseEvent = new(false);
+
+    public object UserData;
+
+    public CapsClient(Uri capability)
+        : this(capability, null)
     {
-        public delegate void DownloadProgressCallback(CapsClient client, int bytesReceived, int totalBytesToReceive);
-        public delegate void CompleteCallback(CapsClient client, OSD result, Exception error);
+    }
 
-        public event DownloadProgressCallback OnDownloadProgress;
-        public event CompleteCallback OnComplete;
+    public CapsClient(Uri capability, X509Certificate2 clientCert)
+    {
+        _Address = capability;
+        _ClientCert = clientCert;
+    }
 
-        public object UserData;
+    public event DownloadProgressCallback OnDownloadProgress;
+    public event CompleteCallback OnComplete;
 
-        protected Uri _Address;
-        protected byte[] _PostData;
-        protected X509Certificate2 _ClientCert;
-        protected string _ContentType;
-        protected HttpWebRequest _Request;
-        protected OSD _Response;
-        protected AutoResetEvent _ResponseEvent = new AutoResetEvent(false);
+    public void BeginGetResponse(int millisecondsTimeout)
+    {
+        BeginGetResponse(null, null, millisecondsTimeout);
+    }
 
-        public CapsClient(Uri capability)
-            : this(capability, null)
+    public void BeginGetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
+    {
+        byte[] postData;
+        string contentType;
+
+        switch (format)
         {
+            case OSDFormat.Xml:
+                postData = OSDParser.SerializeLLSDXmlBytes(data);
+                contentType = "application/llsd+xml";
+                break;
+            case OSDFormat.Binary:
+                postData = OSDParser.SerializeLLSDBinary(data);
+                contentType = "application/llsd+binary";
+                break;
+            case OSDFormat.Json:
+            default:
+                postData = Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(data));
+                contentType = "application/llsd+json";
+                break;
         }
 
-        public CapsClient(Uri capability, X509Certificate2 clientCert)
+        BeginGetResponse(postData, contentType, millisecondsTimeout);
+    }
+
+    public void BeginGetResponse(byte[] postData, string contentType, int millisecondsTimeout)
+    {
+        _PostData = postData;
+        _ContentType = contentType;
+
+        if (_Request != null)
         {
-            _Address = capability;
-            _ClientCert = clientCert;
+            _Request.Abort();
+            _Request = null;
         }
 
-        public void BeginGetResponse(int millisecondsTimeout)
-        {
-            BeginGetResponse(null, null, millisecondsTimeout);
-        }
+        if (postData == null)
+            // GET
+            //Logger.Log.Debug("[CapsClient] GET " + _Address);
+            _Request = CapsBase.DownloadStringAsync(_Address, _ClientCert, millisecondsTimeout, DownloadProgressHandler,
+                RequestCompletedHandler);
+        else
+            // POST
+            //Logger.Log.Debug("[CapsClient] POST (" + postData.Length + " bytes) " + _Address);
+            _Request = CapsBase.UploadDataAsync(_Address, _ClientCert, contentType, postData, millisecondsTimeout, null,
+                DownloadProgressHandler, RequestCompletedHandler);
+    }
 
-        public void BeginGetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
-        {
-            byte[] postData;
-            string contentType;
+    public OSD GetResponse(int millisecondsTimeout)
+    {
+        BeginGetResponse(millisecondsTimeout);
+        _ResponseEvent.WaitOne(millisecondsTimeout, false);
+        return _Response;
+    }
 
-            switch (format)
+    public OSD GetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
+    {
+        BeginGetResponse(data, format, millisecondsTimeout);
+        _ResponseEvent.WaitOne(millisecondsTimeout, false);
+        return _Response;
+    }
+
+    public OSD GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
+    {
+        BeginGetResponse(postData, contentType, millisecondsTimeout);
+        _ResponseEvent.WaitOne(millisecondsTimeout, false);
+        return _Response;
+    }
+
+    public void Cancel()
+    {
+        if (_Request != null)
+            _Request.Abort();
+    }
+
+    private void DownloadProgressHandler(HttpWebRequest request, HttpWebResponse response, int bytesReceived,
+        int totalBytesToReceive)
+    {
+        _Request = request;
+
+        if (OnDownloadProgress != null)
+            try
             {
-                case OSDFormat.Xml:
-                    postData = OSDParser.SerializeLLSDXmlBytes(data);
-                    contentType = "application/llsd+xml";
-                    break;
-                case OSDFormat.Binary:
-                    postData = OSDParser.SerializeLLSDBinary(data);
-                    contentType = "application/llsd+binary";
-                    break;
-                case OSDFormat.Json:
-                default:
-                    postData = System.Text.Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(data));
-                    contentType = "application/llsd+json";
-                    break;
+                OnDownloadProgress(this, bytesReceived, totalBytesToReceive);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+            }
+    }
+
+    private void RequestCompletedHandler(HttpWebRequest request, HttpWebResponse response, byte[] responseData,
+        Exception error)
+    {
+        _Request = request;
+
+        OSD result = null;
+
+        if (responseData != null)
+            try
+            {
+                result = OSDParser.Deserialize(responseData);
+            }
+            catch (Exception ex)
+            {
+                error = ex;
             }
 
-            BeginGetResponse(postData, contentType, millisecondsTimeout);
-        }
+        FireCompleteCallback(result, error);
+    }
 
-        public void BeginGetResponse(byte[] postData, string contentType, int millisecondsTimeout)
-        {
-            _PostData = postData;
-            _ContentType = contentType;
-
-            if (_Request != null)
+    private void FireCompleteCallback(OSD result, Exception error)
+    {
+        var callback = OnComplete;
+        if (callback != null)
+            try
             {
-                _Request.Abort();
-                _Request = null;
+                callback(this, result, error);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
             }
 
-            if (postData == null)
-            {
-                // GET
-                //Logger.Log.Debug("[CapsClient] GET " + _Address);
-                _Request = CapsBase.DownloadStringAsync(_Address, _ClientCert, millisecondsTimeout, DownloadProgressHandler,
-                    RequestCompletedHandler);
-            }
-            else
-            {
-                // POST
-                //Logger.Log.Debug("[CapsClient] POST (" + postData.Length + " bytes) " + _Address);
-                _Request = CapsBase.UploadDataAsync(_Address, _ClientCert, contentType, postData, millisecondsTimeout, null,
-                    DownloadProgressHandler, RequestCompletedHandler);
-            }
-        }
-
-        public OSD GetResponse(int millisecondsTimeout)
-        {
-            BeginGetResponse(millisecondsTimeout);
-            _ResponseEvent.WaitOne(millisecondsTimeout, false);
-            return _Response;
-        }
-
-        public OSD GetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
-        {
-            BeginGetResponse(data, format, millisecondsTimeout);
-            _ResponseEvent.WaitOne(millisecondsTimeout, false);
-            return _Response;
-        }
-
-        public OSD GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
-        {
-            BeginGetResponse(postData, contentType, millisecondsTimeout);
-            _ResponseEvent.WaitOne(millisecondsTimeout, false);
-            return _Response;
-        }
-
-        public void Cancel()
-        {
-            if (_Request != null)
-                _Request.Abort();
-        }
-
-        void DownloadProgressHandler(HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive)
-        {
-            _Request = request;
-
-            if (OnDownloadProgress != null)
-            {
-                try { OnDownloadProgress(this, bytesReceived, totalBytesToReceive); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
-            }
-        }
-
-        void RequestCompletedHandler(HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error)
-        {
-            _Request = request;
-
-            OSD result = null;
-
-            if (responseData != null)
-            {
-                try { result = OSDParser.Deserialize(responseData); }
-                catch (Exception ex) { error = ex; }
-            }
-
-            FireCompleteCallback(result, error);
-        }
-
-        private void FireCompleteCallback(OSD result, Exception error)
-        {
-            CompleteCallback callback = OnComplete;
-            if (callback != null)
-            {
-                try { callback(this, result, error); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
-            }
-
-            _Response = result;
-            _ResponseEvent.Set();
-        }
+        _Response = result;
+        _ResponseEvent.Set();
     }
 }

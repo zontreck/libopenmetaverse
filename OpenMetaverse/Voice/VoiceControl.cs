@@ -55,6 +55,14 @@ public partial class VoiceGateway : IDisposable
         SessionRunning
     }
 
+    private readonly string daemonNode = "127.0.0.1";
+    private readonly int daemonPort = 37331;
+    private readonly VoicePosition position;
+
+    // Session management
+    private readonly Dictionary<string, VoiceSession> sessions;
+    private readonly string slvoiceArgs = "-ll 5";
+
     private string accountHandle;
     private string acctServer = "https://www.bhr.vivox.com/api2/";
     public GridClient Client;
@@ -62,8 +70,6 @@ public partial class VoiceGateway : IDisposable
     private string currentCaptureDevice;
     private Uri currentParcelCap;
     private string currentPlaybackDevice;
-    private readonly string daemonNode = "127.0.0.1";
-    private readonly int daemonPort = 37331;
 
     // Audio interfaces
     private Uri nextParcelCap;
@@ -71,7 +77,6 @@ public partial class VoiceGateway : IDisposable
     private Vector3d oldPosition;
 
     private CapsClient parcelCap;
-    private readonly VoicePosition position;
     private ManualResetEvent posRestart;
 
     // Position update thread
@@ -79,11 +84,7 @@ public partial class VoiceGateway : IDisposable
     private string regionName;
     private string sessionHandle;
 
-    // Session management
-    private readonly Dictionary<string, VoiceSession> sessions;
-
     internal string sipServer = "";
-    private readonly string slvoiceArgs = "-ll 5";
 
     // Parameters to Vivox daemon
     private string slvoicePath = "";

@@ -51,17 +51,17 @@ namespace CSJ2K.j2k.util;
 /// </summary>
 public class MathUtil
 {
-	/// <summary>
-	///     Method that calculates the floor of the log, base 2, of 'x'. The
-	///     calculation is performed in integer arithmetic, therefore, it is exact.
-	/// </summary>
-	/// <param name="x">
-	///     The value to calculate log2 on.
-	/// </param>
-	/// <returns>
-	///     floor(log(x)/log(2)), calculated in an exact way.
-	/// </returns>
-	public static int log2(int x)
+    /// <summary>
+    ///     Method that calculates the floor of the log, base 2, of 'x'. The
+    ///     calculation is performed in integer arithmetic, therefore, it is exact.
+    /// </summary>
+    /// <param name="x">
+    ///     The value to calculate log2 on.
+    /// </param>
+    /// <returns>
+    ///     floor(log(x)/log(2)), calculated in an exact way.
+    /// </returns>
+    public static int log2(int x)
     {
         int y, v;
         // No log of 0 or negative
@@ -78,17 +78,17 @@ public class MathUtil
         return y;
     }
 
-	/// <summary>
-	///     Method that calculates the Least Common Multiple (LCM) of two strictly
-	///     positive integer numbers.
-	/// </summary>
-	/// <param name="x1">
-	///     First number
-	/// </param>
-	/// <param name="x2">
-	///     Second number
-	/// </param>
-	public static int lcm(int x1, int x2)
+    /// <summary>
+    ///     Method that calculates the Least Common Multiple (LCM) of two strictly
+    ///     positive integer numbers.
+    /// </summary>
+    /// <param name="x1">
+    ///     First number
+    /// </param>
+    /// <param name="x2">
+    ///     Second number
+    /// </param>
+    public static int lcm(int x1, int x2)
     {
         if (x1 <= 0 || x2 <= 0)
             throw new ArgumentException("Cannot compute the least " + "common multiple of two " +
@@ -111,14 +111,14 @@ public class MathUtil
         throw new ApplicationException("Cannot find the least common multiple of numbers " + x1 + " and " + x2);
     }
 
-	/// <summary>
-	///     Method that calculates the Least Common Multiple (LCM) of several
-	///     positive integer numbers.
-	/// </summary>
-	/// <param name="x">
-	///     Array containing the numbers.
-	/// </param>
-	public static int lcm(int[] x)
+    /// <summary>
+    ///     Method that calculates the Least Common Multiple (LCM) of several
+    ///     positive integer numbers.
+    /// </summary>
+    /// <param name="x">
+    ///     Array containing the numbers.
+    /// </param>
+    public static int lcm(int[] x)
     {
         if (x.Length < 2)
             throw new ApplicationException("Do not use this method if there are less than" + " two numbers.");
@@ -134,11 +134,11 @@ public class MathUtil
         return tmp;
     }
 
-	/// <summary>
-	///     Method that calculates the Greatest Common Divisor (GCD) of two
-	///     positive integer numbers.
-	/// </summary>
-	public static int gcd(int x1, int x2)
+    /// <summary>
+    ///     Method that calculates the Greatest Common Divisor (GCD) of two
+    ///     positive integer numbers.
+    /// </summary>
+    public static int gcd(int x1, int x2)
     {
         if (x1 < 0 || x2 < 0) throw new ArgumentException("Cannot compute the GCD " + "if one integer is negative.");
         int a, b, g, z;
@@ -169,14 +169,14 @@ public class MathUtil
         return a;
     }
 
-	/// <summary>
-	///     Method that calculates the Greatest Common Divisor (GCD) of several
-	///     positive integer numbers.
-	/// </summary>
-	/// <param name="x">
-	///     Array containing the numbers.
-	/// </param>
-	public static int gcd(int[] x)
+    /// <summary>
+    ///     Method that calculates the Greatest Common Divisor (GCD) of several
+    ///     positive integer numbers.
+    /// </summary>
+    /// <param name="x">
+    ///     Array containing the numbers.
+    /// </param>
+    public static int gcd(int[] x)
     {
         if (x.Length < 2)
             throw new ApplicationException("Do not use this method if there are less than" + " two numbers.");

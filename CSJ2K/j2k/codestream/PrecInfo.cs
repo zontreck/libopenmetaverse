@@ -47,11 +47,11 @@ namespace CSJ2K.j2k.codestream;
 /// </summary>
 public class PrecInfo
 {
-	/// <summary>
-	///     Code-blocks belonging to this precinct in each subbands of the
-	///     resolution level
-	/// </summary>
-	public CBlkCoordInfo[][][] cblk;
+    /// <summary>
+    ///     Code-blocks belonging to this precinct in each subbands of the
+    ///     resolution level
+    /// </summary>
+    public CBlkCoordInfo[][][] cblk;
 
     /// <summary>Precinct height in the corresponding resolution level </summary>
     public int h;

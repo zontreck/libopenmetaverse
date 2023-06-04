@@ -65,6 +65,12 @@ public class FileCodestreamWriter : CodestreamWriter
     /// <summary>The default buffer length, 1024 bytes </summary>
     public static int DEF_BUF_LEN = 1024;
 
+    /// <summary>Index of the current tile </summary>
+    //private int tileIdx = 0;
+
+    /// <summary>The file to write </summary>
+    private readonly Stream out_Renamed;
+
     /// <summary>Array used to store the EPH markers values </summary>
     internal byte[] ephMarker;
 
@@ -79,12 +85,6 @@ public class FileCodestreamWriter : CodestreamWriter
 
     /// <summary>Offset of end of last packet containing ROI information </summary>
     private int offLastROIPkt;
-
-    /// <summary>Index of the current tile </summary>
-    //private int tileIdx = 0;
-
-    /// <summary>The file to write </summary>
-    private readonly Stream out_Renamed;
 
     /// <summary>
     ///     The packet index (when start of packet markers i.e. SOP markers) are

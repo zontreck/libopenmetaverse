@@ -386,10 +386,7 @@ public static partial class OSDParser
         var bt = stream.ReadByte();
         if (bt < 0)
             return false;
-        if ((byte)bt == toFind)
-        {
-            return true;
-        }
+        if ((byte)bt == toFind) return true;
 
         stream.Seek(-1L, SeekOrigin.Current);
         return false;

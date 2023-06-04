@@ -88,6 +88,93 @@ public class PktEncoder
         }
     };
 
+    /// <summary>The encoder specs </summary>
+    private readonly EncoderSpecs encSpec;
+
+    /// <summary>The source object </summary>
+    private readonly CodedCBlkDataSrcEnc infoSrc;
+
+    /// <summary>
+    ///     The base number of bits for sending code-block length information
+    ///     (referred as Lblock in the JPEG 2000 standard). The indexes are
+    ///     outlined below. Note that the layer indexes start at 1, therefore, the
+    ///     layer index minus 1 is used. The subband indices are used as they are
+    ///     defined in the Subband class. The tile indices start at 0 and follow a
+    ///     lexicographical order.
+    ///     <ul>
+    ///         <li>1st index: tile index, in lexicographical order </li>
+    ///         <li>2nd index: component index </li>
+    ///         <li>3rd index: resolution level </li>
+    ///         <li>4th index: subband index </li>
+    ///         <li>5th index: code-block index, in lexicographical order</li>
+    ///     </ul>
+    /// </summary>
+    private readonly int[][][][][] lblock;
+
+    /// <summary>
+    ///     Array containing the coordinates, width, height, indexes, ... of the
+    ///     precincts.
+    ///     <ul>
+    ///         <li> 1st dim: tile index.</li>
+    ///         <li> 2nd dim: component index.</li>
+    ///         <li> 3rd dim: resolution level index.</li>
+    ///         <li> 4th dim: precinct index.</li>
+    ///     </ul>
+    /// </summary>
+    private readonly PrecInfo[][][][] ppinfo;
+
+    /// <summary>
+    ///     The last encoded truncation point for each code-block. A negative value
+    ///     means that no information has been included for the block, yet. The
+    ///     indexes are outlined below. The subband indices are used as they are
+    ///     defined in the Subband class. The tile indices start at 0 and follow a
+    ///     lexicographical order. The code-block indices follow a lexicographical
+    ///     order within the subband tile.
+    ///     <P>
+    ///         What is actually stored is the index of the element in
+    ///         CBlkRateDistStats.truncIdxs that gives the real truncation point.
+    ///         <ul>
+    ///             <li>1st index: tile index, in lexicographical order </li>
+    ///             <li>2nd index: component index </li>
+    ///             <li>3rd index: resolution level </li>
+    ///             <li>4th index: subband index</li>
+    ///             <li>5th index: code-block index, in lexicographical order </li>
+    ///         </ul>
+    /// </summary>
+    private readonly int[][][][][] prevtIdxs;
+
+    /// <summary>
+    ///     The tag tree for inclusion information. The indexes are outlined
+    ///     below. Note that the layer indexes start at 1, therefore, the layer
+    ///     index minus 1 is used. The subband indices are used as they are defined
+    ///     in the Subband class. The tile indices start at 0 and follow a
+    ///     lexicographical order.
+    ///     <ul>
+    ///         <li>1st index: tile index, in lexicographical order</li>
+    ///         <li>2nd index: component index </li>
+    ///         <li>3rd index: resolution level </li>
+    ///         <li>4th index: precinct index </li>
+    ///         <li>5th index: subband index </li>
+    ///     </ul>
+    /// </summary>
+    private readonly TagTreeEncoder[][][][][] ttIncl;
+
+    /// <summary>
+    ///     The tag tree for the maximum significant bit-plane. The indexes are
+    ///     outlined below. Note that the layer indexes start at 1, therefore, the
+    ///     layer index minus 1 is used. The subband indices are used as they are
+    ///     defined in the Subband class. The tile indices start at 0 and follow a
+    ///     lexicographical order.
+    ///     <ul>
+    ///         <li>1st index: tile index, in lexicographical order</li>
+    ///         <li>2nd index: component index </li>
+    ///         <li>3rd index: resolution level </li>
+    ///         <li>4th index: precinct index </li>
+    ///         <li>5th index: subband index</li>
+    ///     </ul>
+    /// </summary>
+    private readonly TagTreeEncoder[][][][][] ttMaxBP;
+
     /// <summary>
     ///     The saved base number of bits for sending code-block length
     ///     information. It is used for restoring previous saved state by
@@ -123,69 +210,14 @@ public class PktEncoder
     /// </summary>
     private int[][][][][] bak_prevtIdxs;
 
-    /// <summary>The encoder specs </summary>
-    private readonly EncoderSpecs encSpec;
-
-    /// <summary>The source object </summary>
-    private readonly CodedCBlkDataSrcEnc infoSrc;
-
     /// <summary>The body buffer of the last encoded packet </summary>
     private byte[] lbbuf;
 
     /// <summary>The body length of the last encoded packet </summary>
     private int lblen;
 
-    /// <summary>
-    ///     The base number of bits for sending code-block length information
-    ///     (referred as Lblock in the JPEG 2000 standard). The indexes are
-    ///     outlined below. Note that the layer indexes start at 1, therefore, the
-    ///     layer index minus 1 is used. The subband indices are used as they are
-    ///     defined in the Subband class. The tile indices start at 0 and follow a
-    ///     lexicographical order.
-    ///     <ul>
-    ///         <li>1st index: tile index, in lexicographical order </li>
-    ///         <li>2nd index: component index </li>
-    ///         <li>3rd index: resolution level </li>
-    ///         <li>4th index: subband index </li>
-    ///         <li>5th index: code-block index, in lexicographical order</li>
-    ///     </ul>
-    /// </summary>
-    private readonly int[][][][][] lblock;
-
     /// <summary>Whether or not the current packet is writable </summary>
     private bool packetWritable;
-
-    /// <summary>
-    ///     Array containing the coordinates, width, height, indexes, ... of the
-    ///     precincts.
-    ///     <ul>
-    ///         <li> 1st dim: tile index.</li>
-    ///         <li> 2nd dim: component index.</li>
-    ///         <li> 3rd dim: resolution level index.</li>
-    ///         <li> 4th dim: precinct index.</li>
-    ///     </ul>
-    /// </summary>
-    private readonly PrecInfo[][][][] ppinfo;
-
-    /// <summary>
-    ///     The last encoded truncation point for each code-block. A negative value
-    ///     means that no information has been included for the block, yet. The
-    ///     indexes are outlined below. The subband indices are used as they are
-    ///     defined in the Subband class. The tile indices start at 0 and follow a
-    ///     lexicographical order. The code-block indices follow a lexicographical
-    ///     order within the subband tile.
-    ///     <P>
-    ///         What is actually stored is the index of the element in
-    ///         CBlkRateDistStats.truncIdxs that gives the real truncation point.
-    ///         <ul>
-    ///             <li>1st index: tile index, in lexicographical order </li>
-    ///             <li>2nd index: component index </li>
-    ///             <li>3rd index: resolution level </li>
-    ///             <li>4th index: subband index</li>
-    ///             <li>5th index: code-block index, in lexicographical order </li>
-    ///         </ul>
-    /// </summary>
-    private readonly int[][][][][] prevtIdxs;
 
     /// <summary>Whether or not there is ROI information in the last encoded Packet </summary>
     private bool roiInPkt;
@@ -195,38 +227,6 @@ public class PktEncoder
 
     /// <summary>The saved state </summary>
     private bool saved;
-
-    /// <summary>
-    ///     The tag tree for inclusion information. The indexes are outlined
-    ///     below. Note that the layer indexes start at 1, therefore, the layer
-    ///     index minus 1 is used. The subband indices are used as they are defined
-    ///     in the Subband class. The tile indices start at 0 and follow a
-    ///     lexicographical order.
-    ///     <ul>
-    ///         <li>1st index: tile index, in lexicographical order</li>
-    ///         <li>2nd index: component index </li>
-    ///         <li>3rd index: resolution level </li>
-    ///         <li>4th index: precinct index </li>
-    ///         <li>5th index: subband index </li>
-    ///     </ul>
-    /// </summary>
-    private readonly TagTreeEncoder[][][][][] ttIncl;
-
-    /// <summary>
-    ///     The tag tree for the maximum significant bit-plane. The indexes are
-    ///     outlined below. Note that the layer indexes start at 1, therefore, the
-    ///     layer index minus 1 is used. The subband indices are used as they are
-    ///     defined in the Subband class. The tile indices start at 0 and follow a
-    ///     lexicographical order.
-    ///     <ul>
-    ///         <li>1st index: tile index, in lexicographical order</li>
-    ///         <li>2nd index: component index </li>
-    ///         <li>3rd index: resolution level </li>
-    ///         <li>4th index: precinct index </li>
-    ///         <li>5th index: subband index</li>
-    ///     </ul>
-    /// </summary>
-    private readonly TagTreeEncoder[][][][][] ttMaxBP;
 
     /// <summary>
     ///     Creates a new packet encoder object, using the information from the

@@ -54,42 +54,42 @@ namespace CSJ2K.j2k.quantization;
 /// </seealso>
 public class QuantStepSizeSpec : ModuleSpec
 {
-	/// <summary>
-	///     Constructs an empty 'QuantStepSizeSpec' with specified number of
-	///     tile and components. This constructor is called by the decoder.
-	/// </summary>
-	/// <param name="nt">
-	///     Number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     Number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	public QuantStepSizeSpec(int nt, int nc, byte type) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs an empty 'QuantStepSizeSpec' with specified number of
+    ///     tile and components. This constructor is called by the decoder.
+    /// </summary>
+    /// <param name="nt">
+    ///     Number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     Number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    public QuantStepSizeSpec(int nt, int nc, byte type) : base(nt, nc, type)
     {
     }
 
-	/// <summary>
-	///     Constructs a new 'QuantStepSizeSpec' for the specified number of
-	///     components and tiles and the arguments of "-Qstep" option.
-	/// </summary>
-	/// <param name="nt">
-	///     The number of tiles
-	/// </param>
-	/// <param name="nc">
-	///     The number of components
-	/// </param>
-	/// <param name="type">
-	///     the type of the specification module i.e. tile specific,
-	///     component specific or both.
-	/// </param>
-	/// <param name="pl">
-	///     The ParameterList
-	/// </param>
-	public QuantStepSizeSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
+    /// <summary>
+    ///     Constructs a new 'QuantStepSizeSpec' for the specified number of
+    ///     components and tiles and the arguments of "-Qstep" option.
+    /// </summary>
+    /// <param name="nt">
+    ///     The number of tiles
+    /// </param>
+    /// <param name="nc">
+    ///     The number of components
+    /// </param>
+    /// <param name="type">
+    ///     the type of the specification module i.e. tile specific,
+    ///     component specific or both.
+    /// </param>
+    /// <param name="pl">
+    ///     The ParameterList
+    /// </param>
+    public QuantStepSizeSpec(int nt, int nc, byte type, ParameterList pl) : base(nt, nc, type)
     {
         var param = pl.getParameter("Qstep");
         if (param == null) throw new ArgumentException("Qstep option not specified");

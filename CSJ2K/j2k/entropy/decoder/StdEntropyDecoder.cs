@@ -80,11 +80,11 @@ namespace CSJ2K.j2k.entropy.decoder;
 /// </summary>
 public class StdEntropyDecoder : EntropyDecoder
 {
-	/// <summary>
-	///     Whether to collect timing information or not: false. Used as a compile
-	///     time directive.
-	/// </summary>
-	private const bool DO_TIMING = false;
+    /// <summary>
+    ///     Whether to collect timing information or not: false. Used as a compile
+    ///     time directive.
+    /// </summary>
+    private const bool DO_TIMING = false;
 
     /// <summary>The cumulative wall time for the entropy coding engine, for each
     /// component. 
@@ -2344,20 +2344,20 @@ public class StdEntropyDecoder : EntropyDecoder
         return error;
     }
 
-	/// <summary>
-	///     Conceals decoding errors detected in the last bit-plane. The
-	///     concealement resets the state of the decoded data to what it was before
-	///     the decoding of bit-plane 'bp' started. No more data should be decoded
-	///     after this method is called for this code-block's data to which it is
-	///     applied.
-	/// </summary>
-	/// <param name="cblk">
-	///     The code-block's data
-	/// </param>
-	/// <param name="bp">
-	///     The last decoded bit-plane (which contains errors).
-	/// </param>
-	private void conceal(DataBlk cblk, int bp)
+    /// <summary>
+    ///     Conceals decoding errors detected in the last bit-plane. The
+    ///     concealement resets the state of the decoded data to what it was before
+    ///     the decoding of bit-plane 'bp' started. No more data should be decoded
+    ///     after this method is called for this code-block's data to which it is
+    ///     applied.
+    /// </summary>
+    /// <param name="cblk">
+    ///     The code-block's data
+    /// </param>
+    /// <param name="bp">
+    ///     The last decoded bit-plane (which contains errors).
+    /// </param>
+    private void conceal(DataBlk cblk, int bp)
     {
         int l; // line index
         int k; // array index

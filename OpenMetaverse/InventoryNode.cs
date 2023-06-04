@@ -25,166 +25,155 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.Serialization;
 
-namespace OpenMetaverse
+namespace OpenMetaverse;
+
+[Serializable]
+public class InventoryNode : ISerializable
 {
-    [Serializable()]
-    public class InventoryNode : ISerializable
+    private InventoryBase data;
+    private bool needsUpdate = true;
+    private InventoryNodeDictionary nodes;
+    private InventoryNode parent;
+
+    [NonSerialized] private object tag;
+
+    /// <summary>
+    /// </summary>
+    public InventoryNode()
     {
-        private InventoryBase data;
-        private InventoryNode parent;
-        private UUID parentID; //used for de-seralization 
-        private InventoryNodeDictionary nodes;
-        private bool needsUpdate = true;
-        [NonSerialized]
-        private object tag;
+    }
 
-        /// <summary></summary>
-        public InventoryBase Data
-        {
-            get { return data; }
-            set { data = value; }
-        }
+    /// <summary>
+    /// </summary>
+    /// <param name="data"></param>
+    public InventoryNode(InventoryBase data)
+    {
+        this.data = data;
+    }
 
-        /// <summary>User data</summary>
-        public object Tag
-        {
-            get { return tag; }
-            set { tag = value; }
-        }
+    /// <summary>
+    ///     De-serialization constructor for the InventoryNode Class
+    /// </summary>
+    public InventoryNode(InventoryBase data, InventoryNode parent)
+    {
+        this.data = data;
+        this.parent = parent;
 
-        /// <summary></summary>
-        public InventoryNode Parent
-        {
-            get { return parent; }
-            set { parent = value; }
-        }
-
-        /// <summary></summary>
-        public UUID ParentID
-        {
-            get { return parentID; }
-        }
-
-        /// <summary></summary>
-        public InventoryNodeDictionary Nodes
-        {
-            get
+        if (parent != null)
+            // Add this node to the collection of parent nodes
+            lock (parent.Nodes.SyncRoot)
             {
-                if (nodes == null)
-                    nodes = new InventoryNodeDictionary(this);
-
-                return nodes;
+                parent.Nodes.Add(data.UUID, this);
             }
-            set { nodes = value; }
-        }
+    }
 
+    /// <summary>
+    ///     De-serialization handler for the InventoryNode Class
+    /// </summary>
+    public InventoryNode(SerializationInfo info, StreamingContext ctxt)
+    {
+        ParentID = (UUID)info.GetValue("Parent", typeof(UUID));
+        var type = (Type)info.GetValue("Type", typeof(Type));
 
-        public System.DateTime ModifyTime
+        // Construct a new inventory object based on the Type stored in Type
+        var ctr = type.GetConstructor(new[] { typeof(SerializationInfo), typeof(StreamingContext) });
+        data = (InventoryBase)ctr.Invoke(new object[] { info, ctxt });
+    }
+
+    /// <summary></summary>
+    public InventoryBase Data
+    {
+        get => data;
+        set => data = value;
+    }
+
+    /// <summary>User data</summary>
+    public object Tag
+    {
+        get => tag;
+        set => tag = value;
+    }
+
+    /// <summary></summary>
+    public InventoryNode Parent
+    {
+        get => parent;
+        set => parent = value;
+    }
+
+    /// <summary></summary>
+    public UUID ParentID { get; }
+
+    /// <summary></summary>
+    public InventoryNodeDictionary Nodes
+    {
+        get
         {
-            get
-            {
-                if (Data is InventoryItem)
+            if (nodes == null)
+                nodes = new InventoryNodeDictionary(this);
+
+            return nodes;
+        }
+        set => nodes = value;
+    }
+
+
+    public DateTime ModifyTime
+    {
+        get
+        {
+            if (Data is InventoryItem) return ((InventoryItem)Data).CreationDate;
+            var newest = default(DateTime); //.MinValue;
+            if (Data is InventoryFolder)
+                foreach (var node in Nodes.Values)
                 {
-                    return ((InventoryItem)Data).CreationDate;
+                    var t = node.ModifyTime;
+                    if (t > newest) newest = t;
                 }
-                DateTime newest = default(DateTime);//.MinValue;
-                if (Data is InventoryFolder)
-                {
-                    foreach (var node in Nodes.Values)
-                    {
-                        var t = node.ModifyTime;
-                        if (t > newest) newest = t;
-                    }
-                }
-                return newest;
-            }
+
+            return newest;
         }
-        public void Sort()
-        {
-            Nodes.Sort();
-        }
+    }
 
-        /// <summary>
-        /// For inventory folder nodes specifies weather the folder needs to be
-        /// refreshed from the server
-        /// </summary>
-        public bool NeedsUpdate
-        {
-            get { return needsUpdate; }
-            set { needsUpdate = value; }
-        }
+    /// <summary>
+    ///     For inventory folder nodes specifies weather the folder needs to be
+    ///     refreshed from the server
+    /// </summary>
+    public bool NeedsUpdate
+    {
+        get => needsUpdate;
+        set => needsUpdate = value;
+    }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public InventoryNode()
-        {
-        }
+    /// <summary>
+    ///     Serialization handler for the InventoryNode Class
+    /// </summary>
+    public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+    {
+        if (parent != null)
+            info.AddValue("Parent", parent.Data.UUID,
+                typeof(UUID)); //We need to track the parent UUID for de-serialization
+        else
+            info.AddValue("Parent", UUID.Zero, typeof(UUID));
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        public InventoryNode(InventoryBase data)
-        {
-            this.data = data;
-        }
+        info.AddValue("Type", data.GetType(), typeof(Type));
 
-        /// <summary>
-        /// De-serialization constructor for the InventoryNode Class
-        /// </summary>
-        public InventoryNode(InventoryBase data, InventoryNode parent)
-        {
-            this.data = data;
-            this.parent = parent;
+        data.GetObjectData(info, ctxt);
+    }
 
-            if (parent != null)
-            {
-                // Add this node to the collection of parent nodes
-                lock (parent.Nodes.SyncRoot) parent.Nodes.Add(data.UUID, this);
-            }
-        }
+    public void Sort()
+    {
+        Nodes.Sort();
+    }
 
-        /// <summary>
-        /// Serialization handler for the InventoryNode Class
-        /// </summary>
-        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
-        {
-            if(parent!=null)
-                info.AddValue("Parent", parent.Data.UUID, typeof(UUID)); //We need to track the parent UUID for de-serialization
-            else
-                info.AddValue("Parent", UUID.Zero, typeof(UUID));
-
-            info.AddValue("Type", data.GetType(), typeof(Type));
-
-            data.GetObjectData(info, ctxt);  
-        }
-
-        /// <summary>
-        /// De-serialization handler for the InventoryNode Class
-        /// </summary>
-        public InventoryNode(SerializationInfo info, StreamingContext ctxt)
-        {
-            parentID = (UUID)info.GetValue("Parent", typeof(UUID));
-            Type type = (Type)info.GetValue("Type", typeof(Type));
-         
-	    // Construct a new inventory object based on the Type stored in Type
-            System.Reflection.ConstructorInfo ctr = type.GetConstructor(new Type[] {typeof(SerializationInfo),typeof(StreamingContext)});
-            data = (InventoryBase) ctr.Invoke(new Object[] { info, ctxt });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            if (this.Data == null) return "[Empty Node]";
-            return this.Data.ToString();
-        }
+    /// <summary>
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        if (Data == null) return "[Empty Node]";
+        return Data.ToString();
     }
 }

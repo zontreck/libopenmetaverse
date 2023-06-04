@@ -106,53 +106,53 @@ public interface CodedCBlkDataSrcEnc : ForwWTDataProps
 	/// </seealso>
 	CBlkRateDistStats getNextCodeBlock(int c, CBlkRateDistStats ccb);
 
-	/// <summary>
-	///     Returns the width of a packet for the specified tile-component and
-	///     resolution level.
-	/// </summary>
-	/// <param name="t">
-	///     The tile
-	/// </param>
-	/// <param name="c">
-	///     The component
-	/// </param>
-	/// <param name="r">
-	///     The resolution level
-	/// </param>
-	/// <returns>
-	///     The width of a packet for the specified tile- component and
-	///     resolution level.
-	/// </returns>
-	int getPPX(int t, int c, int r);
+    /// <summary>
+    ///     Returns the width of a packet for the specified tile-component and
+    ///     resolution level.
+    /// </summary>
+    /// <param name="t">
+    ///     The tile
+    /// </param>
+    /// <param name="c">
+    ///     The component
+    /// </param>
+    /// <param name="r">
+    ///     The resolution level
+    /// </param>
+    /// <returns>
+    ///     The width of a packet for the specified tile- component and
+    ///     resolution level.
+    /// </returns>
+    int getPPX(int t, int c, int r);
 
-	/// <summary>
-	///     Returns the height of a packet for the specified tile-component and
-	///     resolution level.
-	/// </summary>
-	/// <param name="t">
-	///     The tile
-	/// </param>
-	/// <param name="c">
-	///     The component
-	/// </param>
-	/// <param name="r">
-	///     The resolution level
-	/// </param>
-	/// <returns>
-	///     The height of a packet for the specified tile- component and
-	///     resolution level.
-	/// </returns>
-	int getPPY(int t, int c, int r);
+    /// <summary>
+    ///     Returns the height of a packet for the specified tile-component and
+    ///     resolution level.
+    /// </summary>
+    /// <param name="t">
+    ///     The tile
+    /// </param>
+    /// <param name="c">
+    ///     The component
+    /// </param>
+    /// <param name="r">
+    ///     The resolution level
+    /// </param>
+    /// <returns>
+    ///     The height of a packet for the specified tile- component and
+    ///     resolution level.
+    /// </returns>
+    int getPPY(int t, int c, int r);
 
-	/// <summary>
-	///     Returns true if the precinct partition is used for the specified
-	///     component and tile, returns false otherwise
-	/// </summary>
-	/// <param name="c">
-	///     The component
-	/// </param>
-	/// <param name="t">
-	///     The tile
-	/// </param>
-	bool precinctPartitionUsed(int c, int t);
+    /// <summary>
+    ///     Returns true if the precinct partition is used for the specified
+    ///     component and tile, returns false otherwise
+    /// </summary>
+    /// <param name="c">
+    ///     The component
+    /// </param>
+    /// <param name="t">
+    ///     The tile
+    /// </param>
+    bool precinctPartitionUsed(int c, int t);
 }
